@@ -12,7 +12,7 @@ Initial scope:
 
 - Read-only Graph API client.
 - Production endpoint default: `https://graph.anyshift.io`.
-- Managed auth with `ANYSHIFT_TOKEN` and `ANYSHIFT_PROJECT_ID`.
+- Authentication with an Anyshift API token and project ID.
 - Typed methods for stable Graph API intents.
 - Escape hatches for raw `query` and natural-language `ask`.
 
@@ -21,17 +21,13 @@ Package-level examples will live under `typescript/examples/`.
 ## Environment
 
 ```bash
-export ANYSHIFT_TOKEN="anys_api_..."
+export ANYSHIFT_API_TOKEN="anys_api_..."
 export ANYSHIFT_PROJECT_ID="00000000-0000-0000-0000-000000000000"
 ```
 
-Local development can override the endpoint explicitly:
+The default endpoint is `https://graph.anyshift.io`. Advanced users can override the endpoint in
+client configuration when needed.
 
-```bash
-export ENGINE_URL="http://localhost:8099"
-```
+## Contract
 
-## Contract Rule
-
-Do not import TypeScript types from `graph-api/engine/src`. Public SDK types must come from the
-OpenAPI contract pinned in this repository.
+Public SDK types come from the OpenAPI contract pinned in this repository.

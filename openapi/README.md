@@ -2,6 +2,8 @@
 
 SDK releases pin the Graph API contract here.
 
+Current snapshot: `graph-api.v1.json`.
+
 The public API contract is the compatibility boundary between the Anyshift Graph API and the SDK
 packages.
 

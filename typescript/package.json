@@ -1,0 +1,37 @@
+{
+  "name": "@anyshift/graph-sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for the Anyshift Graph API",
+  "type": "module",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/anyshift-io/anyshift-graph-sdk#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anyshift-io/anyshift-graph-sdk.git",
+    "directory": "typescript"
+  },
+  "bugs": {
+    "url": "https://github.com/anyshift-io/anyshift-graph-sdk/issues"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --import tsx --test src/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

@@ -18,6 +18,20 @@ Initial scope:
 
 Package-level examples will live under `typescript/examples/`.
 
+## Usage
+
+```ts
+import { GraphAnswer } from "@anyshift/graph-sdk";
+
+const graph = new GraphAnswer({
+  token: process.env.ANYSHIFT_API_TOKEN,
+  project: process.env.ANYSHIFT_PROJECT_ID,
+});
+
+const recent = await graph.events({ since: "1h", limit: 10 });
+console.log(recent.summary);
+```
+
 ## Environment
 
 ```bash
@@ -31,3 +45,12 @@ client configuration when needed.
 ## Contract
 
 Public SDK types come from the OpenAPI contract pinned in this repository.
+
+## Development
+
+```bash
+npm install
+npm run typecheck
+npm test
+npm run build
+```

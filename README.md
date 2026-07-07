@@ -30,6 +30,9 @@ development, and release notes.
 Product documentation, onboarding guides, and use-case recipes are published on the
 [Anyshift documentation site](https://docs.anyshift.io/pages/product/integration/sdk).
 
+For the detailed list of what the Graph API and SDK can do, see
+[CAPABILITIES.md](./CAPABILITIES.md).
+
 ## Contract Boundary
 
 SDKs depend on the public Graph API contract. TypeScript types should be generated from, or

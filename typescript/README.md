@@ -99,6 +99,9 @@ Runnable examples are available in `examples/`:
 See the [Anyshift Graph SDK guide](https://docs.anyshift.io/pages/product/integration/sdk) for
 product documentation and troubleshooting.
 
+See [CAPABILITIES.md](../CAPABILITIES.md) for the canonical capability matrix: every typed helper,
+the graph query target, primary parameters, and what each capability answers.
+
 ## Development
 
 ```bash

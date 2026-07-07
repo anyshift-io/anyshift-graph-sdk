@@ -1,4 +1,5 @@
 export { GraphAnswer } from "./client.js";
+export { toMermaid } from "./mermaid.js";
 export { GraphAnswerError, AuthError, BadQueryError } from "./errors.js";
 export type {
   GraphAnswerOptions,
@@ -42,4 +43,4 @@ export type {
   ImageParams,
   TopologyParams,
 } from "./client.js";
-export type { AskResult, GraphIntent, Page } from "./types.js";
+export type { AskResult, C4Level, GraphEdge, GraphIntent, GraphNode, Page, TopologyResult } from "./types.js";

@@ -5,6 +5,10 @@ SDK releases pin the Graph API contract here.
 The SDKs should not import types or implementation details from the `graph-api` server repository.
 The public API contract is the boundary between the server and SDK packages.
 
+Current pinned snapshot:
+
+- `graph-api-v1.json` — OpenAPI contract used by the initial Go SDK.
+
 Expected release flow:
 
 1. Graph API publishes or exposes a versioned OpenAPI document.

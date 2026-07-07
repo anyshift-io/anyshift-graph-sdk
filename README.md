@@ -11,7 +11,7 @@ repository is organized as a multi-language SDK home from day one.
 | --- | --- | --- |
 | TypeScript | `@anyshift/graph-sdk` | First public release |
 | Python | `anyshift-graph` | Planned |
-| Go | `github.com/anyshift-io/anyshift-graph-sdk/go` | Planned |
+| Go | `github.com/anyshift-io/anyshift-graph-sdk/go` | Initial SDK |
 
 ## Repository Layout
 

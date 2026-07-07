@@ -27,10 +27,21 @@ go/           Future Go SDK
 This repository owns package-level documentation: installation, examples, local SDK
 development, and release notes.
 
-Product documentation, onboarding guides, and use-case recipes will be published on the
-Anyshift documentation site.
+Product documentation, onboarding guides, and use-case recipes are published on the
+[Anyshift documentation site](https://docs.anyshift.io/pages/product/integration/sdk).
 
 ## Contract Boundary
 
 SDKs depend on the public Graph API contract. TypeScript types should be generated from, or
 pinned to, the OpenAPI contract in `openapi/`.
+
+## Release Status
+
+The first public SDK release is `@anyshift/graph-sdk@0.1.0`.
+
+Release checklist:
+
+- TypeScript package builds with `npm run build`.
+- TypeScript tests pass with `npm test`.
+- Package contents are verified with `npm pack --dry-run`.
+- Developer documentation is published in the Anyshift documentation site.

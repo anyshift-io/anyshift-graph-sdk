@@ -1,10 +1,17 @@
 # TypeScript Examples
 
-Runnable TypeScript examples will live here.
+Set credentials before running examples:
 
-Planned first examples:
+```bash
+export ANYSHIFT_API_TOKEN="anys_api_..."
+export ANYSHIFT_PROJECT_ID="00000000-0000-0000-0000-000000000000"
+```
 
-- List recent events for a project.
-- Compute the blast radius for a resource.
-- Find a path between two resources.
-- Explain a firing alert from graph evidence.
+Run examples from the `typescript/` directory with `tsx`:
+
+```bash
+npx tsx examples/recent-events.ts
+npx tsx examples/blast-radius.ts checkout
+npx tsx examples/path.ts checkout checkout-postgres
+npx tsx examples/raw-query.ts "SELECT * FROM events LIMIT 5"
+```

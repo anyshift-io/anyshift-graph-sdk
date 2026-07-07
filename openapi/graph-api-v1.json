@@ -3,11 +3,17 @@
   "info": {
     "title": "Anyshift Graph API",
     "version": "1.0.0",
-    "description": "Read-only infrastructure graph query API with local single-graph and managed per-project modes."
+    "description": "Read-only API for querying Anyshift infrastructure graphs by project."
   },
   "servers": [
     {
-      "url": "/"
+      "url": "https://graph.anyshift.io"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Graph",
+      "description": "Ask natural-language questions or run deterministic graph queries."
     }
   ],
   "components": {
@@ -271,58 +277,21 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": [
-                "namespace",
-                "count"
-              ],
-              "properties": {
-                "namespace": {
-                  "type": "string"
-                },
-                "count": {
-                  "type": "integer"
-                }
-              },
-              "additionalProperties": false
+              "additionalProperties": true
             }
           },
           "sample": {
             "type": "array",
             "items": {
               "type": "object",
-              "required": [
-                "name",
-                "namespace"
-              ],
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "namespace": {
-                  "type": "string",
-                  "nullable": true
-                }
-              },
-              "additionalProperties": false
+              "additionalProperties": true
             }
           },
           "availableTypes": {
             "type": "array",
             "items": {
               "type": "object",
-              "required": [
-                "label",
-                "count"
-              ],
-              "properties": {
-                "label": {
-                  "type": "string"
-                },
-                "count": {
-                  "type": "integer"
-                }
-              },
-              "additionalProperties": false
+              "additionalProperties": true
             }
           }
         },
@@ -372,11 +341,7 @@
         ],
         "properties": {
           "dimension": {
-            "type": "string",
-            "enum": [
-              "namespace",
-              "resource"
-            ]
+            "type": "string"
           },
           "filter": {
             "type": "object",
@@ -386,24 +351,7 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": [
-                "key",
-                "total",
-                "namespace"
-              ],
-              "properties": {
-                "key": {
-                  "type": "string"
-                },
-                "total": {
-                  "type": "integer"
-                },
-                "namespace": {
-                  "type": "string",
-                  "nullable": true
-                }
-              },
-              "additionalProperties": false
+              "additionalProperties": true
             }
           }
         },
@@ -520,47 +468,7 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": [
-                "ts",
-                "target",
-                "namespace",
-                "images"
-              ],
-              "properties": {
-                "ts": {
-                  "type": "string"
-                },
-                "target": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "namespace": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "images": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "required": [
-                      "from",
-                      "to"
-                    ],
-                    "properties": {
-                      "from": {
-                        "type": "string",
-                        "nullable": true
-                      },
-                      "to": {
-                        "type": "string",
-                        "nullable": true
-                      }
-                    },
-                    "additionalProperties": false
-                  }
-                }
-              },
-              "additionalProperties": false
+              "additionalProperties": true
             }
           },
           "page": {
@@ -573,13 +481,8 @@
         "type": "object",
         "required": [
           "scope",
-          "filter",
           "ranking",
-          "target",
-          "rollouts",
-          "total",
-          "byType",
-          "recent"
+          "target"
         ],
         "properties": {
           "scope": {
@@ -589,10 +492,6 @@
               "target"
             ]
           },
-          "filter": {
-            "type": "object",
-            "additionalProperties": true
-          },
           "ranking": {
             "type": "array",
             "items": {
@@ -601,25 +500,9 @@
             }
           },
           "target": {
-            "type": "string"
-          },
-          "rollouts": {
-            "type": "integer"
-          },
-          "total": {
-            "type": "integer"
-          },
-          "byType": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CountByType"
-            }
-          },
-          "recent": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EventItem"
-            }
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -708,12 +591,7 @@
         ],
         "properties": {
           "kind": {
-            "type": "string",
-            "enum": [
-              "configmap",
-              "serviceaccount",
-              "node"
-            ]
+            "type": "string"
           },
           "filter": {
             "type": "object",
@@ -723,28 +601,7 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": [
-                "name",
-                "namespace",
-                "workloads",
-                "pods"
-              ],
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "namespace": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "workloads": {
-                  "type": "integer"
-                },
-                "pods": {
-                  "type": "integer"
-                }
-              },
-              "additionalProperties": false
+              "additionalProperties": true
             }
           }
         },
@@ -759,13 +616,7 @@
         ],
         "properties": {
           "kind": {
-            "type": "string",
-            "enum": [
-              "configmap",
-              "serviceaccount",
-              "role",
-              "replicaset"
-            ]
+            "type": "string"
           },
           "filter": {
             "type": "object",
@@ -775,20 +626,7 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": [
-                "name",
-                "namespace"
-              ],
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "namespace": {
-                  "type": "string",
-                  "nullable": true
-                }
-              },
-              "additionalProperties": false
+              "additionalProperties": true
             }
           }
         },
@@ -803,11 +641,7 @@
         ],
         "properties": {
           "kind": {
-            "type": "string",
-            "enum": [
-              "service",
-              "monitor"
-            ]
+            "type": "string"
           },
           "filter": {
             "type": "object",
@@ -817,429 +651,59 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": [
-                "name",
-                "namespace",
-                "kind"
-              ],
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "namespace": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "kind": {
-                  "type": "string",
-                  "nullable": true
-                }
-              },
-              "additionalProperties": false
+              "additionalProperties": true
             }
           }
         },
         "additionalProperties": false
+      },
+      "ScalingResult": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "NetpolResult": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "PriorityResult": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "PdbResult": {
+        "type": "object",
+        "additionalProperties": true
       },
       "AccessResult": {
         "type": "object",
-        "required": [
-          "direction",
-          "serviceAccounts",
-          "roles",
-          "subjects"
-        ],
-        "properties": {
-          "direction": {
-            "type": "string",
-            "enum": [
-              "subject",
-              "object"
-            ]
-          },
-          "serviceAccounts": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "roles": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": [
-                "role",
-                "namespace",
-                "via"
-              ],
-              "properties": {
-                "role": {
-                  "type": "string"
-                },
-                "namespace": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "via": {
-                  "type": "string",
-                  "nullable": true
-                }
-              },
-              "additionalProperties": false
-            }
-          },
-          "subjects": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": [
-                "serviceAccount",
-                "namespace",
-                "via",
-                "pods",
-                "workloads"
-              ],
-              "properties": {
-                "serviceAccount": {
-                  "type": "string"
-                },
-                "namespace": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "via": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "pods": {
-                  "type": "integer"
-                },
-                "workloads": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "additionalProperties": false
-            }
-          }
-        },
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "ExposureResult": {
         "type": "object",
-        "required": [
-          "direction",
-          "exposed",
-          "services",
-          "ingresses"
-        ],
-        "properties": {
-          "direction": {
-            "type": "string",
-            "enum": [
-              "ingress",
-              "workload"
-            ]
-          },
-          "exposed": {
-            "type": "boolean"
-          },
-          "services": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          },
-          "ingresses": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          }
-        },
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "TenancyResult": {
         "type": "object",
-        "required": [
-          "nodes",
-          "ownPods",
-          "neighbors"
-        ],
-        "properties": {
-          "nodes": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "ownPods": {
-            "type": "integer"
-          },
-          "neighbors": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          }
-        },
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "SharedConfigResult": {
         "type": "object",
-        "required": [
-          "configmaps",
-          "ownPods",
-          "siblings"
-        ],
-        "properties": {
-          "configmaps": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "ownPods": {
-            "type": "integer"
-          },
-          "siblings": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          }
-        },
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "PathResult": {
         "type": "object",
-        "required": [
-          "from",
-          "to",
-          "found",
-          "hops",
-          "chain",
-          "rels"
-        ],
-        "properties": {
-          "from": {
-            "type": "object",
-            "required": [
-              "term",
-              "name",
-              "type"
-            ],
-            "properties": {
-              "term": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "type": {
-                "type": "string",
-                "nullable": true
-              }
-            },
-            "additionalProperties": false,
-            "nullable": true
-          },
-          "to": {
-            "type": "object",
-            "required": [
-              "term",
-              "name",
-              "type"
-            ],
-            "properties": {
-              "term": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "type": {
-                "type": "string",
-                "nullable": true
-              }
-            },
-            "additionalProperties": false,
-            "nullable": true
-          },
-          "found": {
-            "type": "boolean"
-          },
-          "hops": {
-            "type": "integer"
-          },
-          "chain": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          },
-          "rels": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "CascadeResult": {
         "type": "object",
-        "required": [
-          "correlationId",
-          "root",
-          "totalEvents",
-          "spanSeconds",
-          "byReason",
-          "steps"
-        ],
-        "properties": {
-          "correlationId": {
-            "type": "string"
-          },
-          "root": {
-            "type": "object",
-            "additionalProperties": true,
-            "nullable": true
-          },
-          "totalEvents": {
-            "type": "integer"
-          },
-          "spanSeconds": {
-            "type": "integer"
-          },
-          "byReason": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": [
-                "reason",
-                "count"
-              ],
-              "properties": {
-                "reason": {
-                  "type": "string"
-                },
-                "count": {
-                  "type": "integer"
-                }
-              },
-              "additionalProperties": false
-            }
-          },
-          "steps": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          }
-        },
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "AlertImpactResult": {
         "type": "object",
-        "required": [
-          "scope",
-          "workloads",
-          "services",
-          "counts",
-          "monitors",
-          "slos"
-        ],
-        "properties": {
-          "scope": {
-            "type": "string"
-          },
-          "workloads": {
-            "type": "integer"
-          },
-          "services": {
-            "type": "integer"
-          },
-          "counts": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "monitors": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          },
-          "slos": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          }
-        },
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "MonitorResult": {
         "type": "object",
-        "required": [
-          "term",
-          "matched",
-          "monitors",
-          "services",
-          "workloads",
-          "nodes",
-          "slos"
-        ],
-        "properties": {
-          "term": {
-            "type": "string"
-          },
-          "matched": {
-            "type": "integer"
-          },
-          "monitors": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "services": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "workloads": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          },
-          "nodes": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "slos": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "DataStoreResult": {
         "type": "object",
@@ -1363,48 +827,11 @@
       },
       "AlertsResult": {
         "type": "object",
-        "required": [
-          "filter",
-          "total",
-          "byState",
-          "firing"
-        ],
-        "properties": {
-          "filter": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "total": {
-            "type": "integer"
-          },
-          "byState": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": [
-                "state",
-                "count"
-              ],
-              "properties": {
-                "state": {
-                  "type": "string"
-                },
-                "count": {
-                  "type": "integer"
-                }
-              },
-              "additionalProperties": false
-            }
-          },
-          "firing": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          }
-        },
-        "additionalProperties": false
+        "additionalProperties": true
+      },
+      "AlertNoiseResult": {
+        "type": "object",
+        "additionalProperties": true
       },
       "CallsResult": {
         "type": "object",
@@ -1468,88 +895,27 @@
       },
       "AlertCauseResult": {
         "type": "object",
-        "required": [
-          "target",
-          "workload",
-          "namespace",
-          "firingMonitors",
-          "firingCount",
-          "changes"
-        ],
-        "properties": {
-          "target": {
-            "type": "string"
-          },
-          "workload": {
-            "type": "string",
-            "nullable": true
-          },
-          "namespace": {
-            "type": "string",
-            "nullable": true
-          },
-          "firingMonitors": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "firingCount": {
-            "type": "integer"
-          },
-          "changes": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          }
-        },
-        "additionalProperties": false
+        "additionalProperties": true
+      },
+      "AlertRulesResult": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "GitopsResult": {
+        "type": "object",
+        "additionalProperties": true
       },
       "ImageResult": {
         "type": "object",
-        "required": [
-          "mode",
-          "ranking",
-          "byImage",
-          "workload",
-          "hygiene"
-        ],
-        "properties": {
-          "mode": {
-            "type": "string",
-            "enum": [
-              "ranked",
-              "byimage",
-              "workload",
-              "hygiene"
-            ]
-          },
-          "ranking": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          },
-          "byImage": {
-            "type": "object",
-            "additionalProperties": true,
-            "nullable": true
-          },
-          "workload": {
-            "type": "object",
-            "additionalProperties": true,
-            "nullable": true
-          },
-          "hygiene": {
-            "type": "object",
-            "additionalProperties": true,
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
+        "additionalProperties": true
+      },
+      "StorageResult": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "TopologyResult": {
+        "type": "object",
+        "additionalProperties": true
       },
       "AskResult": {
         "type": "object",
@@ -1586,6 +952,7 @@
               "flow",
               "externaldep",
               "alerts",
+              "alertnoise",
               "calls",
               "servicetree",
               "alertcause",
@@ -1596,7 +963,15 @@
               "slo",
               "tenancy",
               "sharedconfig",
-              "image"
+              "alertrules",
+              "gitops",
+              "image",
+              "netpol",
+              "storage",
+              "pdb",
+              "scaling",
+              "topology",
+              "priority"
             ]
           },
           "summary": {
@@ -1743,6 +1118,38 @@
             ],
             "nullable": true
           },
+          "scaling": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScalingResult"
+              }
+            ],
+            "nullable": true
+          },
+          "netpol": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NetpolResult"
+              }
+            ],
+            "nullable": true
+          },
+          "priority": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriorityResult"
+              }
+            ],
+            "nullable": true
+          },
+          "pdb": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PdbResult"
+              }
+            ],
+            "nullable": true
+          },
           "access": {
             "allOf": [
               {
@@ -1847,6 +1254,14 @@
             ],
             "nullable": true
           },
+          "alertNoise": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlertNoiseResult"
+              }
+            ],
+            "nullable": true
+          },
           "calls": {
             "allOf": [
               {
@@ -1871,10 +1286,42 @@
             ],
             "nullable": true
           },
+          "alertRules": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlertRulesResult"
+              }
+            ],
+            "nullable": true
+          },
+          "gitops": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GitopsResult"
+              }
+            ],
+            "nullable": true
+          },
           "image": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/ImageResult"
+              }
+            ],
+            "nullable": true
+          },
+          "storage": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StorageResult"
+              }
+            ],
+            "nullable": true
+          },
+          "topology": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TopologyResult"
               }
             ],
             "nullable": true
@@ -1906,6 +1353,7 @@
                   "payload_too_large",
                   "timeout",
                   "project_graph_unconfigured",
+                  "project_events_graph_unconfigured",
                   "internal"
                 ]
               },
@@ -1924,6 +1372,9 @@
     "/v1/query": {
       "post": {
         "operationId": "queryGraph",
+        "tags": [
+          "Graph"
+        ],
         "summary": "Run a query-language query (deterministic, no LLM).",
         "security": [
           {
@@ -1997,6 +1448,9 @@
     "/v1/projects/{projectId}/query": {
       "post": {
         "operationId": "queryProjectGraph",
+        "tags": [
+          "Graph"
+        ],
         "summary": "Run a deterministic graph query for an Anyshift project.",
         "security": [
           {
@@ -2095,7 +1549,10 @@
     "/v1/ask": {
       "post": {
         "operationId": "askGraph",
-        "summary": "Ask a natural-language question (one server-side LLM routing call).",
+        "tags": [
+          "Graph"
+        ],
+        "summary": "Ask a natural-language graph question.",
         "security": [
           {
             "bearerAuth": []
@@ -2168,6 +1625,9 @@
     "/v1/projects/{projectId}/ask": {
       "post": {
         "operationId": "askProjectGraph",
+        "tags": [
+          "Graph"
+        ],
         "summary": "Ask a natural-language graph question for an Anyshift project.",
         "security": [
           {

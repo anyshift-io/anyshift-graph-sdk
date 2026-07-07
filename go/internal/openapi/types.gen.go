@@ -7,126 +7,135 @@ const (
 	BearerAuthScopes bearerAuthContextKey = "bearerAuth.Scopes"
 )
 
-// Defines values for AccessResultDirection.
-const (
-	Object  AccessResultDirection = "object"
-	Subject AccessResultDirection = "subject"
-)
-
-// Valid indicates whether the value is a known member of the AccessResultDirection enum.
-func (e AccessResultDirection) Valid() bool {
-	switch e {
-	case Object:
-		return true
-	case Subject:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for AskResultIntent.
 const (
-	AskResultIntentAccess       AskResultIntent = "access"
-	AskResultIntentAlertcause   AskResultIntent = "alertcause"
-	AskResultIntentAlertimpact  AskResultIntent = "alertimpact"
-	AskResultIntentAlerts       AskResultIntent = "alerts"
-	AskResultIntentAudit        AskResultIntent = "audit"
-	AskResultIntentBlast        AskResultIntent = "blast"
-	AskResultIntentCalls        AskResultIntent = "calls"
-	AskResultIntentCascade      AskResultIntent = "cascade"
-	AskResultIntentCommoncause  AskResultIntent = "commoncause"
-	AskResultIntentConnections  AskResultIntent = "connections"
-	AskResultIntentCoverage     AskResultIntent = "coverage"
-	AskResultIntentDatastore    AskResultIntent = "datastore"
-	AskResultIntentDeployimpact AskResultIntent = "deployimpact"
-	AskResultIntentDeployments  AskResultIntent = "deployments"
-	AskResultIntentEvents       AskResultIntent = "events"
-	AskResultIntentExposure     AskResultIntent = "exposure"
-	AskResultIntentExternaldep  AskResultIntent = "externaldep"
-	AskResultIntentFailures     AskResultIntent = "failures"
-	AskResultIntentFlow         AskResultIntent = "flow"
-	AskResultIntentHotspots     AskResultIntent = "hotspots"
-	AskResultIntentImage        AskResultIntent = "image"
-	AskResultIntentIncident     AskResultIntent = "incident"
-	AskResultIntentInventory    AskResultIntent = "inventory"
-	AskResultIntentMonitor      AskResultIntent = "monitor"
-	AskResultIntentNodes        AskResultIntent = "nodes"
-	AskResultIntentOrphans      AskResultIntent = "orphans"
-	AskResultIntentPath         AskResultIntent = "path"
-	AskResultIntentServicetree  AskResultIntent = "servicetree"
-	AskResultIntentSharedconfig AskResultIntent = "sharedconfig"
-	AskResultIntentSlo          AskResultIntent = "slo"
-	AskResultIntentSpof         AskResultIntent = "spof"
-	AskResultIntentTenancy      AskResultIntent = "tenancy"
+	Access       AskResultIntent = "access"
+	Alertcause   AskResultIntent = "alertcause"
+	Alertimpact  AskResultIntent = "alertimpact"
+	Alertnoise   AskResultIntent = "alertnoise"
+	Alertrules   AskResultIntent = "alertrules"
+	Alerts       AskResultIntent = "alerts"
+	Audit        AskResultIntent = "audit"
+	Blast        AskResultIntent = "blast"
+	Calls        AskResultIntent = "calls"
+	Cascade      AskResultIntent = "cascade"
+	Commoncause  AskResultIntent = "commoncause"
+	Connections  AskResultIntent = "connections"
+	Coverage     AskResultIntent = "coverage"
+	Datastore    AskResultIntent = "datastore"
+	Deployimpact AskResultIntent = "deployimpact"
+	Deployments  AskResultIntent = "deployments"
+	Events       AskResultIntent = "events"
+	Exposure     AskResultIntent = "exposure"
+	Externaldep  AskResultIntent = "externaldep"
+	Failures     AskResultIntent = "failures"
+	Flow         AskResultIntent = "flow"
+	Gitops       AskResultIntent = "gitops"
+	Hotspots     AskResultIntent = "hotspots"
+	Image        AskResultIntent = "image"
+	Incident     AskResultIntent = "incident"
+	Inventory    AskResultIntent = "inventory"
+	Monitor      AskResultIntent = "monitor"
+	Netpol       AskResultIntent = "netpol"
+	Nodes        AskResultIntent = "nodes"
+	Orphans      AskResultIntent = "orphans"
+	Path         AskResultIntent = "path"
+	Pdb          AskResultIntent = "pdb"
+	Priority     AskResultIntent = "priority"
+	Scaling      AskResultIntent = "scaling"
+	Servicetree  AskResultIntent = "servicetree"
+	Sharedconfig AskResultIntent = "sharedconfig"
+	Slo          AskResultIntent = "slo"
+	Spof         AskResultIntent = "spof"
+	Storage      AskResultIntent = "storage"
+	Tenancy      AskResultIntent = "tenancy"
+	Topology     AskResultIntent = "topology"
 )
 
 // Valid indicates whether the value is a known member of the AskResultIntent enum.
 func (e AskResultIntent) Valid() bool {
 	switch e {
-	case AskResultIntentAccess:
+	case Access:
 		return true
-	case AskResultIntentAlertcause:
+	case Alertcause:
 		return true
-	case AskResultIntentAlertimpact:
+	case Alertimpact:
 		return true
-	case AskResultIntentAlerts:
+	case Alertnoise:
 		return true
-	case AskResultIntentAudit:
+	case Alertrules:
 		return true
-	case AskResultIntentBlast:
+	case Alerts:
 		return true
-	case AskResultIntentCalls:
+	case Audit:
 		return true
-	case AskResultIntentCascade:
+	case Blast:
 		return true
-	case AskResultIntentCommoncause:
+	case Calls:
 		return true
-	case AskResultIntentConnections:
+	case Cascade:
 		return true
-	case AskResultIntentCoverage:
+	case Commoncause:
 		return true
-	case AskResultIntentDatastore:
+	case Connections:
 		return true
-	case AskResultIntentDeployimpact:
+	case Coverage:
 		return true
-	case AskResultIntentDeployments:
+	case Datastore:
 		return true
-	case AskResultIntentEvents:
+	case Deployimpact:
 		return true
-	case AskResultIntentExposure:
+	case Deployments:
 		return true
-	case AskResultIntentExternaldep:
+	case Events:
 		return true
-	case AskResultIntentFailures:
+	case Exposure:
 		return true
-	case AskResultIntentFlow:
+	case Externaldep:
 		return true
-	case AskResultIntentHotspots:
+	case Failures:
 		return true
-	case AskResultIntentImage:
+	case Flow:
 		return true
-	case AskResultIntentIncident:
+	case Gitops:
 		return true
-	case AskResultIntentInventory:
+	case Hotspots:
 		return true
-	case AskResultIntentMonitor:
+	case Image:
 		return true
-	case AskResultIntentNodes:
+	case Incident:
 		return true
-	case AskResultIntentOrphans:
+	case Inventory:
 		return true
-	case AskResultIntentPath:
+	case Monitor:
 		return true
-	case AskResultIntentServicetree:
+	case Netpol:
 		return true
-	case AskResultIntentSharedconfig:
+	case Nodes:
 		return true
-	case AskResultIntentSlo:
+	case Orphans:
 		return true
-	case AskResultIntentSpof:
+	case Path:
 		return true
-	case AskResultIntentTenancy:
+	case Pdb:
+		return true
+	case Priority:
+		return true
+	case Scaling:
+		return true
+	case Servicetree:
+		return true
+	case Sharedconfig:
+		return true
+	case Slo:
+		return true
+	case Spof:
+		return true
+	case Storage:
+		return true
+	case Tenancy:
+		return true
+	case Topology:
 		return true
 	default:
 		return false
@@ -145,24 +154,6 @@ func (e CallsResultScope) Valid() bool {
 	case CallsResultScopeRanked:
 		return true
 	case CallsResultScopeTarget:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for CoverageResultKind.
-const (
-	CoverageResultKindMonitor CoverageResultKind = "monitor"
-	CoverageResultKindService CoverageResultKind = "service"
-)
-
-// Valid indicates whether the value is a known member of the CoverageResultKind enum.
-func (e CoverageResultKind) Valid() bool {
-	switch e {
-	case CoverageResultKindMonitor:
-		return true
-	case CoverageResultKindService:
 		return true
 	default:
 		return false
@@ -207,15 +198,16 @@ func (e DeployImpactResultScope) Valid() bool {
 
 // Defines values for ErrorEnvelopeErrorCode.
 const (
-	BadRequest               ErrorEnvelopeErrorCode = "bad_request"
-	Forbidden                ErrorEnvelopeErrorCode = "forbidden"
-	Internal                 ErrorEnvelopeErrorCode = "internal"
-	NotFound                 ErrorEnvelopeErrorCode = "not_found"
-	PayloadTooLarge          ErrorEnvelopeErrorCode = "payload_too_large"
-	ProjectGraphUnconfigured ErrorEnvelopeErrorCode = "project_graph_unconfigured"
-	ProjectRequired          ErrorEnvelopeErrorCode = "project_required"
-	Timeout                  ErrorEnvelopeErrorCode = "timeout"
-	Unauthorized             ErrorEnvelopeErrorCode = "unauthorized"
+	BadRequest                     ErrorEnvelopeErrorCode = "bad_request"
+	Forbidden                      ErrorEnvelopeErrorCode = "forbidden"
+	Internal                       ErrorEnvelopeErrorCode = "internal"
+	NotFound                       ErrorEnvelopeErrorCode = "not_found"
+	PayloadTooLarge                ErrorEnvelopeErrorCode = "payload_too_large"
+	ProjectEventsGraphUnconfigured ErrorEnvelopeErrorCode = "project_events_graph_unconfigured"
+	ProjectGraphUnconfigured       ErrorEnvelopeErrorCode = "project_graph_unconfigured"
+	ProjectRequired                ErrorEnvelopeErrorCode = "project_required"
+	Timeout                        ErrorEnvelopeErrorCode = "timeout"
+	Unauthorized                   ErrorEnvelopeErrorCode = "unauthorized"
 )
 
 // Valid indicates whether the value is a known member of the ErrorEnvelopeErrorCode enum.
@@ -231,6 +223,8 @@ func (e ErrorEnvelopeErrorCode) Valid() bool {
 		return true
 	case PayloadTooLarge:
 		return true
+	case ProjectEventsGraphUnconfigured:
+		return true
 	case ProjectGraphUnconfigured:
 		return true
 	case ProjectRequired:
@@ -238,24 +232,6 @@ func (e ErrorEnvelopeErrorCode) Valid() bool {
 	case Timeout:
 		return true
 	case Unauthorized:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for ExposureResultDirection.
-const (
-	ExposureResultDirectionIngress  ExposureResultDirection = "ingress"
-	ExposureResultDirectionWorkload ExposureResultDirection = "workload"
-)
-
-// Valid indicates whether the value is a known member of the ExposureResultDirection enum.
-func (e ExposureResultDirection) Valid() bool {
-	switch e {
-	case ExposureResultDirectionIngress:
-		return true
-	case ExposureResultDirectionWorkload:
 		return true
 	default:
 		return false
@@ -316,72 +292,6 @@ func (e GraphEdgeDirection) Valid() bool {
 	}
 }
 
-// Defines values for HotspotsResultDimension.
-const (
-	Namespace HotspotsResultDimension = "namespace"
-	Resource  HotspotsResultDimension = "resource"
-)
-
-// Valid indicates whether the value is a known member of the HotspotsResultDimension enum.
-func (e HotspotsResultDimension) Valid() bool {
-	switch e {
-	case Namespace:
-		return true
-	case Resource:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for ImageResultMode.
-const (
-	ImageResultModeByimage  ImageResultMode = "byimage"
-	ImageResultModeHygiene  ImageResultMode = "hygiene"
-	ImageResultModeRanked   ImageResultMode = "ranked"
-	ImageResultModeWorkload ImageResultMode = "workload"
-)
-
-// Valid indicates whether the value is a known member of the ImageResultMode enum.
-func (e ImageResultMode) Valid() bool {
-	switch e {
-	case ImageResultModeByimage:
-		return true
-	case ImageResultModeHygiene:
-		return true
-	case ImageResultModeRanked:
-		return true
-	case ImageResultModeWorkload:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for OrphansResultKind.
-const (
-	OrphansResultKindConfigmap      OrphansResultKind = "configmap"
-	OrphansResultKindReplicaset     OrphansResultKind = "replicaset"
-	OrphansResultKindRole           OrphansResultKind = "role"
-	OrphansResultKindServiceaccount OrphansResultKind = "serviceaccount"
-)
-
-// Valid indicates whether the value is a known member of the OrphansResultKind enum.
-func (e OrphansResultKind) Valid() bool {
-	switch e {
-	case OrphansResultKindConfigmap:
-		return true
-	case OrphansResultKindReplicaset:
-		return true
-	case OrphansResultKindRole:
-		return true
-	case OrphansResultKindServiceaccount:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for ServiceTreeResultScope.
 const (
 	ServiceTreeResultScopeRanked ServiceTreeResultScope = "ranked"
@@ -418,78 +328,23 @@ func (e SloResultScope) Valid() bool {
 	}
 }
 
-// Defines values for SpofResultKind.
-const (
-	SpofResultKindConfigmap      SpofResultKind = "configmap"
-	SpofResultKindNode           SpofResultKind = "node"
-	SpofResultKindServiceaccount SpofResultKind = "serviceaccount"
-)
-
-// Valid indicates whether the value is a known member of the SpofResultKind enum.
-func (e SpofResultKind) Valid() bool {
-	switch e {
-	case SpofResultKindConfigmap:
-		return true
-	case SpofResultKindNode:
-		return true
-	case SpofResultKindServiceaccount:
-		return true
-	default:
-		return false
-	}
-}
-
 // AccessResult defines model for AccessResult.
-type AccessResult struct {
-	Direction AccessResultDirection `json:"direction"`
-	Roles     []struct {
-		Namespace *string `json:"namespace"`
-		Role      string  `json:"role"`
-		Via       *string `json:"via"`
-	} `json:"roles"`
-	ServiceAccounts []string `json:"serviceAccounts"`
-	Subjects        []struct {
-		Namespace      *string  `json:"namespace"`
-		Pods           int      `json:"pods"`
-		ServiceAccount string   `json:"serviceAccount"`
-		Via            *string  `json:"via"`
-		Workloads      []string `json:"workloads"`
-	} `json:"subjects"`
-}
-
-// AccessResultDirection defines model for AccessResult.Direction.
-type AccessResultDirection string
+type AccessResult map[string]interface{}
 
 // AlertCauseResult defines model for AlertCauseResult.
-type AlertCauseResult struct {
-	Changes        []map[string]interface{} `json:"changes"`
-	FiringCount    int                      `json:"firingCount"`
-	FiringMonitors []string                 `json:"firingMonitors"`
-	Namespace      *string                  `json:"namespace"`
-	Target         string                   `json:"target"`
-	Workload       *string                  `json:"workload"`
-}
+type AlertCauseResult map[string]interface{}
 
 // AlertImpactResult defines model for AlertImpactResult.
-type AlertImpactResult struct {
-	Counts    map[string]interface{}   `json:"counts"`
-	Monitors  []map[string]interface{} `json:"monitors"`
-	Scope     string                   `json:"scope"`
-	Services  int                      `json:"services"`
-	Slos      []map[string]interface{} `json:"slos"`
-	Workloads int                      `json:"workloads"`
-}
+type AlertImpactResult map[string]interface{}
+
+// AlertNoiseResult defines model for AlertNoiseResult.
+type AlertNoiseResult map[string]interface{}
+
+// AlertRulesResult defines model for AlertRulesResult.
+type AlertRulesResult map[string]interface{}
 
 // AlertsResult defines model for AlertsResult.
-type AlertsResult struct {
-	ByState []struct {
-		Count int    `json:"count"`
-		State string `json:"state"`
-	} `json:"byState"`
-	Filter map[string]interface{}   `json:"filter"`
-	Firing []map[string]interface{} `json:"firing"`
-	Total  int                      `json:"total"`
-}
+type AlertsResult map[string]interface{}
 
 // AskRequest defines model for AskRequest.
 type AskRequest struct {
@@ -501,6 +356,8 @@ type AskResult struct {
 	Access       *AccessResult       `json:"access,omitempty"`
 	AlertCause   *AlertCauseResult   `json:"alertCause,omitempty"`
 	AlertImpact  *AlertImpactResult  `json:"alertImpact,omitempty"`
+	AlertNoise   *AlertNoiseResult   `json:"alertNoise,omitempty"`
+	AlertRules   *AlertRulesResult   `json:"alertRules,omitempty"`
 	Alerts       *AlertsResult       `json:"alerts,omitempty"`
 	Audit        *EventFeedResult    `json:"audit,omitempty"`
 	BlastRadius  *BlastRadiusResult  `json:"blastRadius,omitempty"`
@@ -519,25 +376,32 @@ type AskResult struct {
 	ExternalDep  *ExternalDepResult  `json:"externalDep,omitempty"`
 	Failures     *EventFeedResult    `json:"failures,omitempty"`
 	Flow         *FlowResult         `json:"flow,omitempty"`
+	Gitops       *GitopsResult       `json:"gitops,omitempty"`
 	Hotspots     *HotspotsResult     `json:"hotspots,omitempty"`
 	Image        *ImageResult        `json:"image,omitempty"`
 	Incident     *IncidentResult     `json:"incident,omitempty"`
 	Intent       AskResultIntent     `json:"intent"`
 	Inventory    *InventoryResult    `json:"inventory,omitempty"`
 	Monitor      *MonitorResult      `json:"monitor,omitempty"`
+	Netpol       *NetpolResult       `json:"netpol,omitempty"`
 	NodeEvents   *EventFeedResult    `json:"nodeEvents,omitempty"`
 	Nodes        *[]GraphNode        `json:"nodes,omitempty"`
 	Orphans      *OrphansResult      `json:"orphans,omitempty"`
 	Page         *Page               `json:"page,omitempty"`
 	Path         *PathResult         `json:"path,omitempty"`
+	Pdb          *PdbResult          `json:"pdb,omitempty"`
+	Priority     *PriorityResult     `json:"priority,omitempty"`
 	Question     string              `json:"question"`
 	Resolved     *ResolvedResource   `json:"resolved,omitempty"`
+	Scaling      *ScalingResult      `json:"scaling,omitempty"`
 	ServiceTree  *ServiceTreeResult  `json:"serviceTree,omitempty"`
 	SharedConfig *SharedConfigResult `json:"sharedConfig,omitempty"`
 	Slo          *SloResult          `json:"slo,omitempty"`
 	Spof         *SpofResult         `json:"spof,omitempty"`
+	Storage      *StorageResult      `json:"storage,omitempty"`
 	Summary      string              `json:"summary"`
 	Tenancy      *TenancyResult      `json:"tenancy,omitempty"`
+	Topology     *TopologyResult     `json:"topology,omitempty"`
 }
 
 // AskResultIntent defines model for AskResult.Intent.
@@ -561,17 +425,7 @@ type CallsResult struct {
 type CallsResultScope string
 
 // CascadeResult defines model for CascadeResult.
-type CascadeResult struct {
-	ByReason []struct {
-		Count  int    `json:"count"`
-		Reason string `json:"reason"`
-	} `json:"byReason"`
-	CorrelationId string                   `json:"correlationId"`
-	Root          *map[string]interface{}  `json:"root"`
-	SpanSeconds   int                      `json:"spanSeconds"`
-	Steps         []map[string]interface{} `json:"steps"`
-	TotalEvents   int                      `json:"totalEvents"`
-}
+type CascadeResult map[string]interface{}
 
 // CommonCauseResult defines model for CommonCauseResult.
 type CommonCauseResult struct {
@@ -592,17 +446,10 @@ type CountByType struct {
 
 // CoverageResult defines model for CoverageResult.
 type CoverageResult struct {
-	Filter map[string]interface{} `json:"filter"`
-	Items  []struct {
-		Kind      *string `json:"kind"`
-		Name      string  `json:"name"`
-		Namespace *string `json:"namespace"`
-	} `json:"items"`
-	Kind CoverageResultKind `json:"kind"`
+	Filter map[string]interface{}   `json:"filter"`
+	Items  []map[string]interface{} `json:"items"`
+	Kind   string                   `json:"kind"`
 }
-
-// CoverageResultKind defines model for CoverageResult.Kind.
-type CoverageResultKind string
 
 // DataStoreResult defines model for DataStoreResult.
 type DataStoreResult struct {
@@ -616,14 +463,9 @@ type DataStoreResultScope string
 
 // DeployImpactResult defines model for DeployImpactResult.
 type DeployImpactResult struct {
-	ByType   []CountByType            `json:"byType"`
-	Filter   map[string]interface{}   `json:"filter"`
-	Ranking  []map[string]interface{} `json:"ranking"`
-	Recent   []EventItem              `json:"recent"`
-	Rollouts int                      `json:"rollouts"`
-	Scope    DeployImpactResultScope  `json:"scope"`
-	Target   string                   `json:"target"`
-	Total    int                      `json:"total"`
+	Ranking []map[string]interface{} `json:"ranking"`
+	Scope   DeployImpactResultScope  `json:"scope"`
+	Target  *map[string]interface{}  `json:"target"`
 }
 
 // DeployImpactResultScope defines model for DeployImpactResult.Scope.
@@ -631,19 +473,11 @@ type DeployImpactResultScope string
 
 // DeploymentsResult defines model for DeploymentsResult.
 type DeploymentsResult struct {
-	Filter     map[string]interface{} `json:"filter"`
-	Namespaces []string               `json:"namespaces"`
-	Page       Page                   `json:"page"`
-	Recent     []struct {
-		Images []struct {
-			From *string `json:"from"`
-			To   *string `json:"to"`
-		} `json:"images"`
-		Namespace *string `json:"namespace"`
-		Target    *string `json:"target"`
-		Ts        string  `json:"ts"`
-	} `json:"recent"`
-	Total int `json:"total"`
+	Filter     map[string]interface{}   `json:"filter"`
+	Namespaces []string                 `json:"namespaces"`
+	Page       Page                     `json:"page"`
+	Recent     []map[string]interface{} `json:"recent"`
+	Total      int                      `json:"total"`
 }
 
 // ErrorEnvelope defines model for ErrorEnvelope.
@@ -689,15 +523,7 @@ type EventsResult struct {
 }
 
 // ExposureResult defines model for ExposureResult.
-type ExposureResult struct {
-	Direction ExposureResultDirection  `json:"direction"`
-	Exposed   bool                     `json:"exposed"`
-	Ingresses []map[string]interface{} `json:"ingresses"`
-	Services  []map[string]interface{} `json:"services"`
-}
-
-// ExposureResultDirection defines model for ExposureResult.Direction.
-type ExposureResultDirection string
+type ExposureResult map[string]interface{}
 
 // ExternalDepResult defines model for ExternalDepResult.
 type ExternalDepResult struct {
@@ -718,6 +544,9 @@ type FlowResult struct {
 
 // FlowResultScope defines model for FlowResult.Scope.
 type FlowResultScope string
+
+// GitopsResult defines model for GitopsResult.
+type GitopsResult map[string]interface{}
 
 // GraphEdge defines model for GraphEdge.
 type GraphEdge struct {
@@ -741,29 +570,13 @@ type GraphNode struct {
 
 // HotspotsResult defines model for HotspotsResult.
 type HotspotsResult struct {
-	Dimension HotspotsResultDimension `json:"dimension"`
-	Filter    map[string]interface{}  `json:"filter"`
-	Ranking   []struct {
-		Key       string  `json:"key"`
-		Namespace *string `json:"namespace"`
-		Total     int     `json:"total"`
-	} `json:"ranking"`
+	Dimension string                   `json:"dimension"`
+	Filter    map[string]interface{}   `json:"filter"`
+	Ranking   []map[string]interface{} `json:"ranking"`
 }
-
-// HotspotsResultDimension defines model for HotspotsResult.Dimension.
-type HotspotsResultDimension string
 
 // ImageResult defines model for ImageResult.
-type ImageResult struct {
-	ByImage  *map[string]interface{}  `json:"byImage"`
-	Hygiene  *map[string]interface{}  `json:"hygiene"`
-	Mode     ImageResultMode          `json:"mode"`
-	Ranking  []map[string]interface{} `json:"ranking"`
-	Workload *map[string]interface{}  `json:"workload"`
-}
-
-// ImageResultMode defines model for ImageResult.Mode.
-type ImageResultMode string
+type ImageResult map[string]interface{}
 
 // IncidentResult defines model for IncidentResult.
 type IncidentResult struct {
@@ -778,45 +591,25 @@ type IncidentResult struct {
 
 // InventoryResult defines model for InventoryResult.
 type InventoryResult struct {
-	AvailableTypes []struct {
-		Count int    `json:"count"`
-		Label string `json:"label"`
-	} `json:"availableTypes"`
-	ByNamespace []struct {
-		Count     int    `json:"count"`
-		Namespace string `json:"namespace"`
-	} `json:"byNamespace"`
-	Sample []struct {
-		Name      string  `json:"name"`
-		Namespace *string `json:"namespace"`
-	} `json:"sample"`
-	Total int    `json:"total"`
-	Type  string `json:"type"`
+	AvailableTypes []map[string]interface{} `json:"availableTypes"`
+	ByNamespace    []map[string]interface{} `json:"byNamespace"`
+	Sample         []map[string]interface{} `json:"sample"`
+	Total          int                      `json:"total"`
+	Type           string                   `json:"type"`
 }
 
 // MonitorResult defines model for MonitorResult.
-type MonitorResult struct {
-	Matched   int                      `json:"matched"`
-	Monitors  []string                 `json:"monitors"`
-	Nodes     []string                 `json:"nodes"`
-	Services  []string                 `json:"services"`
-	Slos      []string                 `json:"slos"`
-	Term      string                   `json:"term"`
-	Workloads []map[string]interface{} `json:"workloads"`
-}
+type MonitorResult map[string]interface{}
+
+// NetpolResult defines model for NetpolResult.
+type NetpolResult map[string]interface{}
 
 // OrphansResult defines model for OrphansResult.
 type OrphansResult struct {
-	Filter map[string]interface{} `json:"filter"`
-	Items  []struct {
-		Name      string  `json:"name"`
-		Namespace *string `json:"namespace"`
-	} `json:"items"`
-	Kind OrphansResultKind `json:"kind"`
+	Filter map[string]interface{}   `json:"filter"`
+	Items  []map[string]interface{} `json:"items"`
+	Kind   string                   `json:"kind"`
 }
-
-// OrphansResultKind defines model for OrphansResult.Kind.
-type OrphansResultKind string
 
 // Page defines model for Page.
 type Page struct {
@@ -827,22 +620,13 @@ type Page struct {
 }
 
 // PathResult defines model for PathResult.
-type PathResult struct {
-	Chain []map[string]interface{} `json:"chain"`
-	Found bool                     `json:"found"`
-	From  *struct {
-		Name string  `json:"name"`
-		Term string  `json:"term"`
-		Type *string `json:"type"`
-	} `json:"from"`
-	Hops int      `json:"hops"`
-	Rels []string `json:"rels"`
-	To   *struct {
-		Name string  `json:"name"`
-		Term string  `json:"term"`
-		Type *string `json:"type"`
-	} `json:"to"`
-}
+type PathResult map[string]interface{}
+
+// PdbResult defines model for PdbResult.
+type PdbResult map[string]interface{}
+
+// PriorityResult defines model for PriorityResult.
+type PriorityResult map[string]interface{}
 
 // QueryRequest defines model for QueryRequest.
 type QueryRequest struct {
@@ -857,6 +641,9 @@ type ResolvedResource struct {
 	Term     string  `json:"term"`
 	Type     *string `json:"type"`
 }
+
+// ScalingResult defines model for ScalingResult.
+type ScalingResult map[string]interface{}
 
 // ServiceTreeResult defines model for ServiceTreeResult.
 type ServiceTreeResult struct {
@@ -876,11 +663,7 @@ type SharedCause struct {
 }
 
 // SharedConfigResult defines model for SharedConfigResult.
-type SharedConfigResult struct {
-	Configmaps []string                 `json:"configmaps"`
-	OwnPods    int                      `json:"ownPods"`
-	Siblings   []map[string]interface{} `json:"siblings"`
-}
+type SharedConfigResult map[string]interface{}
 
 // SloResult defines model for SloResult.
 type SloResult struct {
@@ -894,25 +677,19 @@ type SloResultScope string
 
 // SpofResult defines model for SpofResult.
 type SpofResult struct {
-	Filter map[string]interface{} `json:"filter"`
-	Items  []struct {
-		Name      string  `json:"name"`
-		Namespace *string `json:"namespace"`
-		Pods      int     `json:"pods"`
-		Workloads int     `json:"workloads"`
-	} `json:"items"`
-	Kind SpofResultKind `json:"kind"`
+	Filter map[string]interface{}   `json:"filter"`
+	Items  []map[string]interface{} `json:"items"`
+	Kind   string                   `json:"kind"`
 }
 
-// SpofResultKind defines model for SpofResult.Kind.
-type SpofResultKind string
+// StorageResult defines model for StorageResult.
+type StorageResult map[string]interface{}
 
 // TenancyResult defines model for TenancyResult.
-type TenancyResult struct {
-	Neighbors []map[string]interface{} `json:"neighbors"`
-	Nodes     []string                 `json:"nodes"`
-	OwnPods   int                      `json:"ownPods"`
-}
+type TenancyResult map[string]interface{}
+
+// TopologyResult defines model for TopologyResult.
+type TopologyResult map[string]interface{}
 
 // ProjectId defines model for ProjectId.
 type ProjectId = string

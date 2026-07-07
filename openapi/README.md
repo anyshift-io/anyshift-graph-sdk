@@ -7,10 +7,6 @@ Current snapshot: `graph-api.v1.json`.
 The public API contract is the compatibility boundary between the Anyshift Graph API and the SDK
 packages.
 
-Current pinned snapshot:
-
-- `graph-api-v1.json` — OpenAPI contract used by the initial Go SDK.
-
 Expected release flow:
 
 1. Anyshift publishes or exposes a versioned OpenAPI document for the Graph API.

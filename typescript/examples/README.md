@@ -3,7 +3,7 @@
 Set credentials before running examples:
 
 ```bash
-export ANYSHIFT_API_TOKEN="anys_api_..."
+export ANYSHIFT_TOKEN="anys_api_..."
 export ANYSHIFT_PROJECT_ID="00000000-0000-0000-0000-000000000000"
 ```
 

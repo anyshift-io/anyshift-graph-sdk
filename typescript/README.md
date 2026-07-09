@@ -18,7 +18,7 @@ The package is ESM-only and targets Node.js 18+ or runtimes that provide `fetch`
 import { GraphAnswer } from "@anyshift/graph-sdk";
 
 const graph = new GraphAnswer({
-  token: process.env.ANYSHIFT_API_TOKEN!,
+  token: process.env.ANYSHIFT_TOKEN!,
   project: process.env.ANYSHIFT_PROJECT_ID!,
 });
 ```
@@ -74,7 +74,7 @@ console.log(result.summary);
 ## Environment
 
 ```bash
-export ANYSHIFT_API_TOKEN="anys_api_..."
+export ANYSHIFT_TOKEN="anys_api_..."
 export ANYSHIFT_PROJECT_ID="00000000-0000-0000-0000-000000000000"
 ```
 

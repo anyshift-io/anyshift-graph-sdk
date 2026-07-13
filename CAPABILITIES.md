@@ -22,6 +22,7 @@ All typed helpers call `graph.query(...)` and return an `AskResult` envelope wit
 | --- | --- | --- | --- |
 | Recent events | `graph.events()` | `events` | What changed recently for a resource, namespace, or event type. |
 | Event hotspots | `graph.hotspots()` | `hotspots` | Which resources, namespaces, alert rules, or alerting workloads are currently noisy. |
+| Correlated incident | `graph.incident({ target })` or `graph.incident({ id })` | `incidents` | Which root event caused an incident and how the correlated event chain unfolded. |
 | Failure feed | `graph.failures()` | `failures` | Which recent failure events affect a target or namespace. |
 | Deployments | `graph.deployments()` | `deployments` | Which rollout events happened recently, optionally scoped to a target or namespace. |
 | Audit changes | `graph.audit()` | `audit` | Which configuration or identity changes happened recently. |
@@ -44,7 +45,7 @@ Common parameters:
 | Blast radius | `graph.blast({ resource })` | `blast_radius` | Which workloads and services are affected if a resource changes or fails. |
 | Dependency path | `graph.path({ from, to })` | `path` | How two resources are structurally connected. |
 | Downstream footprint | `graph.serviceTree()` | `servicetree` | A service's transitive downstream services and infrastructure leaves. |
-| Common cause | `graph.commonCause()` | `common_cause` | Which shared node or workload may explain recent failures. |
+| Common cause | `graph.commonCause()` | `common_cause` | Which shared node, workload, datastore, or external dependency may explain recent failures. |
 | Deploy impact | `graph.deployImpact()` | `deploy_impact` | Whether a rollout caused fallout, ranked or scoped to one workload. |
 | Shared config | `graph.sharedConfig({ resource })` | `sharedconfig` | Which workloads are coupled through the same ConfigMap. |
 | Tenancy | `graph.tenancy({ resource })` | `tenancy` | Which workloads are co-located on the same node. |
@@ -88,14 +89,15 @@ Selected modes:
 
 | Capability | TypeScript helper | Graph query target | Use it to answer |
 | --- | --- | --- | --- |
-| RBAC reach | `graph.access()` | `access` | What a service account, pod, workload, or role can reach. |
+| RBAC reach | `graph.access({ resource })` | `access` | What a service account, pod, workload, or role can reach. |
 | Over-privileged identities | `graph.access({ mode: "privileged" })` | `access` | Which service accounts have broad or risky permissions. |
 | NetworkPolicy coverage | `graph.netpol()` | `netpol` | Which namespaces are default-allow, which policies apply, or who can reach a target east-west. |
 | Public exposure | `graph.exposure({ resource })` | `exposure` | What an ingress fronts, or which ingress fronts a service/workload. |
 
 Selected modes:
 
-- `access({ mode })`: `reach` or `privileged`.
+- `access({ resource })`: follow effective RBAC from a workload, pod, service account, or role.
+- `access({ mode: "privileged" })`: rank service accounts with broad or risky permissions.
 - `netpol({ mode })`: `uncovered`, `policy`, or `segmentation`.
 
 ## Observability And Alerting

@@ -36,7 +36,7 @@ export function toMermaid(result: AskResult): string {
 
   const idMap = new Map<string, string>();
   nodes.forEach((n, i) => idMap.set(n.id, safeId(n.id, i)));
-  const level = result.topology?.level ?? "container";
+  const level = result.intent === "topology" ? result.topology?.level ?? "container" : "container";
 
   if (level === "dynamic") {
     const lines = ["sequenceDiagram"];

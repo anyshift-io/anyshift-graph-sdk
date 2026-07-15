@@ -82,7 +82,18 @@ Advanced users can override the endpoint in client configuration when needed.
 
 ## Contract
 
-Public SDK types come from the OpenAPI contract pinned in this repository.
+Public SDK response types come from the OpenAPI contract pinned in this repository. `AskResult`
+is a discriminated union, so checking `intent` exposes the matching payload without a cast:
+
+```ts
+const result = await graph.inventory({ type: "K8S_SERVICE" });
+
+if (result.intent === "inventory") {
+  console.log(result.inventory?.total);
+}
+```
+
+Use `AskResultFor<"inventory">` when a function accepts the response for one known intent.
 
 ## Examples
 
@@ -106,6 +117,7 @@ the graph query target, primary parameters, and what each capability answers.
 
 ```bash
 npm install
+npm run generate
 npm run typecheck
 npm test
 npm run build

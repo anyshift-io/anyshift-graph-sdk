@@ -13,3 +13,6 @@ Expected release flow:
 2. This repository vendors the exact OpenAPI snapshot used for an SDK release.
 3. Language SDKs generate or maintain public types from that snapshot.
 4. SDK CI verifies the generated types and package APIs stay aligned with that snapshot.
+
+From `typescript/`, run `npm run generate` to fetch the production contract and regenerate the
+TypeScript schema bindings. Set `GRAPH_API_OPENAPI_URL` to sync from another Graph API environment.

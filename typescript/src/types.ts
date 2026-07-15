@@ -1,91 +1,16 @@
-export interface Page {
-  limit: number;
-  offset: number;
-  hasMore: boolean;
-  nextOffset: number | null;
-}
+import type { components } from "./openapi.generated.js";
 
-export interface GraphNode {
-  id: string;
-  anyshiftID?: string | null;
-  name: string;
-  type?: string | null;
-  namespace?: string | null;
-  image?: string | null;
-  [property: string]: unknown;
-}
+type Schemas = components["schemas"];
 
-export interface GraphEdge {
-  from: string;
-  to: string;
-  type: string;
-  direction?: string | null;
-  [property: string]: unknown;
-}
+export type Page = Schemas["Page"];
+export type GraphNode = Schemas["GraphNode"];
+export type GraphEdge = Schemas["GraphEdge"];
+export type TopologyResult = Schemas["TopologyResult"];
+export type C4Level = TopologyResult["level"];
 
-export type C4Level = "context" | "container" | "component" | "dynamic";
+/** Every successful Graph API response, discriminated by its exact intent payload. */
+export type AskResult = Schemas["AskResult"];
+export type GraphIntent = AskResult["intent"];
 
-export interface TopologyResult {
-  resolved?: Record<string, unknown>;
-  level?: C4Level;
-  nodeCount?: number;
-  edgeCount?: number;
-  byType?: unknown[];
-  [property: string]: unknown;
-}
-
-export type GraphIntent =
-  | "connections"
-  | "inventory"
-  | "events"
-  | "hotspots"
-  | "incident"
-  | "failures"
-  | "deployments"
-  | "audit"
-  | "nodes"
-  | "access"
-  | "servicetree"
-  | "exposure"
-  | "orphans"
-  | "coverage"
-  | "slo"
-  | "tenancy"
-  | "sharedconfig"
-  | "alertnoise"
-  | "alertrules"
-  | "gitops"
-  | "image"
-  | "netpol"
-  | "storage"
-  | "pdb"
-  | "scaling"
-  | "topology"
-  | "priority"
-  | "path"
-  | "cascade"
-  | "blast"
-  | "spof"
-  | "commoncause"
-  | "deployimpact"
-  | "alertimpact"
-  | "monitor"
-  | "datastore"
-  | "flow"
-  | "externaldep"
-  | "alerts"
-  | "calls"
-  | "alertcause";
-
-export interface AskResult {
-  question?: string;
-  intent: GraphIntent | (string & {});
-  summary: string;
-  countOnly?: boolean;
-  elapsedMs?: number;
-  page?: Page;
-  nodes?: GraphNode[];
-  edges?: GraphEdge[];
-  topology?: TopologyResult;
-  [payload: string]: unknown;
-}
+/** Select the exact response shape returned for one Graph API intent. */
+export type AskResultFor<I extends GraphIntent> = Extract<AskResult, { intent: I }>;

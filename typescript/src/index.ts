@@ -43,4 +43,13 @@ export type {
   ImageParams,
   TopologyParams,
 } from "./client.js";
-export type { AskResult, C4Level, GraphEdge, GraphIntent, GraphNode, Page, TopologyResult } from "./types.js";
+export type {
+  AskResult,
+  AskResultFor,
+  C4Level,
+  GraphEdge,
+  GraphIntent,
+  GraphNode,
+  Page,
+  TopologyResult,
+} from "./types.js";

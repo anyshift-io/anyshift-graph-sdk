@@ -41,11 +41,11 @@ npm publish --access public
 After npm publish succeeds:
 
 ```bash
-git tag typescript-v0.1.0
-git push origin typescript-v0.1.0
+git tag typescript-v<version>
+git push origin typescript-v<version>
 ```
 
-Create a GitHub release named `@anyshift/graph-sdk v0.1.0` using the `0.1.0` entry from
+Create a GitHub release named `@anyshift/graph-sdk v<version>` using the matching entry from
 `CHANGELOG.md`.
 
 ## Post-release Verification

@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.0 - 2026-07-15
+
+### Changed
+
+- Pinned the executable Graph API contract published with graph-api v0.2.0.
+- Generated TypeScript response schemas from the pinned OpenAPI document.
+- Replaced the permissive response envelope with a 41-variant `AskResult` discriminated union.
+- Added `AskResultFor<Intent>` for selecting an exact intent response type.
+- Added reproducible contract synchronization and compile-time contract tests.
+- Refined the capability matrix for incidents, common causes, and RBAC access.
+
+This release preserves runtime request compatibility. The stronger response types can reveal invalid
+compile-time assumptions that `0.1.0` accepted.
+
 ## 0.1.0 - 2026-07-07
 
 First public release of the Anyshift Graph SDK.

@@ -47,12 +47,21 @@ Common parameters:
 | Direct connections | `graph.connections({ resource })` | `connections` | What is directly connected to a resource. |
 | Inventory | `graph.inventory({ type })` | `resources` | Which resources of a type exist in the graph. |
 | Blast radius | `graph.blast({ resource })` | `blast_radius` | Which workloads and services are affected if a resource changes or fails. |
-| Dependency path | `graph.path({ from, to })` | `path` | How two resources are structurally connected. |
+| Dependency path | `graph.path({ from, to, scope })` | `path` | How two resources are connected, including Tempo APM identity and dependency edges in `operational` scope. |
 | Downstream footprint | `graph.serviceTree()` | `servicetree` | A service's transitive downstream services and infrastructure leaves. |
 | Common cause | `graph.commonCause()` | `common_cause` | Which shared node, workload, datastore, or external dependency may explain recent failures. |
 | Deploy impact | `graph.deployImpact()` | `deploy_impact` | Whether a rollout caused fallout, ranked or scoped to one workload. |
 | Shared config | `graph.sharedConfig({ resource })` | `sharedconfig` | Which workloads are coupled through the same ConfigMap. |
 | Tenancy | `graph.tenancy({ resource })` | `tenancy` | Which workloads are co-located on the same node. |
+
+Path endpoints accept a legacy string, a stable `{ id }`, or a typed
+`{ name, type, namespace?, cluster? }` selector. Typed selectors prevent a Kubernetes Service,
+Deployment, or Tempo service with the same name from being selected implicitly.
+
+The APM dependency helpers `datastore`, `flow`, `externalDep`, `calls`, `serviceTree`, and
+`topology` accept `source: "auto" | "datadog" | "tempo"`. Tempo mode reads the service maps,
+datastores, messaging destinations, external endpoints, and Kubernetes identity bridges derived
+from Grafana Tempo traces.
 
 ## Topology And Diagrams
 

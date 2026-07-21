@@ -43,7 +43,7 @@ pinned to, the OpenAPI contract in `openapi/`.
 
 ## Release Status
 
-The current public SDK release is `@anyshift/graph-sdk@0.3.0`.
+The release prepared by this branch is `@anyshift/graph-sdk@0.4.0`.
 
 Release checklist:
 

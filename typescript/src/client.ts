@@ -210,11 +210,17 @@ export interface SharedConfigParams {
   /** Top-N config-coupled workloads to return. */
   limit?: number;
 }
+export type ResourceSelector =
+  | string
+  | { id: string }
+  | { name: string; type: string; namespace?: string; cluster?: string };
 export interface PathParams {
   /** The first resource (start of the path). */
-  from: string;
+  from: ResourceSelector;
   /** The second resource (end of the path). */
-  to: string;
+  to: ResourceSelector;
+  /** Include APM identity and dependency edges when set to operational. */
+  scope?: "infrastructure" | "operational";
 }
 export interface CascadeParams {
   /** A resource/app involved in the incident (resolves to its latest correlation group). */
@@ -230,19 +236,23 @@ export interface MonitorParams {
   /** A Datadog monitor/alert name (matched by substring). */
   target: string;
 }
+export type ApmSource = "auto" | "datadog" | "tempo";
 export interface DataStoreParams {
   /** A datastore name to drill into; omit for the ranked top datastores. */
   target?: string;
+  source?: ApmSource;
   limit?: number;
 }
 export interface FlowParams {
   /** A topic/stream (destination) name to drill into; omit for the ranked busiest streams. */
   target?: string;
+  source?: ApmSource;
   limit?: number;
 }
 export interface ExternalDepParams {
   /** An external host (e.g. "nexmo.com") to drill into; omit for the ranked external deps. */
   target?: string;
+  source?: ApmSource;
   limit?: number;
 }
 export interface AlertsParams {
@@ -267,11 +277,13 @@ export interface AlertNoiseParams {
 export interface CallsParams {
   /** A service to drill into (callers + callees); omit for the ranked most-called services. */
   target?: string;
+  source?: ApmSource;
   limit?: number;
 }
 export interface ServiceTreeParams {
   /** A service to expand into its full transitive downstream tree; omit for the ranked footprints. */
   target?: string;
+  source?: ApmSource;
   limit?: number;
 }
 export interface ImageParams {
@@ -305,6 +317,8 @@ export interface AlertRulesParams {
 export interface TopologyParams {
   /** The service (or K8s workload it bridges to) to diagram. */
   service: string;
+  /** Select the APM service universe. Auto preserves the existing Datadog-first behavior. */
+  source?: ApmSource;
   /**
    * The C4 level controlling depth + which node classes appear (default "container"):
    * "context" (service + direct collaborators), "container" (runtime containers + workloads +
@@ -334,6 +348,18 @@ function compose(
   if (limit !== undefined) sql += ` LIMIT ${Math.floor(limit)}`;
   if (offset !== undefined) sql += ` OFFSET ${Math.floor(offset)}`;
   return sql;
+}
+
+function selectorConditions(prefix: "from" | "to", selector: ResourceSelector): Array<[string, string]> {
+  if (typeof selector === "string") return [[prefix, selector]];
+  if ("id" in selector) return [[`${prefix}_id`, selector.id]];
+  return [
+    [prefix, selector.name],
+    [`${prefix}_exact`, "true"],
+    [`${prefix}_type`, selector.type],
+    [`${prefix}_namespace`, selector.namespace ?? ""],
+    [`${prefix}_cluster`, selector.cluster ?? ""],
+  ];
 }
 
 export class GraphAnswer {
@@ -567,8 +593,9 @@ export class GraphAnswer {
   /** How two resources are connected — the shortest structural path between them. */
   path(p: PathParams): Promise<AskResult> {
     return this.query(compose("path", [
-      ["from", p.from],
-      ["to", p.to],
+      ...selectorConditions("from", p.from),
+      ...selectorConditions("to", p.to),
+      ["scope", p.scope],
     ]));
   }
 
@@ -592,17 +619,17 @@ export class GraphAnswer {
 
   /** Which services use a datastore — one DB (target) or the ranked top datastores. */
   datastore(p: DataStoreParams = {}): Promise<AskResult> {
-    return this.query(compose("datastore", [["target", p.target]], p.limit));
+    return this.query(compose("datastore", [["target", p.target], ["source", p.source]], p.limit));
   }
 
   /** Kafka/stream tracing — one topic's producers/consumers, or the ranked busiest streams. */
   flow(p: FlowParams = {}): Promise<AskResult> {
-    return this.query(compose("flow", [["target", p.target]], p.limit));
+    return this.query(compose("flow", [["target", p.target], ["source", p.source]], p.limit));
   }
 
   /** External-dependency blast radius — one host's dependents, or the ranked external deps. */
   externalDep(p: ExternalDepParams = {}): Promise<AskResult> {
-    return this.query(compose("external_dep", [["target", p.target]], p.limit));
+    return this.query(compose("external_dep", [["target", p.target], ["source", p.source]], p.limit));
   }
 
   /** SLO health — one named SLO's status, or the ranked breaching/at-risk SLOs (worst-first). */
@@ -615,9 +642,9 @@ export class GraphAnswer {
     return this.query(compose("alerts", [["target", p.target]], p.limit));
   }
 
-  /** The Datadog service call graph — one service's callers/callees, or the ranked most-called. */
+  /** The APM service call graph — one service's callers/callees, or the ranked most-called. */
   calls(p: CallsParams = {}): Promise<AskResult> {
-    return this.query(compose("calls", [["target", p.target]], p.limit));
+    return this.query(compose("calls", [["target", p.target], ["source", p.source]], p.limit));
   }
 
   /** Noisiest monitors by trigger/recover churn (flapping vs stuck), cluster-wide or scoped to a service/namespace. */
@@ -627,7 +654,7 @@ export class GraphAnswer {
 
   /** A service's full transitive downstream footprint (services + infra leaves), or the ranked footprints. */
   serviceTree(p: ServiceTreeParams = {}): Promise<AskResult> {
-    return this.query(compose("servicetree", [["target", p.target]], p.limit));
+    return this.query(compose("servicetree", [["target", p.target], ["source", p.source]], p.limit));
   }
 
   /** Why a Datadog alert is firing — the firing workload + its recent K8s changes (the suspect). */
@@ -659,7 +686,7 @@ export class GraphAnswer {
    * graph (in the result's `nodes` / `edges`), scoped by C4 `level`. Pair with `toMermaid()` to render.
    */
   topology(p: TopologyParams): Promise<AskResult> {
-    return this.query(compose("topology", [["service", p.service], ["level", p.level]]));
+    return this.query(compose("topology", [["service", p.service], ["level", p.level], ["source", p.source]]));
   }
 
   // Shared transport used by query/ask and (Task 4) the typed methods.

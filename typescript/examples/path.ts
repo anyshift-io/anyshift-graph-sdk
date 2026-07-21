@@ -14,5 +14,9 @@ if (!from || !to) {
 
 const graph = new GraphAnswer({ token, project });
 
-const result = await graph.path({ from, to });
+const result = await graph.path({
+  from: { name: from, type: "K8S_DEPLOYMENT" },
+  to: { name: to, type: "TEMPO_DATASTORE" },
+  scope: "operational",
+});
 console.log(result.summary);

@@ -292,6 +292,22 @@ test("path composes from/to SQL", async () => {
   assert.equal(calls[0].body.sql, "SELECT * FROM path WHERE from = 'central-authentication-service' AND to = 'kube-dns'");
 });
 
+test("path composes typed Tempo selectors and stable ids", async () => {
+  const typed = capturing();
+  await typed.gx.path({
+    from: { name: "checkout-api", type: "K8S_DEPLOYMENT", namespace: "shop" },
+    to: { name: "postgresql", type: "TEMPO_DATASTORE" },
+    scope: "operational",
+  });
+  assert.equal(
+    typed.calls[0].body.sql,
+    "SELECT * FROM path WHERE from = 'checkout-api' AND from_exact = 'true' AND from_type = 'K8S_DEPLOYMENT' AND from_namespace = 'shop' AND to = 'postgresql' AND to_exact = 'true' AND to_type = 'TEMPO_DATASTORE' AND scope = 'operational'",
+  );
+  const ids = capturing();
+  await ids.gx.path({ from: { id: "a" }, to: { id: "b" } });
+  assert.equal(ids.calls[0].body.sql, "SELECT * FROM path WHERE from_id = 'a' AND to_id = 'b'");
+});
+
 test("cascade composes target and id SQL", async () => {
   const t = capturing();
   await t.gx.cascade({ target: "places" });
@@ -320,6 +336,25 @@ test("datastore composes ranked and target SQL", async () => {
   const t = capturing();
   await t.gx.datastore({ target: "mariadb-billing", limit: 5 });
   assert.equal(t.calls[0].body.sql, "SELECT * FROM datastore WHERE target = 'mariadb-billing' LIMIT 5");
+});
+
+test("APM helpers compose explicit Tempo source selection", async () => {
+  const cases: Array<(gx: GraphAnswer) => Promise<unknown>> = [
+    (gx) => gx.datastore({ source: "tempo" }),
+    (gx) => gx.flow({ source: "tempo" }),
+    (gx) => gx.externalDep({ source: "tempo" }),
+    (gx) => gx.calls({ source: "tempo" }),
+    (gx) => gx.serviceTree({ source: "tempo" }),
+  ];
+  const tables = ["datastore", "flow", "external_dep", "calls", "servicetree"];
+  for (let i = 0; i < cases.length; i += 1) {
+    const { gx, calls } = capturing();
+    await cases[i](gx);
+    assert.equal(calls[0].body.sql, `SELECT * FROM ${tables[i]} WHERE source = 'tempo'`);
+  }
+  const topology = capturing();
+  await topology.gx.topology({ service: "checkout-api", source: "tempo" });
+  assert.equal(topology.calls[0].body.sql, "SELECT * FROM topology WHERE service = 'checkout-api' AND source = 'tempo'");
 });
 
 test("flow composes ranked and target SQL", async () => {

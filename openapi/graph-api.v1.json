@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.0",
+    "version": "1.1",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -852,19 +852,82 @@
           "paths"
         ],
         "intent": "path",
-        "summary": "Find the shortest structural path between two resources.",
+        "summary": "Find the shortest infrastructure or operational path between two resources.",
         "filters": [
           {
             "name": "from",
             "type": "string",
-            "description": "Starting resource name.",
-            "required": true
+            "description": "Starting resource name. Required unless from_id is supplied."
+          },
+          {
+            "name": "from_exact",
+            "type": "string",
+            "description": "Set true for exact-name matching instead of legacy fuzzy resolution."
+          },
+          {
+            "name": "from_id",
+            "type": "string",
+            "description": "Exact starting hashedID or anyshiftID."
+          },
+          {
+            "name": "from_type",
+            "type": "string",
+            "description": "Exact starting resource label, such as K8S_DEPLOYMENT."
+          },
+          {
+            "name": "from_namespace",
+            "type": "string",
+            "description": "Exact starting Kubernetes namespace."
+          },
+          {
+            "name": "from_cluster",
+            "type": "string",
+            "description": "Exact starting cluster name."
           },
           {
             "name": "to",
             "type": "string",
-            "description": "Destination resource name.",
-            "required": true
+            "description": "Destination resource name. Required unless to_id is supplied."
+          },
+          {
+            "name": "to_exact",
+            "type": "string",
+            "description": "Set true for exact-name matching instead of legacy fuzzy resolution."
+          },
+          {
+            "name": "to_id",
+            "type": "string",
+            "description": "Exact destination hashedID or anyshiftID."
+          },
+          {
+            "name": "to_type",
+            "type": "string",
+            "description": "Exact destination resource label, such as TEMPO_DATASTORE."
+          },
+          {
+            "name": "to_namespace",
+            "type": "string",
+            "description": "Exact destination Kubernetes namespace."
+          },
+          {
+            "name": "to_cluster",
+            "type": "string",
+            "description": "Exact destination cluster name."
+          },
+          {
+            "name": "scope",
+            "type": "enum",
+            "description": "Relationships available to the path traversal. Defaults to infrastructure.",
+            "values": [
+              {
+                "value": "infrastructure",
+                "description": "Traverse infrastructure structure only."
+              },
+              {
+                "value": "operational",
+                "description": "Also traverse APM identity, calls, datastores, and messaging dependencies."
+              }
+            ]
           }
         ],
         "pagination": {
@@ -874,8 +937,8 @@
         "forms": [
           {
             "name": "Shortest path",
-            "description": "Both from and to are required.",
-            "example": "SELECT * FROM path WHERE from = checkout AND to = checkout-postgres"
+            "description": "Each endpoint requires a name or id. Typed selectors resolve same-named resources deterministically.",
+            "example": "SELECT * FROM path WHERE from = checkout-api AND from_type = K8S_DEPLOYMENT AND to = postgresql AND to_type = TEMPO_DATASTORE AND scope = operational"
           }
         ]
       },
@@ -981,6 +1044,25 @@
             "name": "target",
             "type": "string",
             "description": "Service or datastore name."
+          },
+          {
+            "name": "source",
+            "type": "enum",
+            "description": "APM dependency source. Defaults to auto.",
+            "values": [
+              {
+                "value": "auto",
+                "description": "Use every supported APM source, preserving Datadog-first topology resolution."
+              },
+              {
+                "value": "datadog",
+                "description": "Use Datadog service and dependency nodes only."
+              },
+              {
+                "value": "tempo",
+                "description": "Use Grafana Tempo service and dependency nodes only."
+              }
+            ]
           }
         ],
         "pagination": {
@@ -1013,6 +1095,25 @@
             "name": "target",
             "type": "string",
             "description": "Service, topic, queue, or stream name."
+          },
+          {
+            "name": "source",
+            "type": "enum",
+            "description": "APM dependency source. Defaults to auto.",
+            "values": [
+              {
+                "value": "auto",
+                "description": "Use every supported APM source, preserving Datadog-first topology resolution."
+              },
+              {
+                "value": "datadog",
+                "description": "Use Datadog service and dependency nodes only."
+              },
+              {
+                "value": "tempo",
+                "description": "Use Grafana Tempo service and dependency nodes only."
+              }
+            ]
           }
         ],
         "pagination": {
@@ -1040,6 +1141,25 @@
             "name": "target",
             "type": "string",
             "description": "Service or external dependency name."
+          },
+          {
+            "name": "source",
+            "type": "enum",
+            "description": "APM dependency source. Defaults to auto.",
+            "values": [
+              {
+                "value": "auto",
+                "description": "Use every supported APM source, preserving Datadog-first topology resolution."
+              },
+              {
+                "value": "datadog",
+                "description": "Use Datadog service and dependency nodes only."
+              },
+              {
+                "value": "tempo",
+                "description": "Use Grafana Tempo service and dependency nodes only."
+              }
+            ]
           }
         ],
         "pagination": {
@@ -1146,6 +1266,25 @@
             "name": "target",
             "type": "string",
             "description": "Service name."
+          },
+          {
+            "name": "source",
+            "type": "enum",
+            "description": "APM dependency source. Defaults to auto.",
+            "values": [
+              {
+                "value": "auto",
+                "description": "Use every supported APM source, preserving Datadog-first topology resolution."
+              },
+              {
+                "value": "datadog",
+                "description": "Use Datadog service and dependency nodes only."
+              },
+              {
+                "value": "tempo",
+                "description": "Use Grafana Tempo service and dependency nodes only."
+              }
+            ]
           }
         ],
         "pagination": {
@@ -1173,6 +1312,25 @@
             "name": "target",
             "type": "string",
             "description": "Root service name."
+          },
+          {
+            "name": "source",
+            "type": "enum",
+            "description": "APM dependency source. Defaults to auto.",
+            "values": [
+              {
+                "value": "auto",
+                "description": "Use every supported APM source, preserving Datadog-first topology resolution."
+              },
+              {
+                "value": "datadog",
+                "description": "Use Datadog service and dependency nodes only."
+              },
+              {
+                "value": "tempo",
+                "description": "Use Grafana Tempo service and dependency nodes only."
+              }
+            ]
           }
         ],
         "pagination": {
@@ -1807,6 +1965,25 @@
               {
                 "value": "dynamic",
                 "description": "Ordered call flow suitable for a sequence diagram."
+              }
+            ]
+          },
+          {
+            "name": "source",
+            "type": "enum",
+            "description": "APM dependency source. Defaults to auto.",
+            "values": [
+              {
+                "value": "auto",
+                "description": "Use every supported APM source, preserving Datadog-first topology resolution."
+              },
+              {
+                "value": "datadog",
+                "description": "Use Datadog service and dependency nodes only."
+              },
+              {
+                "value": "tempo",
+                "description": "Use Grafana Tempo service and dependency nodes only."
               }
             ]
           }

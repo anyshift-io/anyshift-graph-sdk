@@ -1,4 +1,4 @@
-import type { AskResult, AskResultFor, GraphIntent } from "../src/index.js";
+import type { ApmSource, AskResult, AskResultFor, GraphIntent, ResourceSelector } from "../src/index.js";
 
 type Equal<A, B> =
   (<T>() => T extends A ? 1 : 2) extends
@@ -41,3 +41,17 @@ void inventoryTotal;
 declare const resolved: AskResultFor<"resolve">;
 const firstCandidateName: string | undefined = resolved.resolve?.candidates[0]?.name;
 void firstCandidateName;
+
+const typedSelector: ResourceSelector = {
+  name: "checkout-api",
+  type: "K8S_DEPLOYMENT",
+  namespace: "shop",
+};
+const stableSelector: ResourceSelector = { id: "resource-hash" };
+// @ts-expect-error Name-based selectors must include a resource type to be deterministic.
+const ambiguousSelector: ResourceSelector = { name: "checkout-api" };
+void typedSelector;
+void stableSelector;
+void ambiguousSelector;
+const tempoSource: ApmSource = "tempo";
+void tempoSource;

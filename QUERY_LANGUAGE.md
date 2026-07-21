@@ -38,17 +38,17 @@ Values may be bare words or single- or double-quoted strings.
 | [`exposure`](#exposure) | Trace public ingress exposure to or from a resource. | `resource` |
 | [`tenancy`](#tenancy) | Find workloads co-located with a resource on the same node. | `resource` |
 | [`sharedconfig`](#sharedconfig) | Find workloads coupled through shared configuration. | `resource` |
-| [`path`](#path) | Find the shortest structural path between two resources. | `from`, `to` |
+| [`path`](#path) | Find the shortest infrastructure or operational path between two resources. | `from`, `from_exact`, `from_id`, `from_type`, `from_namespace`, `from_cluster`, `to`, `to_exact`, `to_id`, `to_type`, `to_namespace`, `to_cluster`, `scope` |
 | [`cascade`](#cascade) | Trace an incident correlation group in propagation order. | `target`, `id` |
 | [`alert_impact`](#alert_impact) | Find monitors and SLOs affected by a resource failure. | `resource` |
 | [`monitor`](#monitor) | Resolve a monitor to the infrastructure it observes. | `target` |
-| [`datastore`](#datastore) | Inspect datastore dependencies or rank widely used datastores. | `target` |
-| [`flow`](#flow) | Inspect stream producers and consumers or rank busy streams. | `target` |
-| [`external_dep`](#external_dep) | Inspect external dependencies or rank high-fan-in external hosts. | `target` |
+| [`datastore`](#datastore) | Inspect datastore dependencies or rank widely used datastores. | `target`, `source` |
+| [`flow`](#flow) | Inspect stream producers and consumers or rank busy streams. | `target`, `source` |
+| [`external_dep`](#external_dep) | Inspect external dependencies or rank high-fan-in external hosts. | `target`, `source` |
 | [`alerts`](#alerts) | List currently firing monitors, optionally scoped to a service. | `target` |
 | [`alert_noise`](#alert_noise) | Rank flapping or stuck monitors. | `target`, `kind`, `since` |
-| [`calls`](#calls) | Inspect service callers and callees or rank call-graph fan-in. | `target` |
-| [`servicetree`](#servicetree) | Expand a service's downstream services, datastores, and external dependencies. | `target` |
+| [`calls`](#calls) | Inspect service callers and callees or rank call-graph fan-in. | `target`, `source` |
+| [`servicetree`](#servicetree) | Expand a service's downstream services, datastores, and external dependencies. | `target`, `source` |
 | [`alert_cause`](#alert_cause) | Join a firing service or workload to recent Kubernetes changes. | `target`, `since` |
 | [`slo`](#slo) | Inspect one SLO or rank breaching and at-risk SLOs. | `target` |
 | [`alertrules`](#alertrules) | Inspect Grafana and VictoriaMetrics alert-rule coverage and inventory. | `subject`, `namespace`, `target` |
@@ -59,7 +59,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`storage`](#storage) | Inspect workload storage and find orphaned or unclaimed volumes. | `mode`, `workload`, `resource`, `class`, `namespace` |
 | [`pdb`](#pdb) | Find workloads without PodDisruptionBudgets or inspect one workload or PDB. | `target`, `workload`, `pdb` |
 | [`scaling`](#scaling) | Find workloads without HPAs, list autoscaled workloads, or inspect one target. | `mode`, `namespace`, `target` |
-| [`topology`](#topology) | Build a typed service topology at a selected level. | `service`, `level` |
+| [`topology`](#topology) | Build a typed service topology at a selected level. | `service`, `level`, `source` |
 
 ## resolve
 
@@ -623,7 +623,7 @@ $ annie graph query "SELECT * FROM sharedconfig WHERE resource = checkout LIMIT 
 
 ## path
 
-Find the shortest structural path between two resources.
+Find the shortest infrastructure or operational path between two resources.
 
 Result intent: `path`.
 
@@ -635,17 +635,28 @@ Modifiers: `LIMIT` is not applied; `OFFSET` is not applied.
 
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
-| `from` | string | Yes | Any value | Starting resource name. |
-| `to` | string | Yes | Any value | Destination resource name. |
+| `from` | string | No | Any value | Starting resource name. Required unless from_id is supplied. |
+| `from_exact` | string | No | Any value | Set true for exact-name matching instead of legacy fuzzy resolution. |
+| `from_id` | string | No | Any value | Exact starting hashedID or anyshiftID. |
+| `from_type` | string | No | Any value | Exact starting resource label, such as K8S_DEPLOYMENT. |
+| `from_namespace` | string | No | Any value | Exact starting Kubernetes namespace. |
+| `from_cluster` | string | No | Any value | Exact starting cluster name. |
+| `to` | string | No | Any value | Destination resource name. Required unless to_id is supplied. |
+| `to_exact` | string | No | Any value | Set true for exact-name matching instead of legacy fuzzy resolution. |
+| `to_id` | string | No | Any value | Exact destination hashedID or anyshiftID. |
+| `to_type` | string | No | Any value | Exact destination resource label, such as TEMPO_DATASTORE. |
+| `to_namespace` | string | No | Any value | Exact destination Kubernetes namespace. |
+| `to_cluster` | string | No | Any value | Exact destination cluster name. |
+| `scope` | enum | No | `infrastructure`<br />`operational` | Relationships available to the path traversal. Defaults to infrastructure. |
 
 ### Forms
 
 #### Shortest path
 
-Both from and to are required.
+Each endpoint requires a name or id. Typed selectors resolve same-named resources deterministically.
 
 ```console
-$ annie graph query "SELECT * FROM path WHERE from = checkout AND to = checkout-postgres"
+$ annie graph query "SELECT * FROM path WHERE from = checkout-api AND from_type = K8S_DEPLOYMENT AND to = postgresql AND to_type = TEMPO_DATASTORE AND scope = operational"
 ```
 
 ## cascade
@@ -750,6 +761,7 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
 | `target` | string | No | Any value | Service or datastore name. |
+| `source` | enum | No | `auto`<br />`datadog`<br />`tempo` | APM dependency source. Defaults to auto. |
 
 ### Forms
 
@@ -784,6 +796,7 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
 | `target` | string | No | Any value | Service, topic, queue, or stream name. |
+| `source` | enum | No | `auto`<br />`datadog`<br />`tempo` | APM dependency source. Defaults to auto. |
 
 ### Forms
 
@@ -810,6 +823,7 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
 | `target` | string | No | Any value | Service or external dependency name. |
+| `source` | enum | No | `auto`<br />`datadog`<br />`tempo` | APM dependency source. Defaults to auto. |
 
 ### Forms
 
@@ -890,6 +904,7 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
 | `target` | string | No | Any value | Service name. |
+| `source` | enum | No | `auto`<br />`datadog`<br />`tempo` | APM dependency source. Defaults to auto. |
 
 ### Forms
 
@@ -916,6 +931,7 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
 | `target` | string | No | Any value | Root service name. |
+| `source` | enum | No | `auto`<br />`datadog`<br />`tempo` | APM dependency source. Defaults to auto. |
 
 ### Forms
 
@@ -1287,6 +1303,7 @@ Modifiers: `LIMIT` is not applied; `OFFSET` is not applied.
 | --- | --- | --- | --- | --- |
 | `service` | string | Yes | Any value | Service or workload name. |
 | `level` | enum | No | `context`<br />`container`<br />`component`<br />`dynamic` | Topology level. Defaults to container. |
+| `source` | enum | No | `auto`<br />`datadog`<br />`tempo` | APM dependency source. Defaults to auto. |
 
 ### Forms
 

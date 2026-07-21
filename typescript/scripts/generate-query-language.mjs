@@ -7,8 +7,8 @@ const check = process.argv.includes("--check");
 const contract = JSON.parse(await readFile(contractPath, "utf8"));
 const language = contract["x-anyshift-query-language"];
 
-if (language?.version !== "1.0" || !Array.isArray(language.tables) || language.tables.length === 0) {
-  throw new Error(`${contractPath.pathname} does not contain x-anyshift-query-language version 1.0`);
+if (language?.version !== "1.1" || !Array.isArray(language.tables) || language.tables.length === 0) {
+  throw new Error(`${contractPath.pathname} does not contain x-anyshift-query-language version 1.1`);
 }
 
 const escapeCell = (value) => String(value).replaceAll("|", "\\|").replaceAll("\n", " ");

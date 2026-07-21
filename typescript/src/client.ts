@@ -213,7 +213,7 @@ export interface SharedConfigParams {
 export type ResourceSelector =
   | string
   | { id: string }
-  | { name: string; type?: string; namespace?: string; cluster?: string };
+  | { name: string; type: string; namespace?: string; cluster?: string };
 export interface PathParams {
   /** The first resource (start of the path). */
   from: ResourceSelector;
@@ -356,7 +356,7 @@ function selectorConditions(prefix: "from" | "to", selector: ResourceSelector): 
   return [
     [prefix, selector.name],
     [`${prefix}_exact`, "true"],
-    [`${prefix}_type`, selector.type ?? ""],
+    [`${prefix}_type`, selector.type],
     [`${prefix}_namespace`, selector.namespace ?? ""],
     [`${prefix}_cluster`, selector.cluster ?? ""],
   ];

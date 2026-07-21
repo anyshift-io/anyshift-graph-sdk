@@ -48,7 +48,10 @@ const typedSelector: ResourceSelector = {
   namespace: "shop",
 };
 const stableSelector: ResourceSelector = { id: "resource-hash" };
+// @ts-expect-error Name-based selectors must include a resource type to be deterministic.
+const ambiguousSelector: ResourceSelector = { name: "checkout-api" };
 void typedSelector;
 void stableSelector;
+void ambiguousSelector;
 const tempoSource: ApmSource = "tempo";
 void tempoSource;

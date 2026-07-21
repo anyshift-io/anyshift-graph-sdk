@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.0 - 2026-07-21
+
+### Added
+
+- Added deterministic path selectors by resource name and type, namespace, cluster, or stable id.
+- Added operational path scope for Grafana Tempo service, datastore, call, and messaging edges.
+- Added explicit Tempo source selection to datastore, flow, external-dependency, call graph,
+  service-tree, and topology helpers.
+
+### Compatibility
+
+- Existing string-based `graph.path({ from, to })` calls retain fuzzy-name resolution and the
+  infrastructure-only path scope.
+
 ## 0.3.0 - 2026-07-21
 
 ### Added

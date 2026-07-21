@@ -47,9 +47,32 @@ console.log(blast.summary);
 ```
 
 ```ts
-const path = await graph.path({ from: "checkout", to: "checkout-postgres" });
+const path = await graph.path({
+  from: { name: "checkout-api", type: "K8S_DEPLOYMENT" },
+  to: { name: "postgresql", type: "TEMPO_DATASTORE" },
+  scope: "operational",
+});
 console.log(path.summary);
 ```
+
+Typed selectors are deterministic when multiple resource types share the same name. Use
+`{ id: candidate.id }` with an id returned by `graph.resolve()` when name, type, namespace, and
+cluster still do not identify one node. Existing string selectors retain fuzzy-name resolution.
+
+Tempo-backed APM helpers accept `source: "tempo"`:
+
+```ts
+const calls = await graph.calls({ target: "checkout-api", source: "tempo" });
+const datastore = await graph.datastore({ target: "postgresql", source: "tempo" });
+const topology = await graph.topology({
+  service: "checkout-api",
+  source: "tempo",
+  level: "container",
+});
+```
+
+The `datastore`, `flow`, `externalDep`, `calls`, `serviceTree`, and `topology` helpers support
+`source: "auto" | "datadog" | "tempo"`. Omitting it preserves the source-agnostic default.
 
 ## Topology Diagrams
 

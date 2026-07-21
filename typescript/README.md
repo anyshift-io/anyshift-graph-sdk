@@ -80,6 +80,9 @@ const result = await graph.query(
 console.log(result.summary);
 ```
 
+See the complete [Graph Query Language reference](../QUERY_LANGUAGE.md) for every target,
+filter, accepted value, alias, and valid query form.
+
 ## Environment
 
 ```bash

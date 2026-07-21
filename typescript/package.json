@@ -26,8 +26,10 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "generate": "npm run sync:openapi && npm run generate:types",
+    "generate": "npm run sync:openapi && npm run generate:types && npm run generate:query-language",
     "generate:types": "openapi-typescript ../openapi/graph-api.v1.json -o src/openapi.generated.ts",
+    "generate:query-language": "node scripts/generate-query-language.mjs",
+    "check:generated": "node scripts/generate-query-language.mjs --check",
     "sync:openapi": "node scripts/sync-openapi.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "node --import tsx --test src/*.test.ts && npm run test:types",

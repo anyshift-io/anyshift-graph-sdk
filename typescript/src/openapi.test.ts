@@ -7,10 +7,19 @@ test("pinned OpenAPI exposes the executable 42-intent contract", async () => {
   const document = JSON.parse(raw);
   const schemas = document.components.schemas;
   const variants = schemas.AskResult.oneOf;
+  const queryLanguage = document["x-anyshift-query-language"];
 
   assert.equal(schemas.QueryRequest.additionalProperties, false);
   assert.equal(schemas.AskRequest.additionalProperties, false);
   assert.equal(schemas.AskResult.discriminator.propertyName, "intent");
   assert.equal(variants.length, 42);
   assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, 42);
+  assert.equal(queryLanguage.version, "1.0");
+  assert.equal(queryLanguage.tables.length, variants.length);
+  const spof = queryLanguage.tables.find((table: any) => table.name === "spof");
+  assert.deepEqual(spof.filters.find((filter: any) => filter.name === "kind").values.map((entry: any) => entry.value), [
+    "configmap",
+    "serviceaccount",
+    "node",
+  ]);
 });

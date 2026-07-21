@@ -9,6 +9,9 @@ The TypeScript SDK also exposes two escape hatches:
 - `graph.query(sql)` sends deterministic Anyshift graph SQL to `/v1/query`.
 - `graph.ask(question)` sends a natural-language graph question to `/v1/ask`.
 
+Use the generated [Graph Query Language reference](./QUERY_LANGUAGE.md) to discover every
+deterministic query target, filter, accepted value, alias, and valid form.
+
 All typed helpers call `graph.query(...)` and return an `AskResult` envelope with:
 
 - `intent`: the resolved Graph API intent.

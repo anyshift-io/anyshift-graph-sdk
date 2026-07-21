@@ -33,6 +33,9 @@ Product documentation, onboarding guides, and use-case recipes are published on 
 For the detailed list of what the Graph API and SDK can do, see
 [CAPABILITIES.md](./CAPABILITIES.md).
 
+For every deterministic query target, filter, accepted value, alias, and query form, see the
+[Graph Query Language reference](./QUERY_LANGUAGE.md).
+
 ## Contract Boundary
 
 SDKs depend on the public Graph API contract. TypeScript types should be generated from, or
@@ -40,7 +43,7 @@ pinned to, the OpenAPI contract in `openapi/`.
 
 ## Release Status
 
-The current public SDK release is `@anyshift/graph-sdk@0.2.0`.
+The current public SDK release is `@anyshift/graph-sdk@0.3.0`.
 
 Release checklist:
 

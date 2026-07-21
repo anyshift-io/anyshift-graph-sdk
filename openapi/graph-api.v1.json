@@ -1,5 +1,1830 @@
 {
   "openapi": "3.1.0",
+  "x-anyshift-query-language": {
+    "version": "1.0",
+    "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
+    "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
+    "selectors": [
+      "*",
+      "count(*)"
+    ],
+    "selectorAliases": [
+      "count(1)"
+    ],
+    "valueSyntax": "Values may be bare words or single- or double-quoted strings.",
+    "tables": [
+      {
+        "name": "resolve",
+        "aliases": [
+          "search"
+        ],
+        "intent": "resolve",
+        "summary": "Resolve a resource name or fragment to ranked current graph resources.",
+        "filters": [
+          {
+            "name": "term",
+            "type": "string",
+            "description": "Resource name or fragment to resolve.",
+            "required": true
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Resolve resources",
+            "description": "Return ranked candidates for a resource name or fragment.",
+            "example": "SELECT * FROM resolve WHERE term = checkout LIMIT 10"
+          }
+        ]
+      },
+      {
+        "name": "events",
+        "aliases": [
+          "event"
+        ],
+        "intent": "events",
+        "summary": "Read the infrastructure change-event timeline.",
+        "filters": [
+          {
+            "name": "type",
+            "type": "string",
+            "description": "Event type or type fragment, such as oom or scaling."
+          },
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Resource name or fragment."
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Kubernetes namespace."
+          },
+          {
+            "name": "noise",
+            "type": "enum",
+            "description": "Whether to include noisy events.",
+            "values": [
+              {
+                "value": "signal",
+                "description": "Return signal events only.",
+                "aliases": [
+                  "false",
+                  "exclude"
+                ]
+              },
+              {
+                "value": "all",
+                "description": "Include noisy events.",
+                "aliases": [
+                  "true",
+                  "include"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": true
+        },
+        "forms": [
+          {
+            "name": "Recent resource events",
+            "description": "Read recent events for a resource inside a time window.",
+            "example": "SELECT * FROM events WHERE target = checkout AND since = 2h LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "resources",
+        "aliases": [
+          "resource",
+          "inventory"
+        ],
+        "intent": "inventory",
+        "summary": "Count and sample current resources of one graph resource type.",
+        "filters": [
+          {
+            "name": "type",
+            "type": "string",
+            "description": "Graph resource type, such as service or deployment.",
+            "required": true
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": true
+        },
+        "forms": [
+          {
+            "name": "Resource inventory",
+            "description": "Return the inventory for one resource type.",
+            "example": "SELECT * FROM resources WHERE type = deployment LIMIT 50"
+          }
+        ]
+      },
+      {
+        "name": "connections",
+        "aliases": [
+          "connection",
+          "deps"
+        ],
+        "intent": "connections",
+        "summary": "Inspect direct upstream and downstream relationships for a resource.",
+        "filters": [
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Resource name or identifier.",
+            "required": true
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Direct connections",
+            "description": "Return the resource and its direct graph neighbors.",
+            "example": "SELECT * FROM connections WHERE resource = checkout LIMIT 50"
+          }
+        ]
+      },
+      {
+        "name": "hotspots",
+        "aliases": [
+          "hotspot"
+        ],
+        "intent": "hotspots",
+        "summary": "Rank noisy resources, namespaces, alert rules, or alerting workloads.",
+        "filters": [
+          {
+            "name": "type",
+            "type": "string",
+            "description": "Event type or type fragment."
+          },
+          {
+            "name": "by",
+            "type": "enum",
+            "description": "Ranking dimension.",
+            "values": [
+              {
+                "value": "resource",
+                "description": "Rank resources.",
+                "aliases": [
+                  "resources"
+                ]
+              },
+              {
+                "value": "namespace",
+                "description": "Rank namespaces.",
+                "aliases": [
+                  "namespaces",
+                  "ns"
+                ]
+              },
+              {
+                "value": "alertrule",
+                "description": "Rank firing alert rules.",
+                "aliases": [
+                  "alertrules",
+                  "rule"
+                ]
+              },
+              {
+                "value": "alertworkload",
+                "description": "Rank workloads with firing alerts.",
+                "aliases": [
+                  "alertworkloads",
+                  "workload"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Kubernetes namespace scope."
+          },
+          {
+            "name": "noise",
+            "type": "enum",
+            "description": "Whether to include noisy events.",
+            "values": [
+              {
+                "value": "signal",
+                "description": "Return signal events only.",
+                "aliases": [
+                  "false",
+                  "exclude"
+                ]
+              },
+              {
+                "value": "all",
+                "description": "Include noisy events.",
+                "aliases": [
+                  "true",
+                  "include"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Resource hotspots",
+            "description": "Rank resources by recent event activity.",
+            "example": "SELECT * FROM hotspots WHERE by = resource AND since = 24h LIMIT 10"
+          }
+        ]
+      },
+      {
+        "name": "incidents",
+        "aliases": [
+          "incident"
+        ],
+        "intent": "incident",
+        "summary": "Reconstruct a correlated incident around a target or correlation identifier.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Resource name or fragment."
+          },
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Correlation identifier."
+          },
+          {
+            "name": "type",
+            "type": "string",
+            "description": "Optional event type filter."
+          }
+        ],
+        "pagination": {
+          "limit": false,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Incident by target",
+            "description": "At least one of target or id is required.",
+            "example": "SELECT * FROM incidents WHERE target = checkout"
+          },
+          {
+            "name": "Incident by correlation id",
+            "description": "Load one exact correlation group.",
+            "example": "SELECT * FROM incidents WHERE id = incident-123"
+          }
+        ]
+      },
+      {
+        "name": "failures",
+        "aliases": [],
+        "intent": "failures",
+        "summary": "Read recent failure-class infrastructure events.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Resource name or fragment."
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Kubernetes namespace."
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": true
+        },
+        "forms": [
+          {
+            "name": "Recent failures",
+            "description": "Read failures for a target, namespace, or the whole project.",
+            "example": "SELECT * FROM failures WHERE namespace = commerce AND since = 2h LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "deployments",
+        "aliases": [
+          "deployment",
+          "rollouts"
+        ],
+        "intent": "deployments",
+        "summary": "Read recent workload deployments and image changes.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Workload name or fragment."
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Kubernetes namespace."
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": true
+        },
+        "forms": [
+          {
+            "name": "Recent deployments",
+            "description": "Read deployments for a target, namespace, or the whole project.",
+            "example": "SELECT * FROM deployments WHERE namespace = commerce AND since = 24h LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "audit",
+        "aliases": [
+          "changes"
+        ],
+        "intent": "audit",
+        "summary": "Read configuration, identity, and infrastructure audit events.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Resource name or fragment."
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Kubernetes namespace."
+          },
+          {
+            "name": "type",
+            "type": "string",
+            "description": "Audit event type or fragment, such as rbac."
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": true
+        },
+        "forms": [
+          {
+            "name": "RBAC audit",
+            "description": "Read recent RBAC-related changes.",
+            "example": "SELECT * FROM audit WHERE type = rbac AND since = 24h LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "nodes",
+        "aliases": [
+          "node"
+        ],
+        "intent": "nodes",
+        "summary": "Read node lifecycle and capacity events.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Node name or fragment."
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": true
+        },
+        "forms": [
+          {
+            "name": "Node activity",
+            "description": "Read recent node events.",
+            "example": "SELECT * FROM nodes WHERE since = 6h LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "deploy_impact",
+        "aliases": [
+          "impact",
+          "risky"
+        ],
+        "intent": "deployimpact",
+        "summary": "Join recent deployments to the failures that followed them.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Workload name or fragment."
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Deployment impact",
+            "description": "Rank recent deployment fallout or inspect one workload.",
+            "example": "SELECT * FROM deploy_impact WHERE target = checkout AND since = 24h LIMIT 10"
+          }
+        ]
+      },
+      {
+        "name": "common_cause",
+        "aliases": [
+          "commoncause",
+          "cause"
+        ],
+        "intent": "commoncause",
+        "summary": "Find shared infrastructure or dependencies behind recent failures.",
+        "filters": [
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Kubernetes namespace scope."
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Shared failure causes",
+            "description": "Intersect recent failures by node, workload, datastore, and external dependency.",
+            "example": "SELECT * FROM common_cause WHERE namespace = commerce AND since = 2h LIMIT 10"
+          }
+        ]
+      },
+      {
+        "name": "blast_radius",
+        "aliases": [
+          "blast"
+        ],
+        "intent": "blast",
+        "summary": "Calculate the transitive workloads, pods, and services affected by a resource.",
+        "filters": [
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Starting resource name or identifier.",
+            "required": true
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Resource blast radius",
+            "description": "Walk impact outward from one resource.",
+            "example": "SELECT * FROM blast_radius WHERE resource = shared-runtime-sa LIMIT 100"
+          }
+        ]
+      },
+      {
+        "name": "spof",
+        "aliases": [
+          "spofs"
+        ],
+        "intent": "spof",
+        "summary": "Rank highly shared ConfigMaps, service accounts, or nodes by fan-in.",
+        "filters": [
+          {
+            "name": "kind",
+            "type": "enum",
+            "description": "Resource kind to rank. Defaults to configmap.",
+            "values": [
+              {
+                "value": "configmap",
+                "description": "Rank ConfigMaps.",
+                "aliases": [
+                  "configmaps",
+                  "cm"
+                ]
+              },
+              {
+                "value": "serviceaccount",
+                "description": "Rank Kubernetes service accounts.",
+                "aliases": [
+                  "serviceaccounts",
+                  "sa"
+                ]
+              },
+              {
+                "value": "node",
+                "description": "Rank Kubernetes nodes.",
+                "aliases": [
+                  "nodes"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Kubernetes namespace scope."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Shared service accounts",
+            "description": "Rank service accounts by dependent workloads and pods.",
+            "example": "SELECT * FROM spof WHERE kind = serviceaccount LIMIT 10"
+          }
+        ]
+      },
+      {
+        "name": "orphans",
+        "aliases": [
+          "orphan",
+          "unused",
+          "dangling"
+        ],
+        "intent": "orphans",
+        "summary": "Find unused or dangling Kubernetes resources.",
+        "filters": [
+          {
+            "name": "kind",
+            "type": "enum",
+            "description": "Resource kind to inspect. Defaults to configmap.",
+            "values": [
+              {
+                "value": "configmap",
+                "description": "Find orphaned ConfigMaps.",
+                "aliases": [
+                  "configmaps",
+                  "cm"
+                ]
+              },
+              {
+                "value": "serviceaccount",
+                "description": "Find orphaned service accounts.",
+                "aliases": [
+                  "serviceaccounts",
+                  "sa"
+                ]
+              },
+              {
+                "value": "role",
+                "description": "Find orphaned roles.",
+                "aliases": [
+                  "roles"
+                ]
+              },
+              {
+                "value": "replicaset",
+                "description": "Find orphaned ReplicaSets.",
+                "aliases": [
+                  "replicasets",
+                  "rs"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Kubernetes namespace scope."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Orphaned roles",
+            "description": "Find roles with no observed consumers.",
+            "example": "SELECT * FROM orphans WHERE kind = role AND namespace = commerce LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "coverage",
+        "aliases": [
+          "blindspots",
+          "unmonitored",
+          "uncovered"
+        ],
+        "intent": "coverage",
+        "summary": "Find service, monitor, or metrics coverage gaps.",
+        "filters": [
+          {
+            "name": "kind",
+            "type": "enum",
+            "description": "Coverage dimension. Defaults to service.",
+            "values": [
+              {
+                "value": "service",
+                "description": "Find services without monitoring presence.",
+                "aliases": [
+                  "services",
+                  "workload",
+                  "workloads"
+                ]
+              },
+              {
+                "value": "monitor",
+                "description": "Find monitored services without monitors.",
+                "aliases": [
+                  "monitors"
+                ]
+              },
+              {
+                "value": "metrics",
+                "description": "Find metrics shipping gaps.",
+                "aliases": [
+                  "metric"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Kubernetes namespace scope."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Monitoring gaps",
+            "description": "Find unmonitored services in one namespace.",
+            "example": "SELECT * FROM coverage WHERE kind = service AND namespace = commerce LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "access",
+        "aliases": [
+          "rbac",
+          "permissions"
+        ],
+        "intent": "access",
+        "summary": "Inspect RBAC reach or rank over-privileged service accounts.",
+        "filters": [
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Subject or role name in reach mode; optional namespace scope in privileged mode."
+          },
+          {
+            "name": "mode",
+            "type": "enum",
+            "description": "Access analysis mode. Defaults to reach.",
+            "values": [
+              {
+                "value": "reach",
+                "description": "Inspect what one subject can reach."
+              },
+              {
+                "value": "privileged",
+                "description": "Rank broadly privileged service accounts."
+              }
+            ]
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Subject reach",
+            "description": "Reach mode requires resource.",
+            "example": "SELECT * FROM access WHERE resource = ci-deployer"
+          },
+          {
+            "name": "Privileged identities",
+            "description": "Privileged mode can optionally scope resource to a namespace.",
+            "example": "SELECT * FROM access WHERE mode = privileged LIMIT 10"
+          }
+        ]
+      },
+      {
+        "name": "exposure",
+        "aliases": [
+          "exposed",
+          "attack_surface"
+        ],
+        "intent": "exposure",
+        "summary": "Trace public ingress exposure to or from a resource.",
+        "filters": [
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Ingress, service, or workload name.",
+            "required": true
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Public exposure",
+            "description": "Trace how a resource is publicly exposed.",
+            "example": "SELECT * FROM exposure WHERE resource = checkout"
+          }
+        ]
+      },
+      {
+        "name": "tenancy",
+        "aliases": [
+          "colocation",
+          "colocated",
+          "neighbors"
+        ],
+        "intent": "tenancy",
+        "summary": "Find workloads co-located with a resource on the same node.",
+        "filters": [
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Workload, pod, or node name.",
+            "required": true
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Noisy neighbors",
+            "description": "Inspect resources sharing a node with the target.",
+            "example": "SELECT * FROM tenancy WHERE resource = checkout LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "sharedconfig",
+        "aliases": [
+          "shared_config",
+          "configsiblings",
+          "config_siblings",
+          "configcoupled"
+        ],
+        "intent": "sharedconfig",
+        "summary": "Find workloads coupled through shared configuration.",
+        "filters": [
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Workload or configuration resource name.",
+            "required": true
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Shared configuration",
+            "description": "Find workloads sharing configuration with the target.",
+            "example": "SELECT * FROM sharedconfig WHERE resource = checkout LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "path",
+        "aliases": [
+          "paths"
+        ],
+        "intent": "path",
+        "summary": "Find the shortest structural path between two resources.",
+        "filters": [
+          {
+            "name": "from",
+            "type": "string",
+            "description": "Starting resource name.",
+            "required": true
+          },
+          {
+            "name": "to",
+            "type": "string",
+            "description": "Destination resource name.",
+            "required": true
+          }
+        ],
+        "pagination": {
+          "limit": false,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Shortest path",
+            "description": "Both from and to are required.",
+            "example": "SELECT * FROM path WHERE from = checkout AND to = checkout-postgres"
+          }
+        ]
+      },
+      {
+        "name": "cascade",
+        "aliases": [
+          "cascades"
+        ],
+        "intent": "cascade",
+        "summary": "Trace an incident correlation group in propagation order.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Resource name or fragment."
+          },
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Correlation identifier."
+          }
+        ],
+        "pagination": {
+          "limit": false,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Cascade by target",
+            "description": "At least one of target or id is required.",
+            "example": "SELECT * FROM cascade WHERE target = checkout"
+          },
+          {
+            "name": "Cascade by correlation id",
+            "description": "Trace one exact correlation group.",
+            "example": "SELECT * FROM cascade WHERE id = incident-123"
+          }
+        ]
+      },
+      {
+        "name": "alert_impact",
+        "aliases": [
+          "alertimpact"
+        ],
+        "intent": "alertimpact",
+        "summary": "Find monitors and SLOs affected by a resource failure.",
+        "filters": [
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Infrastructure resource name.",
+            "required": true
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Alert impact",
+            "description": "Map an infrastructure resource to affected observability objects.",
+            "example": "SELECT * FROM alert_impact WHERE resource = checkout"
+          }
+        ]
+      },
+      {
+        "name": "monitor",
+        "aliases": [
+          "monitors"
+        ],
+        "intent": "monitor",
+        "summary": "Resolve a monitor to the infrastructure it observes.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Monitor name or fragment.",
+            "required": true
+          }
+        ],
+        "pagination": {
+          "limit": false,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Monitor infrastructure",
+            "description": "Map one monitor to its service, workload, and node.",
+            "example": "SELECT * FROM monitor WHERE target = checkout-latency"
+          }
+        ]
+      },
+      {
+        "name": "datastore",
+        "aliases": [
+          "datastores"
+        ],
+        "intent": "datastore",
+        "summary": "Inspect datastore dependencies or rank widely used datastores.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Service or datastore name."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Rank datastores",
+            "description": "Omit target to rank datastore fan-in.",
+            "example": "SELECT * FROM datastore LIMIT 10"
+          },
+          {
+            "name": "Datastore dependencies",
+            "description": "Inspect services connected to one datastore or datastores used by one service.",
+            "example": "SELECT * FROM datastore WHERE target = checkout-postgres"
+          }
+        ]
+      },
+      {
+        "name": "flow",
+        "aliases": [
+          "flows",
+          "stream"
+        ],
+        "intent": "flow",
+        "summary": "Inspect stream producers and consumers or rank busy streams.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Service, topic, queue, or stream name."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Stream dependencies",
+            "description": "Inspect producers and consumers for a stream.",
+            "example": "SELECT * FROM flow WHERE target = checkout-events"
+          }
+        ]
+      },
+      {
+        "name": "external_dep",
+        "aliases": [
+          "externaldep",
+          "external"
+        ],
+        "intent": "externaldep",
+        "summary": "Inspect external dependencies or rank high-fan-in external hosts.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Service or external dependency name."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "External dependencies",
+            "description": "Inspect services depending on one external host.",
+            "example": "SELECT * FROM external_dep WHERE target = payments.example.com"
+          }
+        ]
+      },
+      {
+        "name": "alerts",
+        "aliases": [
+          "alert",
+          "firing"
+        ],
+        "intent": "alerts",
+        "summary": "List currently firing monitors, optionally scoped to a service.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Service or workload name."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Current alerts",
+            "description": "List firing monitors for the project or one target.",
+            "example": "SELECT * FROM alerts WHERE target = checkout LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "alert_noise",
+        "aliases": [
+          "alertnoise",
+          "noise",
+          "flapping",
+          "noisy"
+        ],
+        "intent": "alertnoise",
+        "summary": "Rank flapping or stuck monitors.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Monitor or service name."
+          },
+          {
+            "name": "kind",
+            "type": "enum",
+            "description": "Noise pattern.",
+            "values": [
+              {
+                "value": "flapping",
+                "description": "Repeated alert and recovery transitions.",
+                "aliases": [
+                  "flap"
+                ]
+              },
+              {
+                "value": "stuck",
+                "description": "Long-running firing state."
+              }
+            ]
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Flapping alerts",
+            "description": "Rank recently flapping monitors.",
+            "example": "SELECT * FROM alert_noise WHERE kind = flapping AND since = 1d LIMIT 10"
+          }
+        ]
+      },
+      {
+        "name": "calls",
+        "aliases": [
+          "call",
+          "callgraph"
+        ],
+        "intent": "calls",
+        "summary": "Inspect service callers and callees or rank call-graph fan-in.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Service name."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Service calls",
+            "description": "Inspect callers and callees for one service.",
+            "example": "SELECT * FROM calls WHERE target = checkout"
+          }
+        ]
+      },
+      {
+        "name": "servicetree",
+        "aliases": [
+          "service_tree",
+          "footprint"
+        ],
+        "intent": "servicetree",
+        "summary": "Expand a service's downstream services, datastores, and external dependencies.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Root service name."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Service tree",
+            "description": "Expand the downstream footprint of one service.",
+            "example": "SELECT * FROM servicetree WHERE target = checkout LIMIT 50"
+          }
+        ]
+      },
+      {
+        "name": "alert_cause",
+        "aliases": [
+          "alertcause",
+          "rootcause"
+        ],
+        "intent": "alertcause",
+        "summary": "Join a firing service or workload to recent Kubernetes changes.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Service or workload name.",
+            "required": true
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Alert cause",
+            "description": "Find recent infrastructure changes behind a firing target.",
+            "example": "SELECT * FROM alert_cause WHERE target = checkout AND since = 2h LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "slo",
+        "aliases": [
+          "slos"
+        ],
+        "intent": "slo",
+        "summary": "Inspect one SLO or rank breaching and at-risk SLOs.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "SLO name or fragment."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "SLO health",
+            "description": "Inspect one SLO by name.",
+            "example": "SELECT * FROM slo WHERE target = 'checkout availability'"
+          }
+        ]
+      },
+      {
+        "name": "alertrules",
+        "aliases": [
+          "alert_rules",
+          "grafana",
+          "victoria"
+        ],
+        "intent": "alertrules",
+        "summary": "Inspect Grafana and VictoriaMetrics alert-rule coverage and inventory.",
+        "filters": [
+          {
+            "name": "subject",
+            "type": "enum",
+            "description": "Alert-rule view. Defaults to coverage.",
+            "values": [
+              {
+                "value": "coverage",
+                "description": "Find targets without alert rules."
+              },
+              {
+                "value": "inventory",
+                "description": "List alert rules.",
+                "aliases": [
+                  "inventories"
+                ]
+              },
+              {
+                "value": "target",
+                "description": "Inspect rules for one target.",
+                "aliases": [
+                  "targets"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Namespace scope for coverage or inventory."
+          },
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Service or workload name. Required when subject is target."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Alert-rule coverage",
+            "description": "Find services or workloads without alert rules.",
+            "example": "SELECT * FROM alertrules WHERE subject = coverage AND namespace = commerce LIMIT 20"
+          },
+          {
+            "name": "Rules for a target",
+            "description": "Target subject requires target.",
+            "example": "SELECT * FROM alertrules WHERE subject = target AND target = checkout"
+          }
+        ]
+      },
+      {
+        "name": "gitops",
+        "aliases": [
+          "argocd",
+          "drift"
+        ],
+        "intent": "gitops",
+        "summary": "Inspect GitOps drift, unmanaged workloads, or resource ownership.",
+        "filters": [
+          {
+            "name": "subject",
+            "type": "enum",
+            "description": "GitOps view. Defaults to drift.",
+            "values": [
+              {
+                "value": "drift",
+                "description": "Find drifted applications.",
+                "aliases": [
+                  "drifted"
+                ]
+              },
+              {
+                "value": "unmanaged",
+                "description": "Find workloads without GitOps ownership."
+              },
+              {
+                "value": "owner",
+                "description": "Find the application and repository owning one resource.",
+                "aliases": [
+                  "ownership"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Namespace scope for drift or unmanaged views."
+          },
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Workload name. Required when subject is owner."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "GitOps drift",
+            "description": "List drifted applications, optionally scoped to a namespace.",
+            "example": "SELECT * FROM gitops WHERE subject = drift AND namespace = commerce LIMIT 20"
+          },
+          {
+            "name": "Resource owner",
+            "description": "Owner subject requires resource.",
+            "example": "SELECT * FROM gitops WHERE subject = owner AND resource = checkout"
+          }
+        ]
+      },
+      {
+        "name": "image",
+        "aliases": [
+          "images",
+          "containers"
+        ],
+        "intent": "image",
+        "summary": "Inspect image usage, workload containers, or container hygiene gaps.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Image, service, or workload name."
+          },
+          {
+            "name": "workload",
+            "type": "string",
+            "description": "Workload whose container resources should be inspected."
+          },
+          {
+            "name": "kind",
+            "type": "enum",
+            "description": "Container hygiene scan.",
+            "values": [
+              {
+                "value": "nomemlimit",
+                "description": "Containers without a memory limit.",
+                "aliases": [
+                  "no_mem_limit",
+                  "nomemorylimit"
+                ]
+              },
+              {
+                "value": "nocpurequest",
+                "description": "Containers without a CPU request.",
+                "aliases": [
+                  "no_cpu_request"
+                ]
+              },
+              {
+                "value": "skew",
+                "description": "Workloads running multiple image versions.",
+                "aliases": [
+                  "versionskew",
+                  "version_skew"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Namespace scope for a hygiene scan."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Image usage",
+            "description": "Inspect who runs an image or what image a target runs.",
+            "example": "SELECT * FROM image WHERE target = checkout"
+          },
+          {
+            "name": "Container hygiene",
+            "description": "Kind selects a hygiene scan and namespace optionally scopes it.",
+            "example": "SELECT * FROM image WHERE kind = nomemlimit AND namespace = commerce LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "netpol",
+        "aliases": [
+          "netpols",
+          "networkpolicy",
+          "segmentation",
+          "defaultallow"
+        ],
+        "intent": "netpol",
+        "summary": "Inspect NetworkPolicy coverage, policies, or east-west reach.",
+        "filters": [
+          {
+            "name": "mode",
+            "type": "enum",
+            "description": "Network policy view. Defaults to uncovered.",
+            "values": [
+              {
+                "value": "uncovered",
+                "description": "Find default-allow namespaces.",
+                "aliases": [
+                  "coverage",
+                  "default_allow",
+                  "defaultallow"
+                ]
+              },
+              {
+                "value": "policy",
+                "description": "Inspect policies for a target or namespace.",
+                "aliases": [
+                  "policies"
+                ]
+              },
+              {
+                "value": "segmentation",
+                "description": "Model workloads that could reach a target.",
+                "aliases": [
+                  "segment"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Namespace scope for uncovered or policy views."
+          },
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Workload or policy name. Required for segmentation."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "NetworkPolicy gaps",
+            "description": "Find default-allow namespaces.",
+            "example": "SELECT * FROM netpol WHERE mode = uncovered LIMIT 20"
+          },
+          {
+            "name": "East-west reach",
+            "description": "Segmentation mode requires target.",
+            "example": "SELECT * FROM netpol WHERE mode = segmentation AND target = checkout"
+          }
+        ]
+      },
+      {
+        "name": "priority",
+        "aliases": [
+          "priorityclass",
+          "preemption",
+          "nopriority"
+        ],
+        "intent": "priority",
+        "summary": "Inspect scheduling priority gaps, the class ladder, or one target's priority.",
+        "filters": [
+          {
+            "name": "kind",
+            "type": "enum",
+            "description": "Priority view.",
+            "values": [
+              {
+                "value": "nopriority",
+                "description": "Find workloads without a priority class.",
+                "aliases": [
+                  "unprioritized",
+                  "none"
+                ]
+              },
+              {
+                "value": "ladder",
+                "description": "List the observed priority class ladder.",
+                "aliases": [
+                  "classes",
+                  "class"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Namespace scope for missing-priority checks."
+          },
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Workload or pod name whose priority should be inspected."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Missing priority classes",
+            "description": "Find workloads without a priority class.",
+            "example": "SELECT * FROM priority WHERE kind = nopriority AND namespace = commerce LIMIT 20"
+          },
+          {
+            "name": "Target priority",
+            "description": "Inspect the priority class for one workload or pod.",
+            "example": "SELECT * FROM priority WHERE target = checkout"
+          }
+        ]
+      },
+      {
+        "name": "storage",
+        "aliases": [
+          "volumes",
+          "pv",
+          "pvc",
+          "storageclass"
+        ],
+        "intent": "storage",
+        "summary": "Inspect workload storage and find orphaned or unclaimed volumes.",
+        "filters": [
+          {
+            "name": "mode",
+            "type": "enum",
+            "description": "Storage view. Defaults to footprint.",
+            "values": [
+              {
+                "value": "footprint",
+                "description": "Trace a workload's PVC, PV, and StorageClass chain.",
+                "aliases": [
+                  "workload"
+                ]
+              },
+              {
+                "value": "orphanpv",
+                "description": "Find orphaned persistent volumes.",
+                "aliases": [
+                  "orphanpvs",
+                  "orphaned",
+                  "orphan"
+                ]
+              },
+              {
+                "value": "unclaimedpvc",
+                "description": "Find unclaimed persistent volume claims.",
+                "aliases": [
+                  "unclaimedpvcs",
+                  "unclaimed"
+                ]
+              },
+              {
+                "value": "byclass",
+                "description": "Group or filter storage by StorageClass.",
+                "aliases": [
+                  "class",
+                  "storageclass"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "workload",
+            "type": "string",
+            "description": "Workload or pod name. Required in footprint mode."
+          },
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Alias for workload in footprint mode."
+          },
+          {
+            "name": "class",
+            "type": "string",
+            "description": "StorageClass filter for orphanpv or byclass mode."
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Namespace scope for unclaimedpvc mode."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Workload storage",
+            "description": "Footprint mode requires workload or resource.",
+            "example": "SELECT * FROM storage WHERE workload = checkout"
+          },
+          {
+            "name": "Unclaimed PVCs",
+            "description": "Find unclaimed claims, optionally scoped to a namespace.",
+            "example": "SELECT * FROM storage WHERE mode = unclaimedpvc AND namespace = commerce LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "pdb",
+        "aliases": [
+          "pdbs",
+          "unprotected",
+          "disruption"
+        ],
+        "intent": "pdb",
+        "summary": "Find workloads without PodDisruptionBudgets or inspect one workload or PDB.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Workload or PDB name."
+          },
+          {
+            "name": "workload",
+            "type": "string",
+            "description": "Workload name."
+          },
+          {
+            "name": "pdb",
+            "type": "string",
+            "description": "PodDisruptionBudget name."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "PDB coverage gaps",
+            "description": "Omit filters to list workloads without PDB protection.",
+            "example": "SELECT * FROM pdb LIMIT 20"
+          },
+          {
+            "name": "Target PDB coverage",
+            "description": "Inspect one workload or PDB by target, workload, or pdb.",
+            "example": "SELECT * FROM pdb WHERE workload = checkout"
+          }
+        ]
+      },
+      {
+        "name": "scaling",
+        "aliases": [
+          "hpa",
+          "hpas",
+          "autoscaling",
+          "autoscalers"
+        ],
+        "intent": "scaling",
+        "summary": "Find workloads without HPAs, list autoscaled workloads, or inspect one target.",
+        "filters": [
+          {
+            "name": "mode",
+            "type": "enum",
+            "description": "Autoscaling view. Defaults to nohpa.",
+            "values": [
+              {
+                "value": "nohpa",
+                "description": "Find workloads without an HPA.",
+                "aliases": [
+                  "no_hpa",
+                  "unscaled",
+                  "fixed",
+                  "coverage"
+                ]
+              },
+              {
+                "value": "autoscaled",
+                "description": "List workloads with an HPA.",
+                "aliases": [
+                  "hpa",
+                  "scaled"
+                ]
+              },
+              {
+                "value": "target",
+                "description": "Inspect one workload or HPA."
+              }
+            ]
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Namespace scope for nohpa or autoscaled views."
+          },
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Workload or HPA name. Required in target mode."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Autoscaling gaps",
+            "description": "Find workloads without HPAs.",
+            "example": "SELECT * FROM scaling WHERE mode = nohpa AND namespace = commerce LIMIT 20"
+          },
+          {
+            "name": "Target autoscaling",
+            "description": "Target mode requires target.",
+            "example": "SELECT * FROM scaling WHERE target = checkout"
+          }
+        ]
+      },
+      {
+        "name": "topology",
+        "aliases": [
+          "diagram",
+          "c4"
+        ],
+        "intent": "topology",
+        "summary": "Build a typed service topology at a selected level.",
+        "filters": [
+          {
+            "name": "service",
+            "type": "string",
+            "description": "Service or workload name.",
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "description": "Topology level. Defaults to container.",
+            "values": [
+              {
+                "value": "context",
+                "description": "Service and direct collaborators."
+              },
+              {
+                "value": "container",
+                "description": "Runtime containers, workloads, datastores, queues, and external dependencies."
+              },
+              {
+                "value": "component",
+                "description": "Deeper component and configuration detail."
+              },
+              {
+                "value": "dynamic",
+                "description": "Ordered call flow suitable for a sequence diagram."
+              }
+            ]
+          }
+        ],
+        "pagination": {
+          "limit": false,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Service topology",
+            "description": "Service is required; level selects the topology depth.",
+            "example": "SELECT * FROM topology WHERE service = checkout AND level = context"
+          }
+        ]
+      }
+    ]
+  },
   "info": {
     "title": "Anyshift Graph API",
     "version": "1.0.0",

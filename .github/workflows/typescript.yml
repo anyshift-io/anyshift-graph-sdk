@@ -5,12 +5,18 @@ on:
     paths:
       - "typescript/**"
       - "openapi/**"
+      - "QUERY_LANGUAGE.md"
+      - "CAPABILITIES.md"
+      - "README.md"
       - ".github/workflows/typescript.yml"
   push:
     branches: ["main"]
     paths:
       - "typescript/**"
       - "openapi/**"
+      - "QUERY_LANGUAGE.md"
+      - "CAPABILITIES.md"
+      - "README.md"
       - ".github/workflows/typescript.yml"
 
 permissions:
@@ -32,4 +38,5 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - run: npm run check:generated
       - run: npm run build

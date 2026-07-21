@@ -10,8 +10,15 @@ if (!response.ok) {
 
 const document = await response.json();
 const askResult = document?.components?.schemas?.AskResult;
-if (document?.openapi !== "3.1.0" || askResult?.discriminator?.propertyName !== "intent" || askResult?.oneOf?.length !== 42) {
-  throw new Error(`${source} does not expose the expected executable 42-intent contract`);
+const queryLanguage = document?.["x-anyshift-query-language"];
+if (
+  document?.openapi !== "3.1.0"
+  || askResult?.discriminator?.propertyName !== "intent"
+  || askResult?.oneOf?.length !== 42
+  || queryLanguage?.version !== "1.0"
+  || queryLanguage?.tables?.length !== askResult.oneOf.length
+) {
+  throw new Error(`${source} does not expose the expected executable 42-intent and query-language contract`);
 }
 
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`);

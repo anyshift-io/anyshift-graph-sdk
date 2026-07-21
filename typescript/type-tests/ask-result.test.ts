@@ -6,7 +6,7 @@ type Equal<A, B> =
 type Assert<T extends true> = T;
 
 type ExpectedIntent =
-  | "connections" | "inventory" | "events" | "hotspots" | "incident" | "failures"
+  | "resolve" | "connections" | "inventory" | "events" | "hotspots" | "incident" | "failures"
   | "deployments" | "audit" | "nodes" | "deployimpact" | "commoncause" | "blast"
   | "spof" | "path" | "cascade" | "alertimpact" | "monitor" | "datastore" | "flow"
   | "externaldep" | "alerts" | "alertnoise" | "calls" | "servicetree" | "alertcause"
@@ -37,3 +37,7 @@ const inventoryIntent: "inventory" = inventory.intent;
 const inventoryTotal: number | undefined = inventory.inventory?.total;
 void inventoryIntent;
 void inventoryTotal;
+
+declare const resolved: AskResultFor<"resolve">;
+const firstCandidateName: string | undefined = resolved.resolve?.candidates[0]?.name;
+void firstCandidateName;

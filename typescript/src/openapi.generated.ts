@@ -112,6 +112,17 @@ export interface components {
             /** @enum {string} */
             direction: "upstream" | "downstream";
         };
+        ResolveResult: {
+            term: string;
+            candidates: {
+                id: string;
+                anyshiftID: string | null;
+                name: string;
+                type: string | null;
+                namespace: string | null;
+                cluster: string | null;
+            }[];
+        };
         InventoryResult: {
             type: string;
             total: number;
@@ -949,6 +960,22 @@ export interface components {
             }[];
         };
         AskResult: {
+            question: string;
+            summary: string;
+            countOnly?: boolean;
+            elapsedMs?: number;
+            resolved?: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            nodes?: components["schemas"]["GraphNode"][];
+            edges?: components["schemas"]["GraphEdge"][];
+            /** @constant */
+            intent: "resolve";
+            resolve: components["schemas"]["ResolveResult"] | null;
+        } | {
             question: string;
             summary: string;
             countOnly?: boolean;

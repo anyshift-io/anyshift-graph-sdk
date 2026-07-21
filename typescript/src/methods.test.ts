@@ -22,6 +22,12 @@ test("connections composes resource SQL", async () => {
   assert.equal(calls[0].body.sql, "SELECT * FROM connections WHERE resource = 'harvestor'");
 });
 
+test("resolve composes term and limit SQL", async () => {
+  const { gx, calls } = capturing();
+  await gx.resolve({ term: "checkout api", limit: 20 });
+  assert.equal(calls[0].body.sql, "SELECT * FROM resolve WHERE term = 'checkout api' LIMIT 20");
+});
+
 test("inventory composes type SQL", async () => {
   const { gx, calls } = capturing();
   await gx.inventory({ type: "service" });

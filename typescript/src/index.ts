@@ -4,6 +4,7 @@ export { GraphAnswerError, AuthError, BadQueryError } from "./errors.js";
 export type {
   GraphAnswerOptions,
   FetchLike,
+  ResolveParams,
   Since,
   EventsParams,
   HotspotsParams,
@@ -52,4 +53,6 @@ export type {
   GraphNode,
   Page,
   TopologyResult,
+  ResolveResult,
+  ResolveCandidate,
 } from "./types.js";

@@ -19,6 +19,13 @@ export interface GraphAnswerOptions {
   fetch?: FetchLike;
 }
 
+export interface ResolveParams {
+  /** Resource name or fragment to rank against the current graph. */
+  term: string;
+  /** Maximum candidates to return. */
+  limit?: number;
+}
+
 export type Since = "30m" | "1h" | "2h" | "6h" | "12h" | "1d" | "today" | (string & {});
 
 export interface EventsParams {
@@ -355,6 +362,10 @@ export class GraphAnswer {
   /** Natural-language escape hatch (one server-side LLM routing call). */
   ask(question: string): Promise<AskResult> {
     return this.post(this.routePath("ask"), { question });
+  }
+
+  resolve(p: ResolveParams): Promise<AskResult> {
+    return this.query(compose("resolve", [["term", p.term]], p.limit));
   }
 
   connections(p: { resource: string }): Promise<AskResult> {

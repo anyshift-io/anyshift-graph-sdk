@@ -10,8 +10,8 @@ if (!response.ok) {
 
 const document = await response.json();
 const askResult = document?.components?.schemas?.AskResult;
-if (document?.openapi !== "3.1.0" || askResult?.discriminator?.propertyName !== "intent" || askResult?.oneOf?.length !== 41) {
-  throw new Error(`${source} does not expose the expected executable 41-intent contract`);
+if (document?.openapi !== "3.1.0" || askResult?.discriminator?.propertyName !== "intent" || askResult?.oneOf?.length !== 42) {
+  throw new Error(`${source} does not expose the expected executable 42-intent contract`);
 }
 
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`);

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 - 2026-07-21
+
+### Added
+
+- Added `graph.resolve({ term, limit })` for deterministic current-resource lookup.
+- Added typed `ResolveResult` and `ResolveCandidate` exports.
+- Pinned the 42-intent Graph API contract with the new `resolve` response.
+
 ## 0.2.0 - 2026-07-15
 
 ### Changed

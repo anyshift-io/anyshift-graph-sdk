@@ -44,7 +44,7 @@ const lines = [
   "",
   "| Target | Purpose | Filters |",
   "| --- | --- | --- |",
-  ...language.tables.map((table) => `| [${code(table.name)}](#${table.name.replaceAll("_", "-")}) | ${escapeCell(table.summary)} | ${table.filters.length ? table.filters.map((filter) => code(filter.name)).join(", ") : "None"} |`),
+  ...language.tables.map((table) => `| [${code(table.name)}](#${table.name}) | ${escapeCell(table.summary)} | ${table.filters.length ? table.filters.map((filter) => code(filter.name)).join(", ") : "None"} |`),
   "",
 ];
 

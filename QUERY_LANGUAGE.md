@@ -28,9 +28,9 @@ Values may be bare words or single- or double-quoted strings.
 | [`deployments`](#deployments) | Read recent workload deployments and image changes. | `target`, `namespace`, `since` |
 | [`audit`](#audit) | Read configuration, identity, and infrastructure audit events. | `target`, `namespace`, `type`, `since` |
 | [`nodes`](#nodes) | Read node lifecycle and capacity events. | `target`, `since` |
-| [`deploy_impact`](#deploy-impact) | Join recent deployments to the failures that followed them. | `target`, `since` |
-| [`common_cause`](#common-cause) | Find shared infrastructure or dependencies behind recent failures. | `namespace`, `since` |
-| [`blast_radius`](#blast-radius) | Calculate the transitive workloads, pods, and services affected by a resource. | `resource` |
+| [`deploy_impact`](#deploy_impact) | Join recent deployments to the failures that followed them. | `target`, `since` |
+| [`common_cause`](#common_cause) | Find shared infrastructure or dependencies behind recent failures. | `namespace`, `since` |
+| [`blast_radius`](#blast_radius) | Calculate the transitive workloads, pods, and services affected by a resource. | `resource` |
 | [`spof`](#spof) | Rank highly shared ConfigMaps, service accounts, or nodes by fan-in. | `kind`, `namespace` |
 | [`orphans`](#orphans) | Find unused or dangling Kubernetes resources. | `kind`, `namespace` |
 | [`coverage`](#coverage) | Find service, monitor, or metrics coverage gaps. | `kind`, `namespace` |
@@ -40,16 +40,16 @@ Values may be bare words or single- or double-quoted strings.
 | [`sharedconfig`](#sharedconfig) | Find workloads coupled through shared configuration. | `resource` |
 | [`path`](#path) | Find the shortest structural path between two resources. | `from`, `to` |
 | [`cascade`](#cascade) | Trace an incident correlation group in propagation order. | `target`, `id` |
-| [`alert_impact`](#alert-impact) | Find monitors and SLOs affected by a resource failure. | `resource` |
+| [`alert_impact`](#alert_impact) | Find monitors and SLOs affected by a resource failure. | `resource` |
 | [`monitor`](#monitor) | Resolve a monitor to the infrastructure it observes. | `target` |
 | [`datastore`](#datastore) | Inspect datastore dependencies or rank widely used datastores. | `target` |
 | [`flow`](#flow) | Inspect stream producers and consumers or rank busy streams. | `target` |
-| [`external_dep`](#external-dep) | Inspect external dependencies or rank high-fan-in external hosts. | `target` |
+| [`external_dep`](#external_dep) | Inspect external dependencies or rank high-fan-in external hosts. | `target` |
 | [`alerts`](#alerts) | List currently firing monitors, optionally scoped to a service. | `target` |
-| [`alert_noise`](#alert-noise) | Rank flapping or stuck monitors. | `target`, `kind`, `since` |
+| [`alert_noise`](#alert_noise) | Rank flapping or stuck monitors. | `target`, `kind`, `since` |
 | [`calls`](#calls) | Inspect service callers and callees or rank call-graph fan-in. | `target` |
 | [`servicetree`](#servicetree) | Expand a service's downstream services, datastores, and external dependencies. | `target` |
-| [`alert_cause`](#alert-cause) | Join a firing service or workload to recent Kubernetes changes. | `target`, `since` |
+| [`alert_cause`](#alert_cause) | Join a firing service or workload to recent Kubernetes changes. | `target`, `since` |
 | [`slo`](#slo) | Inspect one SLO or rank breaching and at-risk SLOs. | `target` |
 | [`alertrules`](#alertrules) | Inspect Grafana and VictoriaMetrics alert-rule coverage and inventory. | `subject`, `namespace`, `target` |
 | [`gitops`](#gitops) | Inspect GitOps drift, unmanaged workloads, or resource ownership. | `subject`, `namespace`, `resource` |

@@ -14,7 +14,7 @@ test("pinned OpenAPI exposes the executable 42-intent contract", async () => {
   assert.equal(schemas.AskResult.discriminator.propertyName, "intent");
   assert.equal(variants.length, 42);
   assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, 42);
-  assert.equal(queryLanguage.version, "1.0");
+  assert.equal(queryLanguage.version, "1.1");
   assert.equal(queryLanguage.tables.length, variants.length);
   const spof = queryLanguage.tables.find((table: any) => table.name === "spof");
   assert.deepEqual(spof.filters.find((filter: any) => filter.name === "kind").values.map((entry: any) => entry.value), [
@@ -22,4 +22,9 @@ test("pinned OpenAPI exposes the executable 42-intent contract", async () => {
     "serviceaccount",
     "node",
   ]);
+  const path = queryLanguage.tables.find((table: any) => table.name === "path");
+  const topology = queryLanguage.tables.find((table: any) => table.name === "topology");
+  assert.ok(path.filters.some((filter: any) => filter.name === "from_type"));
+  assert.ok(path.filters.some((filter: any) => filter.name === "scope"));
+  assert.ok(topology.filters.find((filter: any) => filter.name === "source").values.some((entry: any) => entry.value === "tempo"));
 });

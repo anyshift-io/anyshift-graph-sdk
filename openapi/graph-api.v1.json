@@ -204,6 +204,66 @@
         ],
         "additionalProperties": false
       },
+      "ResolveResult": {
+        "type": "object",
+        "properties": {
+          "term": {
+            "type": "string"
+          },
+          "candidates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "anyshiftID": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "namespace": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "cluster": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "anyshiftID",
+                "name",
+                "type",
+                "namespace",
+                "cluster"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "term",
+          "candidates"
+        ],
+        "additionalProperties": false
+      },
       "InventoryResult": {
         "type": "object",
         "properties": {
@@ -4803,6 +4863,90 @@
       },
       "AskResult": {
         "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "question",
+              "intent",
+              "summary",
+              "resolve"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "countOnly": {
+                "type": "boolean"
+              },
+              "elapsedMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "resolved": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "term",
+                      "hashedID",
+                      "name",
+                      "type"
+                    ],
+                    "properties": {
+                      "term": {
+                        "type": "string"
+                      },
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphNode"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphEdge"
+                }
+              },
+              "intent": {
+                "const": "resolve"
+              },
+              "resolve": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/ResolveResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
           {
             "type": "object",
             "required": [

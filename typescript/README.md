@@ -27,6 +27,15 @@ The default endpoint is `https://graph.anyshift.io`.
 
 ## Query Helpers
 
+Resolve a resource name before opening a drill-down:
+
+```ts
+const matches = await graph.resolve({ term: "checkout", limit: 10 });
+if (matches.intent === "resolve") {
+  console.log(matches.resolve?.candidates);
+}
+```
+
 ```ts
 const recent = await graph.events({ since: "1h", limit: 10 });
 console.log(recent.summary);

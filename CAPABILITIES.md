@@ -40,6 +40,7 @@ Common parameters:
 
 | Capability | TypeScript helper | Graph query target | Use it to answer |
 | --- | --- | --- | --- |
+| Resource resolution | `graph.resolve({ term })` | `resolve` | Which current resources best match a name or fragment before opening a drill-down. |
 | Direct connections | `graph.connections({ resource })` | `connections` | What is directly connected to a resource. |
 | Inventory | `graph.inventory({ type })` | `resources` | Which resources of a type exist in the graph. |
 | Blast radius | `graph.blast({ resource })` | `blast_radius` | Which workloads and services are affected if a resource changes or fails. |

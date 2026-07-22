@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.1 - 2026-07-22
+
+### Changed
+
+- Pinned the Graph API v0.2.14 contract and query-language 1.2 catalog.
+- Exposed nullable stable `resourceId` values on inventory samples so consumers can keep
+  resource identities stable across synchronization cycles.
+
 ## 0.4.0 - 2026-07-21
 
 ### Added

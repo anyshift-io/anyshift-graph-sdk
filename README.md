@@ -43,7 +43,7 @@ pinned to, the OpenAPI contract in `openapi/`.
 
 ## Release Status
 
-The release prepared by this branch is `@anyshift/graph-sdk@0.4.0`.
+The release prepared by this branch is `@anyshift/graph-sdk@0.4.1`.
 
 Release checklist:
 

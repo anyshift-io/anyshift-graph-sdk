@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.1",
+    "version": "1.2",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -279,6 +279,11 @@
             "name": "type",
             "type": "string",
             "description": "Optional event type filter."
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
           }
         ],
         "pagination": {
@@ -288,8 +293,8 @@
         "forms": [
           {
             "name": "Incident by target",
-            "description": "At least one of target or id is required.",
-            "example": "SELECT * FROM incidents WHERE target = checkout"
+            "description": "At least one of target or id is required; since bounds target resolution.",
+            "example": "SELECT * FROM incidents WHERE target = checkout AND since = 2h"
           },
           {
             "name": "Incident by correlation id",
@@ -959,6 +964,11 @@
             "name": "id",
             "type": "string",
             "description": "Correlation identifier."
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
           }
         ],
         "pagination": {
@@ -968,8 +978,8 @@
         "forms": [
           {
             "name": "Cascade by target",
-            "description": "At least one of target or id is required.",
-            "example": "SELECT * FROM cascade WHERE target = checkout"
+            "description": "At least one of target or id is required; since bounds target resolution.",
+            "example": "SELECT * FROM cascade WHERE target = checkout AND since = 2h"
           },
           {
             "name": "Cascade by correlation id",
@@ -2309,11 +2319,18 @@
                     "string",
                     "null"
                   ]
+                },
+                "resourceId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
               "required": [
                 "name",
-                "namespace"
+                "namespace",
+                "resourceId"
               ],
               "additionalProperties": false
             }

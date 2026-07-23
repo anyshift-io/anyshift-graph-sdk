@@ -1,4 +1,5 @@
 export { GraphAnswer } from "./client.js";
+export { GRAPH_SDK_VERSION } from "./version.js";
 export { toMermaid } from "./mermaid.js";
 export { GraphAnswerError, AuthError, BadQueryError } from "./errors.js";
 export type {

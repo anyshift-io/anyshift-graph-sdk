@@ -368,7 +368,7 @@ function selectorConditions(prefix: "from" | "to", selector: ResourceSelector): 
   ];
 }
 
-function invocationId(): string {
+function generateInvocationId(): string {
   if (typeof globalThis.crypto?.randomUUID === "function") {
     return globalThis.crypto.randomUUID();
   }
@@ -737,7 +737,7 @@ export class GraphAnswer {
       "content-type": "application/json",
       "x-anyshift-client": "graph-sdk-typescript",
       "x-anyshift-client-version": GRAPH_SDK_VERSION,
-      "x-anyshift-invocation-id": this.invocationId ?? invocationId(),
+      "x-anyshift-invocation-id": this.invocationId ?? generateInvocationId(),
       "x-anyshift-graph-workflow": workflow,
     };
     if (step) headers["x-anyshift-graph-step"] = step;

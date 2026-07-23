@@ -133,6 +133,7 @@ export interface components {
             sample: {
                 name: string;
                 namespace: string | null;
+                resourceId: string | null;
             }[];
             availableTypes: {
                 label: string;

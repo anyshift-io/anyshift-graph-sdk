@@ -23,7 +23,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`resources`](#resources) | Count and sample current resources of one graph resource type. | `type` |
 | [`connections`](#connections) | Inspect direct upstream and downstream relationships for a resource. | `resource` |
 | [`hotspots`](#hotspots) | Rank noisy resources, namespaces, alert rules, or alerting workloads. | `type`, `by`, `namespace`, `noise`, `since` |
-| [`incidents`](#incidents) | Reconstruct a correlated incident around a target or correlation identifier. | `target`, `id`, `type` |
+| [`incidents`](#incidents) | Reconstruct a correlated incident around a target or correlation identifier. | `target`, `id`, `type`, `since` |
 | [`failures`](#failures) | Read recent failure-class infrastructure events. | `target`, `namespace`, `since` |
 | [`deployments`](#deployments) | Read recent workload deployments and image changes. | `target`, `namespace`, `since` |
 | [`audit`](#audit) | Read configuration, identity, and infrastructure audit events. | `target`, `namespace`, `type`, `since` |
@@ -39,7 +39,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`tenancy`](#tenancy) | Find workloads co-located with a resource on the same node. | `resource` |
 | [`sharedconfig`](#sharedconfig) | Find workloads coupled through shared configuration. | `resource` |
 | [`path`](#path) | Find the shortest infrastructure or operational path between two resources. | `from`, `from_exact`, `from_id`, `from_type`, `from_namespace`, `from_cluster`, `to`, `to_exact`, `to_id`, `to_type`, `to_namespace`, `to_cluster`, `scope` |
-| [`cascade`](#cascade) | Trace an incident correlation group in propagation order. | `target`, `id` |
+| [`cascade`](#cascade) | Trace an incident correlation group in propagation order. | `target`, `id`, `since` |
 | [`alert_impact`](#alert_impact) | Find monitors and SLOs affected by a resource failure. | `resource` |
 | [`monitor`](#monitor) | Resolve a monitor to the infrastructure it observes. | `target` |
 | [`datastore`](#datastore) | Inspect datastore dependencies or rank widely used datastores. | `target`, `source` |
@@ -216,15 +216,16 @@ Modifiers: `LIMIT` is not applied; `OFFSET` is not applied.
 | `target` | string | No | Any value | Resource name or fragment. |
 | `id` | string | No | Any value | Correlation identifier. |
 | `type` | string | No | Any value | Optional event type filter. |
+| `since` | duration | No | Any value | Relative lookback such as 30m, 2h, 1d, or today. |
 
 ### Forms
 
 #### Incident by target
 
-At least one of target or id is required.
+At least one of target or id is required; since bounds target resolution.
 
 ```console
-$ annie graph query "SELECT * FROM incidents WHERE target = checkout"
+$ annie graph query "SELECT * FROM incidents WHERE target = checkout AND since = 2h"
 ```
 
 #### Incident by correlation id
@@ -675,15 +676,16 @@ Modifiers: `LIMIT` is not applied; `OFFSET` is not applied.
 | --- | --- | --- | --- | --- |
 | `target` | string | No | Any value | Resource name or fragment. |
 | `id` | string | No | Any value | Correlation identifier. |
+| `since` | duration | No | Any value | Relative lookback such as 30m, 2h, 1d, or today. |
 
 ### Forms
 
 #### Cascade by target
 
-At least one of target or id is required.
+At least one of target or id is required; since bounds target resolution.
 
 ```console
-$ annie graph query "SELECT * FROM cascade WHERE target = checkout"
+$ annie graph query "SELECT * FROM cascade WHERE target = checkout AND since = 2h"
 ```
 
 #### Cascade by correlation id

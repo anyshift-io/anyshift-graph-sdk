@@ -7,6 +7,8 @@
 - Pinned the Graph API v0.2.14 contract and query-language 1.2 catalog.
 - Exposed nullable stable `resourceId` values on inventory samples so consumers can keep
   resource identities stable across synchronization cycles.
+- Added privacy-safe request correlation headers for SDK version, invocation, workflow, and
+  workflow step without transmitting query text, questions, resource names, namespaces, or tokens.
 
 ## 0.4.0 - 2026-07-21
 

@@ -115,6 +115,15 @@ export ANYSHIFT_PROJECT_ID="00000000-0000-0000-0000-000000000000"
 
 Advanced users can override the endpoint in client configuration when needed.
 
+Every SDK request includes the package version and a random invocation ID so
+operators can correlate product analytics with Graph API traces. Typed helpers
+identify only their fixed query target. Query text, questions, resource names,
+namespaces, response bodies, and bearer tokens are never copied into telemetry
+headers.
+
+To correlate several calls as one application workflow, pass a UUID as
+`invocationId` when constructing `GraphAnswer`.
+
 ## Contract
 
 Public SDK response types come from the OpenAPI contract pinned in this repository. `AskResult`

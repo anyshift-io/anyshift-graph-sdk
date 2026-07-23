@@ -1,5 +1,6 @@
 import { GraphAnswerError, AuthError, BadQueryError } from "./errors.js";
 import type { AskResult } from "./types.js";
+import { GRAPH_SDK_VERSION } from "./version.js";
 
 // Minimal shape we need from fetch — keeps real `fetch` and test stubs both valid
 // without depending on DOM/undici Response types.
@@ -17,6 +18,11 @@ export interface GraphAnswerOptions {
   project?: string;
   /** Injectable fetch (for tests). Defaults to global fetch. */
   fetch?: FetchLike;
+  /**
+   * UUID used to correlate several SDK calls as one caller-defined workflow.
+   * When omitted, the SDK creates a new UUID for each request.
+   */
+  invocationId?: string;
 }
 
 export interface ResolveParams {
@@ -362,17 +368,44 @@ function selectorConditions(prefix: "from" | "to", selector: ResourceSelector): 
   ];
 }
 
+function generateInvocationId(): string {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+  const bytes = new Uint8Array(16);
+  if (typeof globalThis.crypto?.getRandomValues === "function") {
+    globalThis.crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function typedQueryStep(sql: string): string | undefined {
+  return /^SELECT \* FROM ([a-z_]+)(?:\s|$)/.exec(sql)?.[1];
+}
+
 export class GraphAnswer {
   private baseUrl: string;
   private token?: string;
   private project?: string;
   private fetchImpl: FetchLike;
+  private invocationId?: string;
 
   constructor(opts: GraphAnswerOptions = {}) {
     this.baseUrl = (opts.baseUrl ?? "https://graph.anyshift.io").replace(/\/$/, "");
     this.token = opts.token;
     this.project = opts.project;
     this.fetchImpl = opts.fetch ?? (fetch as unknown as FetchLike);
+    if (opts.invocationId && !UUID_PATTERN.test(opts.invocationId)) {
+      throw new TypeError("invocationId must be a UUID");
+    }
+    this.invocationId = opts.invocationId;
   }
 
   private routePath(kind: "ask" | "query"): string {
@@ -382,28 +415,32 @@ export class GraphAnswer {
 
   /** Raw query-language escape hatch (deterministic, no LLM). */
   query(sql: string): Promise<AskResult> {
-    return this.post(this.routePath("query"), { sql });
+    return this.post(this.routePath("query"), { sql }, "query");
   }
 
   /** Natural-language escape hatch (one server-side LLM routing call). */
   ask(question: string): Promise<AskResult> {
-    return this.post(this.routePath("ask"), { question });
+    return this.post(this.routePath("ask"), { question }, "ask");
+  }
+
+  private typedQuery(sql: string): Promise<AskResult> {
+    return this.post(this.routePath("query"), { sql }, "typed-query", typedQueryStep(sql));
   }
 
   resolve(p: ResolveParams): Promise<AskResult> {
-    return this.query(compose("resolve", [["term", p.term]], p.limit));
+    return this.typedQuery(compose("resolve", [["term", p.term]], p.limit));
   }
 
   connections(p: { resource: string }): Promise<AskResult> {
-    return this.query(compose("connections", [["resource", p.resource]]));
+    return this.typedQuery(compose("connections", [["resource", p.resource]]));
   }
 
   inventory(p: { type: string }): Promise<AskResult> {
-    return this.query(compose("resources", [["type", p.type]]));
+    return this.typedQuery(compose("resources", [["type", p.type]]));
   }
 
   events(p: EventsParams = {}): Promise<AskResult> {
-    return this.query(compose("events", [
+    return this.typedQuery(compose("events", [
       ["type", p.type],
       ["target", p.target],
       ["namespace", p.namespace],
@@ -413,7 +450,7 @@ export class GraphAnswer {
   }
 
   hotspots(p: HotspotsParams = {}): Promise<AskResult> {
-    return this.query(compose("hotspots", [
+    return this.typedQuery(compose("hotspots", [
       ["type", p.type],
       ["by", p.by],
       ["namespace", p.namespace],
@@ -422,14 +459,14 @@ export class GraphAnswer {
   }
 
   incident(p: { target?: string; id?: string }): Promise<AskResult> {
-    return this.query(compose("incidents", [
+    return this.typedQuery(compose("incidents", [
       ["id", p.id],
       ["target", p.target],
     ]));
   }
 
   failures(p: FeedParams = {}): Promise<AskResult> {
-    return this.query(compose("failures", [
+    return this.typedQuery(compose("failures", [
       ["target", p.target],
       ["namespace", p.namespace],
       ["since", p.since],
@@ -437,7 +474,7 @@ export class GraphAnswer {
   }
 
   deployments(p: FeedParams = {}): Promise<AskResult> {
-    return this.query(compose("deployments", [
+    return this.typedQuery(compose("deployments", [
       ["target", p.target],
       ["namespace", p.namespace],
       ["since", p.since],
@@ -445,7 +482,7 @@ export class GraphAnswer {
   }
 
   audit(p: AuditParams = {}): Promise<AskResult> {
-    return this.query(compose("audit", [
+    return this.typedQuery(compose("audit", [
       ["target", p.target],
       ["namespace", p.namespace],
       ["type", p.type],
@@ -454,7 +491,7 @@ export class GraphAnswer {
   }
 
   nodes(p: NodeParams = {}): Promise<AskResult> {
-    return this.query(compose("nodes", [
+    return this.typedQuery(compose("nodes", [
       ["target", p.target],
       ["since", p.since],
     ], p.limit, p.offset));
@@ -462,7 +499,7 @@ export class GraphAnswer {
 
   /** Did a rollout cause problems — ranked by fallout, or one workload (target). */
   deployImpact(p: DeployImpactParams = {}): Promise<AskResult> {
-    return this.query(compose("deploy_impact", [
+    return this.typedQuery(compose("deploy_impact", [
       ["target", p.target],
       ["since", p.since],
     ], p.limit));
@@ -470,7 +507,7 @@ export class GraphAnswer {
 
   /** What do recent failures share — the suspected common cause (shared node / owning workload). */
   commonCause(p: CommonCauseParams = {}): Promise<AskResult> {
-    return this.query(compose("common_cause", [
+    return this.typedQuery(compose("common_cause", [
       ["namespace", p.namespace],
       ["since", p.since],
     ], p.limit));
@@ -478,14 +515,14 @@ export class GraphAnswer {
 
   /** Transitive blast radius — the workloads & services affected if `resource` changes/dies. */
   blast(p: BlastParams): Promise<AskResult> {
-    return this.query(compose("blast_radius", [
+    return this.typedQuery(compose("blast_radius", [
       ["resource", p.resource],
     ], p.limit));
   }
 
   /** Single points of failure — most-depended-on resources of a kind, ranked by fan-in. */
   spof(p: SpofParams = {}): Promise<AskResult> {
-    return this.query(compose("spof", [
+    return this.typedQuery(compose("spof", [
       ["kind", p.kind],
       ["namespace", p.namespace],
     ], p.limit));
@@ -493,7 +530,7 @@ export class GraphAnswer {
 
   /** Orphans — unused / dangling resources of a kind (zero fan-in), the inverse of spof. */
   orphans(p: OrphansParams = {}): Promise<AskResult> {
-    return this.query(compose("orphans", [
+    return this.typedQuery(compose("orphans", [
       ["kind", p.kind],
       ["namespace", p.namespace],
     ], p.limit));
@@ -501,7 +538,7 @@ export class GraphAnswer {
 
   /** Observability blind spots — workloads with no Datadog presence, services with no monitor, or workloads shipping no metrics. */
   coverage(p: CoverageParams = {}): Promise<AskResult> {
-    return this.query(compose("coverage", [
+    return this.typedQuery(compose("coverage", [
       ["kind", p.kind],
       ["namespace", p.namespace],
     ], p.limit));
@@ -509,7 +546,7 @@ export class GraphAnswer {
 
   /** Network segmentation — default-allow namespaces (default), a target's policies, or its east-west reach. */
   netpol(p: NetpolParams = {}): Promise<AskResult> {
-    return this.query(compose("netpol", [
+    return this.typedQuery(compose("netpol", [
       ["mode", p.mode],
       ["target", p.target],
       ["namespace", p.namespace],
@@ -518,7 +555,7 @@ export class GraphAnswer {
 
   /** Scheduling priority / preemption — workloads with no priority class (default), the priority-class ladder, or a target's own class. */
   priority(p: PriorityParams = {}): Promise<AskResult> {
-    return this.query(compose("priority", [
+    return this.typedQuery(compose("priority", [
       ["kind", p.kind],
       ["target", p.target],
       ["namespace", p.namespace],
@@ -527,7 +564,7 @@ export class GraphAnswer {
 
   /** Persistent storage — a workload/pod's PVC→PV→StorageClass footprint (default), orphaned PVs, unclaimed PVCs, or what a storageclass backs. */
   storage(p: StorageParams = {}): Promise<AskResult> {
-    return this.query(compose("storage", [
+    return this.typedQuery(compose("storage", [
       ["mode", p.mode],
       ["workload", p.workload],
       ["class", p.class],
@@ -537,12 +574,12 @@ export class GraphAnswer {
 
   /** PodDisruptionBudget coverage — workloads with no PDB, or the PDB(s)/pods for one workload/PDB. */
   pdb(p: PdbParams = {}): Promise<AskResult> {
-    return this.query(compose("pdb", [["target", p.target]], p.limit));
+    return this.typedQuery(compose("pdb", [["target", p.target]], p.limit));
   }
 
   /** Autoscaler coverage & HPA targets — workloads with no HPA (default), the autoscaled ones, or a workload/HPA's SCALES relation. */
   scaling(p: ScalingParams = {}): Promise<AskResult> {
-    return this.query(compose("scaling", [
+    return this.typedQuery(compose("scaling", [
       ["mode", p.mode],
       ["target", p.target],
       ["namespace", p.namespace],
@@ -551,7 +588,7 @@ export class GraphAnswer {
 
   /** GitOps — drifted ArgoCD apps (default), unmanaged workloads, or a workload's owning app + repo. */
   gitops(p: GitopsParams = {}): Promise<AskResult> {
-    return this.query(compose("gitops", [
+    return this.typedQuery(compose("gitops", [
       ["subject", p.subject],
       ["resource", p.resource],
       ["namespace", p.namespace],
@@ -563,7 +600,7 @@ export class GraphAnswer {
    * subjects bound to a role, or (mode="privileged") the ranked over-privileged serviceaccounts.
    */
   access(p: AccessParams): Promise<AskResult> {
-    return this.query(compose("access", [
+    return this.typedQuery(compose("access", [
       ["resource", p.resource],
       ["mode", p.mode],
     ], p.limit));
@@ -571,28 +608,28 @@ export class GraphAnswer {
 
   /** Attack surface — what an ingress fronts, or the ingress(es) fronting a service/workload. */
   exposure(p: ExposureParams): Promise<AskResult> {
-    return this.query(compose("exposure", [
+    return this.typedQuery(compose("exposure", [
       ["resource", p.resource],
     ], p.limit));
   }
 
   /** Co-location / noisy neighbors — the workloads sharing a node with the resource. */
   tenancy(p: TenancyParams): Promise<AskResult> {
-    return this.query(compose("tenancy", [
+    return this.typedQuery(compose("tenancy", [
       ["resource", p.resource],
     ], p.limit));
   }
 
   /** Config coupling — the workloads sharing a configmap with the resource (config blast siblings). */
   sharedConfig(p: SharedConfigParams): Promise<AskResult> {
-    return this.query(compose("sharedconfig", [
+    return this.typedQuery(compose("sharedconfig", [
       ["resource", p.resource],
     ], p.limit));
   }
 
   /** How two resources are connected — the shortest structural path between them. */
   path(p: PathParams): Promise<AskResult> {
-    return this.query(compose("path", [
+    return this.typedQuery(compose("path", [
       ...selectorConditions("from", p.from),
       ...selectorConditions("to", p.to),
       ["scope", p.scope],
@@ -601,7 +638,7 @@ export class GraphAnswer {
 
   /** Trace how an incident propagated — root trigger → affected resources over time. */
   cascade(p: CascadeParams = {}): Promise<AskResult> {
-    return this.query(compose("cascade", [
+    return this.typedQuery(compose("cascade", [
       ["target", p.target],
       ["id", p.id],
     ]));
@@ -609,62 +646,62 @@ export class GraphAnswer {
 
   /** Which Datadog monitors & SLOs would fire if `resource` is impacted. */
   alertImpact(p: AlertImpactParams): Promise<AskResult> {
-    return this.query(compose("alert_impact", [["resource", p.resource]]));
+    return this.typedQuery(compose("alert_impact", [["resource", p.resource]]));
   }
 
   /** From a Datadog monitor/alert to the service → workload → node it watches. */
   monitor(p: MonitorParams): Promise<AskResult> {
-    return this.query(compose("monitor", [["target", p.target]]));
+    return this.typedQuery(compose("monitor", [["target", p.target]]));
   }
 
   /** Which services use a datastore — one DB (target) or the ranked top datastores. */
   datastore(p: DataStoreParams = {}): Promise<AskResult> {
-    return this.query(compose("datastore", [["target", p.target], ["source", p.source]], p.limit));
+    return this.typedQuery(compose("datastore", [["target", p.target], ["source", p.source]], p.limit));
   }
 
   /** Kafka/stream tracing — one topic's producers/consumers, or the ranked busiest streams. */
   flow(p: FlowParams = {}): Promise<AskResult> {
-    return this.query(compose("flow", [["target", p.target], ["source", p.source]], p.limit));
+    return this.typedQuery(compose("flow", [["target", p.target], ["source", p.source]], p.limit));
   }
 
   /** External-dependency blast radius — one host's dependents, or the ranked external deps. */
   externalDep(p: ExternalDepParams = {}): Promise<AskResult> {
-    return this.query(compose("external_dep", [["target", p.target], ["source", p.source]], p.limit));
+    return this.typedQuery(compose("external_dep", [["target", p.target], ["source", p.source]], p.limit));
   }
 
   /** SLO health — one named SLO's status, or the ranked breaching/at-risk SLOs (worst-first). */
   slo(p: SloParams = {}): Promise<AskResult> {
-    return this.query(compose("slo", [["target", p.target]], p.limit));
+    return this.typedQuery(compose("slo", [["target", p.target]], p.limit));
   }
 
   /** Datadog monitors firing right now (Alert/Warn) → the infra behind them; scope with target. */
   alerts(p: AlertsParams = {}): Promise<AskResult> {
-    return this.query(compose("alerts", [["target", p.target]], p.limit));
+    return this.typedQuery(compose("alerts", [["target", p.target]], p.limit));
   }
 
   /** The APM service call graph — one service's callers/callees, or the ranked most-called. */
   calls(p: CallsParams = {}): Promise<AskResult> {
-    return this.query(compose("calls", [["target", p.target], ["source", p.source]], p.limit));
+    return this.typedQuery(compose("calls", [["target", p.target], ["source", p.source]], p.limit));
   }
 
   /** Noisiest monitors by trigger/recover churn (flapping vs stuck), cluster-wide or scoped to a service/namespace. */
   alertNoise(p: AlertNoiseParams = {}): Promise<AskResult> {
-    return this.query(compose("alert_noise", [["target", p.target], ["kind", p.kind], ["since", p.since]], p.limit));
+    return this.typedQuery(compose("alert_noise", [["target", p.target], ["kind", p.kind], ["since", p.since]], p.limit));
   }
 
   /** A service's full transitive downstream footprint (services + infra leaves), or the ranked footprints. */
   serviceTree(p: ServiceTreeParams = {}): Promise<AskResult> {
-    return this.query(compose("servicetree", [["target", p.target], ["source", p.source]], p.limit));
+    return this.typedQuery(compose("servicetree", [["target", p.target], ["source", p.source]], p.limit));
   }
 
   /** Why a Datadog alert is firing — the firing workload + its recent K8s changes (the suspect). */
   alertCause(p: AlertCauseParams): Promise<AskResult> {
-    return this.query(compose("alert_cause", [["target", p.target], ["since", p.since]], p.limit));
+    return this.typedQuery(compose("alert_cause", [["target", p.target], ["since", p.since]], p.limit));
   }
 
   /** Grafana/Victoria alert-rule coverage — gaps (default), the rule inventory, or one workload's rules. */
   alertRules(p: AlertRulesParams = {}): Promise<AskResult> {
-    return this.query(compose("alertrules", [
+    return this.typedQuery(compose("alertrules", [
       ["subject", p.subject],
       ["namespace", p.namespace],
       ["target", p.target],
@@ -673,7 +710,7 @@ export class GraphAnswer {
 
   /** Container inventory by image — who runs an image (CVE blast radius), a workload's images, a hygiene scan, or the ranked top images. */
   image(p: ImageParams = {}): Promise<AskResult> {
-    return this.query(compose("image", [
+    return this.typedQuery(compose("image", [
       ["target", p.target],
       ["workload", p.workload],
       ["kind", p.kind],
@@ -686,12 +723,24 @@ export class GraphAnswer {
    * graph (in the result's `nodes` / `edges`), scoped by C4 `level`. Pair with `toMermaid()` to render.
    */
   topology(p: TopologyParams): Promise<AskResult> {
-    return this.query(compose("topology", [["service", p.service], ["level", p.level], ["source", p.source]]));
+    return this.typedQuery(compose("topology", [["service", p.service], ["level", p.level], ["source", p.source]]));
   }
 
   // Shared transport used by query/ask and (Task 4) the typed methods.
-  protected async post(path: string, body: Record<string, unknown>): Promise<AskResult> {
-    const headers: Record<string, string> = { "content-type": "application/json" };
+  protected async post(
+    path: string,
+    body: Record<string, unknown>,
+    workflow: "query" | "ask" | "typed-query",
+    step?: string,
+  ): Promise<AskResult> {
+    const headers: Record<string, string> = {
+      "content-type": "application/json",
+      "x-anyshift-client": "graph-sdk-typescript",
+      "x-anyshift-client-version": GRAPH_SDK_VERSION,
+      "x-anyshift-invocation-id": this.invocationId ?? generateInvocationId(),
+      "x-anyshift-graph-workflow": workflow,
+    };
+    if (step) headers["x-anyshift-graph-step"] = step;
     if (this.token) headers["authorization"] = `Bearer ${this.token}`;
 
     let res: { ok: boolean; status: number; text(): Promise<string> };

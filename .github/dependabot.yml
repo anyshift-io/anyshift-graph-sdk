@@ -8,9 +8,6 @@ updates:
       time: "05:00"
       timezone: "Europe/Paris"
     open-pull-requests-limit: 3
-    reviewers:
-      - "lerenn"
-      - "safwentrabelsi"
     commit-message:
       prefix: "chore"
       include: "scope"
@@ -35,9 +32,6 @@ updates:
       time: "05:00"
       timezone: "Europe/Paris"
     open-pull-requests-limit: 3
-    reviewers:
-      - "lerenn"
-      - "safwentrabelsi"
     commit-message:
       prefix: "chore"
       include: "scope"

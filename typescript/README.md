@@ -60,6 +60,7 @@ const impact = await graph.impact({ resource: "checkout-db", depth: 2 });
 const releases = await graph.deliveryEvents({ stage: "release", since: "7d" });
 const releaseProvenance = await graph.provenance({ resource: "checkout" });
 const owners = await graph.ownership({ resource: "anyshift-io/checkout" });
+const dynatraceCoverage = await graph.graphCoverage({ source: "dynatrace" });
 ```
 
 ```ts

@@ -64,9 +64,11 @@ Path endpoints accept a legacy string, a stable `{ id }`, or a typed
 Deployment, or Tempo service with the same name from being selected implicitly.
 
 The APM dependency helpers `datastore`, `flow`, `externalDep`, `calls`, `serviceTree`, and
-`topology` accept `source: "auto" | "datadog" | "tempo"`. Tempo mode reads the service maps,
-datastores, messaging destinations, external endpoints, and Kubernetes identity bridges derived
-from Grafana Tempo traces.
+`topology` accept `source: "auto" | "datadog" | "tempo" | "dynatrace"`. Tempo and Dynatrace
+modes read stored service maps, datastores, messaging destinations, external endpoints, and
+Kubernetes or cloud identity bridges.
+
+| Graph source evidence | `graph.graphCoverage({ source })` | `graph_coverage` | Which producer sources currently have graph nodes, relationships, explicit cross-model bridges, and events. |
 
 Graph edges include a reviewed semantic class and conservative impact eligibility. Unknown
 relationship types remain non-impacting. Missing cloud provenance remains `unknown`; it is not
@@ -77,6 +79,9 @@ failure will occur or that a reachable resource caused an incident.
 
 Delivery provenance and ownership helpers return only explicit stored joins. Missing joins remain
 `unknown`; the SDK does not synthesize actors, owners, or provenance from names or summaries.
+
+Graph coverage describes current graph evidence only. An absent source does not prove that an
+integration is disconnected or misconfigured.
 
 ## Topology And Diagrams
 

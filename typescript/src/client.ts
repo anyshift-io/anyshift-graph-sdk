@@ -103,6 +103,9 @@ export interface EvidenceResourceParams {
   resource: string;
   limit?: number;
 }
+export interface GraphCoverageParams {
+  source?: "kubernetes" | "cloud" | "github" | "datadog" | "tempo" | "dynatrace" | "victoria" | "grafana";
+}
 export interface ImpactParams {
   /** Root resource whose potential operational impact to evaluate. */
   resource: string;
@@ -330,7 +333,7 @@ export interface MonitorParams {
   /** A Datadog monitor/alert name (matched by substring). */
   target: string;
 }
-export type ApmSource = "auto" | "datadog" | "tempo";
+export type ApmSource = "auto" | "datadog" | "tempo" | "dynatrace";
 export interface DataStoreParams {
   /** A datastore name to drill into; omit for the ranked top datastores. */
   target?: string;
@@ -592,6 +595,11 @@ export class GraphAnswer {
   /** Observed OWNS_CODE edges and linked contact identities. */
   ownership(p: EvidenceResourceParams): Promise<AskResult> {
     return this.typedQuery(compose("ownership", [["resource", p.resource]], p.limit));
+  }
+
+  /** Current observed evidence by graph source; absence is not integration state. */
+  graphCoverage(p: GraphCoverageParams = {}): Promise<AskResult> {
+    return this.typedQuery(compose("graph_coverage", [["source", p.source]]));
   }
 
   /** Potential operational impact over a reviewed directional edge allowlist. */

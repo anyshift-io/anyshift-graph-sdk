@@ -25,6 +25,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`delivery_events`](#delivery_events) | Read commit, CI, release, and deployment evidence from the delivery graph. | `stage`, `type`, `resource`, `actor`, `source`, `since`, `cursor` |
 | [`provenance`](#provenance) | Trace a resource to stored release, commit, and actor evidence. | `resource` |
 | [`ownership`](#ownership) | Resolve observed GitHub user or team code ownership and contact identities. | `resource` |
+| [`graph_coverage`](#graph_coverage) | Inspect current node, relationship, bridge, and event evidence by graph source. | `source` |
 | [`resources`](#resources) | Count and sample current resources of one graph resource type. | `type` |
 | [`operational_impact`](#operational_impact) | Find potential operational impact through reviewed directional graph relationships. | `resource`, `depth` |
 | [`connections`](#connections) | Inspect direct upstream and downstream relationships for a resource. | `resource` |
@@ -279,6 +280,32 @@ Return OWNS_CODE evidence and any linked people; missing edges remain unknown.
 
 ```console
 $ annie graph query "SELECT * FROM ownership WHERE resource = anyshift-io/checkout LIMIT 20"
+```
+
+## graph_coverage
+
+Inspect current node, relationship, bridge, and event evidence by graph source.
+
+Result intent: `graphcoverage`.
+
+Table aliases: `graphcoverage`, `source_coverage`.
+
+Modifiers: `LIMIT` is not applied; `OFFSET` is not applied.
+
+### Filters
+
+| Filter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `source` | enum | No | `kubernetes` (`k8s`)<br />`cloud`<br />`github` (`scm`)<br />`datadog`<br />`tempo`<br />`dynatrace`<br />`victoria`<br />`grafana` | Source universe. |
+
+### Forms
+
+#### Graph source coverage
+
+Report only observed graph evidence; absent does not imply configuration state.
+
+```console
+$ annie graph query "SELECT * FROM graph_coverage"
 ```
 
 ## resources
@@ -954,7 +981,7 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
 | `target` | string | No | Any value | Service or datastore name. |
-| `source` | enum | No | `auto`<br />`datadog`<br />`tempo` | APM dependency source. Defaults to auto. |
+| `source` | enum | No | `auto`<br />`datadog`<br />`tempo`<br />`dynatrace` | APM dependency source. Defaults to auto. |
 
 ### Forms
 
@@ -989,7 +1016,7 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
 | `target` | string | No | Any value | Service, topic, queue, or stream name. |
-| `source` | enum | No | `auto`<br />`datadog`<br />`tempo` | APM dependency source. Defaults to auto. |
+| `source` | enum | No | `auto`<br />`datadog`<br />`tempo`<br />`dynatrace` | APM dependency source. Defaults to auto. |
 
 ### Forms
 
@@ -1016,7 +1043,7 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
 | `target` | string | No | Any value | Service or external dependency name. |
-| `source` | enum | No | `auto`<br />`datadog`<br />`tempo` | APM dependency source. Defaults to auto. |
+| `source` | enum | No | `auto`<br />`datadog`<br />`tempo`<br />`dynatrace` | APM dependency source. Defaults to auto. |
 
 ### Forms
 
@@ -1097,7 +1124,7 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
 | `target` | string | No | Any value | Service name. |
-| `source` | enum | No | `auto`<br />`datadog`<br />`tempo` | APM dependency source. Defaults to auto. |
+| `source` | enum | No | `auto`<br />`datadog`<br />`tempo`<br />`dynatrace` | APM dependency source. Defaults to auto. |
 
 ### Forms
 
@@ -1124,7 +1151,7 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
 | `target` | string | No | Any value | Root service name. |
-| `source` | enum | No | `auto`<br />`datadog`<br />`tempo` | APM dependency source. Defaults to auto. |
+| `source` | enum | No | `auto`<br />`datadog`<br />`tempo`<br />`dynatrace` | APM dependency source. Defaults to auto. |
 
 ### Forms
 
@@ -1576,7 +1603,7 @@ Modifiers: `LIMIT` is not applied; `OFFSET` is not applied.
 | --- | --- | --- | --- | --- |
 | `service` | string | Yes | Any value | Service or workload name. |
 | `level` | enum | No | `context`<br />`container`<br />`component`<br />`dynamic` | Topology level. Defaults to container. |
-| `source` | enum | No | `auto`<br />`datadog`<br />`tempo` | APM dependency source. Defaults to auto. |
+| `source` | enum | No | `auto`<br />`datadog`<br />`tempo`<br />`dynatrace` | APM dependency source. Defaults to auto. |
 
 ### Forms
 

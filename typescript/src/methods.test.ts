@@ -44,6 +44,26 @@ test("cloudEvents composes evidence filters and keyset pagination", async () => 
   );
 });
 
+test("cloudResources composes inventory and evidence filters", async () => {
+  const { gx, calls } = capturing();
+  await gx.cloudResources({
+    provider: "gcp",
+    scope: "checkout-prod",
+    region: "europe-west1",
+    type: "COMPUTE_INSTANCES",
+    lifecycle: "all",
+    provenance: "managed",
+    freshness: "stale",
+    maxAge: "6h",
+    cursor: "opaque-cursor",
+    limit: 20,
+  });
+  assert.equal(
+    calls[0].body.sql,
+    "SELECT * FROM cloud_resources WHERE provider = 'gcp' AND scope = 'checkout-prod' AND region = 'europe-west1' AND type = 'COMPUTE_INSTANCES' AND lifecycle = 'all' AND provenance = 'managed' AND freshness = 'stale' AND max_age = '6h' AND cursor = 'opaque-cursor' LIMIT 20",
+  );
+});
+
 test("iac and iacDrift compose provenance and drift filters", async () => {
   const provenance = capturing();
   await provenance.gx.iac({

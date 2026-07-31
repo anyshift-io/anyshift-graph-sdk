@@ -1,4 +1,12 @@
-import type { ApmSource, AskResult, AskResultFor, GraphIntent, ResourceSelector } from "../src/index.js";
+import type {
+  ApmSource,
+  AskResult,
+  AskResultFor,
+  CloudResourceItem,
+  GraphEdge,
+  GraphIntent,
+  ResourceSelector,
+} from "../src/index.js";
 
 type Equal<A, B> =
   (<T>() => T extends A ? 1 : 2) extends
@@ -6,7 +14,7 @@ type Equal<A, B> =
 type Assert<T extends true> = T;
 
 type ExpectedIntent =
-  | "resolve" | "connections" | "inventory" | "events" | "cloudevents" | "hotspots" | "incident" | "failures"
+  | "resolve" | "connections" | "inventory" | "events" | "cloudevents" | "cloudresources" | "hotspots" | "incident" | "failures"
   | "deployments" | "audit" | "nodes" | "deployimpact" | "commoncause" | "blast"
   | "spof" | "path" | "cascade" | "alertimpact" | "monitor" | "datastore" | "flow"
   | "externaldep" | "alerts" | "alertnoise" | "calls" | "servicetree" | "alertcause"
@@ -41,6 +49,18 @@ void inventoryTotal;
 declare const resolved: AskResultFor<"resolve">;
 const firstCandidateName: string | undefined = resolved.resolve?.candidates[0]?.name;
 void firstCandidateName;
+
+declare const cloudResource: CloudResourceItem;
+const provenanceStatus: "managed" | "configured" | "unknown" = cloudResource.provenance.status;
+void provenanceStatus;
+
+declare const edge: GraphEdge;
+const edgeSemantic:
+  | "dependency" | "ownership" | "identity" | "connectivity" | "context" | "plumbing" | "unknown" =
+    edge.semantic;
+const impactEligible: boolean = edge.impact;
+void edgeSemantic;
+void impactEligible;
 
 const typedSelector: ResourceSelector = {
   name: "checkout-api",

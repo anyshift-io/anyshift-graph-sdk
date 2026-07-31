@@ -8,7 +8,7 @@
 
 ### Changed
 
-- Pinned the Graph API v0.2.31 contract and query-language 1.9 catalog.
+- Pinned the Graph API v0.2.32 contract and query-language 1.9 catalog.
 
 ## 0.5.4 - 2026-07-31
 

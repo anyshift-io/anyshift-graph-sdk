@@ -22,6 +22,9 @@ Values may be bare words or single- or double-quoted strings.
 | [`events`](#events) | Read the infrastructure change-event timeline. | `type`, `target`, `namespace`, `noise`, `since` |
 | [`cloud_events`](#cloud_events) | Read evidence-backed AWS, Azure, and GCP change events without parsing summaries. | `provider`, `scope`, `region`, `category`, `type`, `resource`, `actor`, `correlation`, `noise`, `diff`, `since`, `cursor` |
 | [`cloud_resources`](#cloud_resources) | Inspect current or recently deleted AWS, Azure, and GCP resources with freshness and provenance. | `provider`, `scope`, `region`, `type`, `resource`, `lifecycle`, `provenance`, `freshness`, `max_age`, `cursor` |
+| [`delivery_events`](#delivery_events) | Read commit, CI, release, and deployment evidence from the delivery graph. | `stage`, `type`, `resource`, `actor`, `source`, `since`, `cursor` |
+| [`provenance`](#provenance) | Trace a resource to stored release, commit, and actor evidence. | `resource` |
+| [`ownership`](#ownership) | Resolve observed GitHub user or team code ownership and contact identities. | `resource` |
 | [`resources`](#resources) | Count and sample current resources of one graph resource type. | `type` |
 | [`operational_impact`](#operational_impact) | Find potential operational impact through reviewed directional graph relationships. | `resource`, `depth` |
 | [`connections`](#connections) | Inspect direct upstream and downstream relationships for a resource. | `resource` |
@@ -192,6 +195,90 @@ List provider resources with explicit freshness and provenance evidence.
 
 ```console
 $ annie graph query "SELECT * FROM cloud_resources WHERE provider = aws AND type = EC2_INSTANCE LIMIT 50"
+```
+
+## delivery_events
+
+Read commit, CI, release, and deployment evidence from the delivery graph.
+
+Result intent: `deliveryevents`.
+
+Table aliases: `deliveryevents`, `delivery`.
+
+Modifiers: `LIMIT`; `OFFSET` is not applied.
+
+### Filters
+
+| Filter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `stage` | enum | No | `commit`<br />`ci` (`pipeline`)<br />`release`<br />`deploy` (`deployment`) | Delivery stage. |
+| `type` | string | No | Any value | Exact event type, such as event_release or argocd_synced. |
+| `resource` | string | No | Any value | Exact graph id or unambiguous target name. |
+| `actor` | string | No | Any value | Actor identity, name, or graph id. |
+| `source` | string | No | Any value | Persisted event source. |
+| `since` | duration | No | Any value | Relative lookback such as 30m, 2h, 1d, or today. |
+| `cursor` | string | No | Any value | Opaque seek cursor returned by the previous page. |
+
+### Forms
+
+#### Recent delivery activity
+
+Read a bounded software-delivery timeline without inferring missing actors or commits.
+
+```console
+$ annie graph query "SELECT * FROM delivery_events WHERE stage = release AND since = 7d LIMIT 50"
+```
+
+## provenance
+
+Trace a resource to stored release, commit, and actor evidence.
+
+Result intent: `provenance`.
+
+Table aliases: `release_provenance`, `delivery_provenance`.
+
+Modifiers: `LIMIT`; `OFFSET` is not applied.
+
+### Filters
+
+| Filter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `resource` | string | Yes | Any value | Resource, repository, release, image, or service to trace. |
+
+### Forms
+
+#### Release provenance
+
+Return only stored release-to-commit-to-actor evidence.
+
+```console
+$ annie graph query "SELECT * FROM provenance WHERE resource = checkout LIMIT 20"
+```
+
+## ownership
+
+Resolve observed GitHub user or team code ownership and contact identities.
+
+Result intent: `ownership`.
+
+Table aliases: `owners`, `code_ownership`.
+
+Modifiers: `LIMIT`; `OFFSET` is not applied.
+
+### Filters
+
+| Filter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `resource` | string | Yes | Any value | Repository or resource whose observed owner is required. |
+
+### Forms
+
+#### Observed code ownership
+
+Return OWNS_CODE evidence and any linked people; missing edges remain unknown.
+
+```console
+$ annie graph query "SELECT * FROM ownership WHERE resource = anyshift-io/checkout LIMIT 20"
 ```
 
 ## resources

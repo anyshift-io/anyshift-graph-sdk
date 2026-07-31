@@ -89,6 +89,20 @@ export interface CloudResourcesParams {
   cursor?: string;
   limit?: number;
 }
+export interface DeliveryEventsParams {
+  stage?: "commit" | "ci" | "release" | "deploy";
+  type?: string;
+  resource?: string;
+  actor?: string;
+  source?: string;
+  since?: Since;
+  cursor?: string;
+  limit?: number;
+}
+export interface EvidenceResourceParams {
+  resource: string;
+  limit?: number;
+}
 export interface ImpactParams {
   /** Root resource whose potential operational impact to evaluate. */
   resource: string;
@@ -555,6 +569,29 @@ export class GraphAnswer {
       ["max_age", p.maxAge],
       ["cursor", p.cursor],
     ], p.limit));
+  }
+
+  /** Commit, CI, release, and deployment evidence from the delivery graph. */
+  deliveryEvents(p: DeliveryEventsParams = {}): Promise<AskResult> {
+    return this.typedQuery(compose("delivery_events", [
+      ["stage", p.stage],
+      ["type", p.type],
+      ["resource", p.resource],
+      ["actor", p.actor],
+      ["source", p.source],
+      ["since", p.since],
+      ["cursor", p.cursor],
+    ], p.limit));
+  }
+
+  /** Stored release-to-commit-to-actor provenance; missing joins remain unknown. */
+  provenance(p: EvidenceResourceParams): Promise<AskResult> {
+    return this.typedQuery(compose("provenance", [["resource", p.resource]], p.limit));
+  }
+
+  /** Observed OWNS_CODE edges and linked contact identities. */
+  ownership(p: EvidenceResourceParams): Promise<AskResult> {
+    return this.typedQuery(compose("ownership", [["resource", p.resource]], p.limit));
   }
 
   /** Potential operational impact over a reviewed directional edge allowlist. */

@@ -64,6 +64,37 @@ test("cloudResources composes inventory and evidence filters", async () => {
   );
 });
 
+test("delivery evidence helpers compose typed deterministic queries", async () => {
+  const delivery = capturing();
+  await delivery.gx.deliveryEvents({
+    stage: "release",
+    resource: "checkout",
+    actor: "alice",
+    source: "github",
+    since: "7d",
+    cursor: "opaque",
+    limit: 25,
+  });
+  assert.equal(
+    delivery.calls[0].body.sql,
+    "SELECT * FROM delivery_events WHERE stage = 'release' AND resource = 'checkout' AND actor = 'alice' AND source = 'github' AND since = '7d' AND cursor = 'opaque' LIMIT 25",
+  );
+
+  const provenance = capturing();
+  await provenance.gx.provenance({ resource: "checkout", limit: 10 });
+  assert.equal(
+    provenance.calls[0].body.sql,
+    "SELECT * FROM provenance WHERE resource = 'checkout' LIMIT 10",
+  );
+
+  const ownership = capturing();
+  await ownership.gx.ownership({ resource: "anyshift-io/checkout" });
+  assert.equal(
+    ownership.calls[0].body.sql,
+    "SELECT * FROM ownership WHERE resource = 'anyshift-io/checkout'",
+  );
+});
+
 test("impact composes a bounded reviewed-edge traversal", async () => {
   const { gx, calls } = capturing();
   await gx.impact({ resource: "checkout-db", depth: 3, limit: 25, offset: 50 });

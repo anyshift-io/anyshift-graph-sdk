@@ -6,12 +6,12 @@ type Equal<A, B> =
 type Assert<T extends true> = T;
 
 type ExpectedIntent =
-  | "resolve" | "connections" | "inventory" | "events" | "hotspots" | "incident" | "failures"
+  | "resolve" | "connections" | "inventory" | "events" | "cloudevents" | "hotspots" | "incident" | "failures"
   | "deployments" | "audit" | "nodes" | "deployimpact" | "commoncause" | "blast"
   | "spof" | "path" | "cascade" | "alertimpact" | "monitor" | "datastore" | "flow"
   | "externaldep" | "alerts" | "alertnoise" | "calls" | "servicetree" | "alertcause"
   | "access" | "exposure" | "orphans" | "coverage" | "slo" | "tenancy"
-  | "sharedconfig" | "alertrules" | "gitops" | "image" | "netpol" | "storage"
+  | "sharedconfig" | "alertrules" | "iac" | "iacdrift" | "gitops" | "image" | "netpol" | "storage"
   | "pdb" | "scaling" | "topology" | "priority";
 
 type _AllIntentsAreExported = Assert<Equal<GraphIntent, ExpectedIntent>>;

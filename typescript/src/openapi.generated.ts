@@ -134,6 +134,7 @@ export interface components {
                 name: string;
                 namespace: string | null;
                 resourceId: string | null;
+                externalId: string | null;
             }[];
             availableTypes: {
                 label: string;
@@ -174,6 +175,92 @@ export interface components {
                 offset: number;
                 hasMore: boolean;
                 nextOffset: number | null;
+            };
+        };
+        CloudEventsResult: {
+            filter: {
+                provider: string;
+                scope: string;
+                region: string;
+                category: string;
+                type: string;
+                resource: string;
+                actor: string;
+                correlation: string;
+                includeNoise: boolean;
+                includeDiff: boolean;
+                sinceHours: number;
+            };
+            availability: {
+                /** @enum {string} */
+                targetIdentity: "available" | "partial" | "unavailable";
+                /** @enum {string} */
+                actor: "available" | "partial" | "unavailable";
+                /** @enum {string} */
+                source: "available" | "partial" | "unavailable";
+                /** @enum {string} */
+                status: "available" | "partial" | "unavailable";
+            };
+            warnings: string[];
+            total: number;
+            byType: {
+                type: string;
+                count: number;
+            }[];
+            items: {
+                id: string;
+                timestamp: string;
+                type: string;
+                /** @enum {string} */
+                category: "security" | "identity" | "lifecycle" | "configuration" | "capacity" | "backup" | "other";
+                summary: string | null;
+                /** @enum {string} */
+                provider: "aws" | "azure" | "gcp";
+                scope: string;
+                region: string | null;
+                target: {
+                    hashedID: string;
+                    id: string | null;
+                    name: string | null;
+                    kind: string | null;
+                };
+                actor: {
+                    hashedID: string;
+                    id: string | null;
+                    name: string | null;
+                    kind: string | null;
+                } | null;
+                change: {
+                    fields: string[];
+                    details: {
+                        field: string;
+                        before: string | null;
+                        after: string | null;
+                    }[];
+                };
+                evidence: {
+                    /** @enum {string} */
+                    source: "audit" | "snapshot" | "reconciliation" | "unknown";
+                    /** @enum {string} */
+                    status: "success" | "failed" | "unknown";
+                };
+                correlation: {
+                    id: string | null;
+                    isRoot: boolean;
+                    reason: string | null;
+                    confidence: string | null;
+                };
+                noiseClass: string | null;
+                provenance: {
+                    /** @enum {string} */
+                    status: "managed" | "configured" | "unknown";
+                    references: string[];
+                };
+            }[];
+            page: {
+                limit: number;
+                hasMore: boolean;
+                nextCursor: string | null;
             };
         };
         HotspotsResult: {
@@ -960,6 +1047,120 @@ export interface components {
                 pods: number;
             }[];
         };
+        IacResult: {
+            filter: {
+                resource: string;
+                status: string;
+                freshnessHours: number;
+            };
+            coverage: {
+                total: number;
+                managed: number;
+                unlinked: number;
+                missingCloud: number;
+                ambiguous: number;
+                stale: number;
+                invalid: number;
+            };
+            resources: {
+                terraform: {
+                    hashedID: string;
+                    anyshiftID: string | null;
+                    address: string;
+                    resourceType: string | null;
+                    resourceName: string | null;
+                    fileRef: string | null;
+                    githubUrl: string | null;
+                };
+                /** @enum {string} */
+                status: "managed" | "unlinked" | "missing_cloud" | "ambiguous" | "stale" | "invalid";
+                states: {
+                    hashedID: string;
+                    anyshiftID: string | null;
+                    graphType: string | null;
+                    resourceType: string | null;
+                    serial: number | null;
+                    lineage: string | null;
+                    terraformVersion: string | null;
+                }[];
+                clouds: {
+                    hashedID: string;
+                    anyshiftID: string | null;
+                    graphType: string | null;
+                    observedAt: string | null;
+                }[];
+                directClouds: {
+                    hashedID: string;
+                    anyshiftID: string | null;
+                    graphType: string | null;
+                    observedAt: string | null;
+                }[];
+            }[];
+            page: {
+                limit: number;
+                offset: number;
+                hasMore: boolean;
+                nextOffset: number | null;
+            };
+        };
+        IacDriftResult: {
+            filter: {
+                resource: string;
+                status: string;
+                freshnessHours: number;
+            };
+            counts: {
+                total: number;
+                inSync: number;
+                drifted: number;
+                unknown: number;
+            };
+            items: {
+                terraform: {
+                    hashedID: string;
+                    anyshiftID: string | null;
+                    address: string;
+                    resourceType: string | null;
+                    resourceName: string | null;
+                    fileRef: string | null;
+                    githubUrl: string | null;
+                };
+                state: {
+                    hashedID: string;
+                    anyshiftID: string | null;
+                    graphType: string | null;
+                    resourceType: string | null;
+                    serial: number | null;
+                    lineage: string | null;
+                    terraformVersion: string | null;
+                } | null;
+                cloud: {
+                    hashedID: string;
+                    anyshiftID: string | null;
+                    graphType: string | null;
+                    observedAt: string | null;
+                } | null;
+                /** @enum {string} */
+                status: "in_sync" | "drifted" | "unknown";
+                /** @enum {string} */
+                category: "none" | "configuration" | "existence" | "linkage" | "freshness" | "unsupported";
+                /** @enum {string} */
+                reason: "compared" | "unsupported_resource_type" | "unlinked" | "missing_cloud" | "ambiguous" | "stale_evidence" | "invalid_direct_link";
+                supported: boolean;
+                comparedFields: number;
+                differences: {
+                    field: string;
+                    lastApplied: string | null;
+                    observed: string | null;
+                }[];
+            }[];
+            page: {
+                limit: number;
+                offset: number;
+                hasMore: boolean;
+                nextOffset: number | null;
+            };
+        };
         AskResult: {
             question: string;
             summary: string;
@@ -1023,6 +1224,22 @@ export interface components {
             /** @constant */
             intent: "events";
             events: components["schemas"]["EventsResult"] | null;
+        } | {
+            question: string;
+            summary: string;
+            countOnly?: boolean;
+            elapsedMs?: number;
+            resolved?: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            nodes?: components["schemas"]["GraphNode"][];
+            edges?: components["schemas"]["GraphEdge"][];
+            /** @constant */
+            intent: "cloudevents";
+            cloudEvents: components["schemas"]["CloudEventsResult"] | null;
         } | {
             question: string;
             summary: string;
@@ -1631,6 +1848,38 @@ export interface components {
             /** @constant */
             intent: "priority";
             priority: components["schemas"]["PriorityResult"] | null;
+        } | {
+            question: string;
+            summary: string;
+            countOnly?: boolean;
+            elapsedMs?: number;
+            resolved?: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            nodes?: components["schemas"]["GraphNode"][];
+            edges?: components["schemas"]["GraphEdge"][];
+            /** @constant */
+            intent: "iac";
+            iac: components["schemas"]["IacResult"] | null;
+        } | {
+            question: string;
+            summary: string;
+            countOnly?: boolean;
+            elapsedMs?: number;
+            resolved?: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            nodes?: components["schemas"]["GraphNode"][];
+            edges?: components["schemas"]["GraphEdge"][];
+            /** @constant */
+            intent: "iacdrift";
+            iacDrift: components["schemas"]["IacDriftResult"] | null;
         };
     };
     responses: never;

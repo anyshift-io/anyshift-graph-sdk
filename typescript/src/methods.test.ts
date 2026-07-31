@@ -22,6 +22,55 @@ test("connections composes resource SQL", async () => {
   assert.equal(calls[0].body.sql, "SELECT * FROM connections WHERE resource = 'harvestor'");
 });
 
+test("cloudEvents composes evidence filters and keyset pagination", async () => {
+  const { gx, calls } = capturing();
+  await gx.cloudEvents({
+    provider: "aws",
+    scope: "123456789012",
+    region: "eu-west-3",
+    category: "security",
+    resource: "arn:aws:ec2:eu-west-3:123456789012:security-group/sg-1",
+    actor: "ops",
+    correlation: "corr-1",
+    noise: "all",
+    diff: true,
+    since: "1d",
+    cursor: "opaque-cursor",
+    limit: 20,
+  });
+  assert.equal(
+    calls[0].body.sql,
+    "SELECT * FROM cloud_events WHERE provider = 'aws' AND scope = '123456789012' AND region = 'eu-west-3' AND category = 'security' AND resource = 'arn:aws:ec2:eu-west-3:123456789012:security-group/sg-1' AND actor = 'ops' AND correlation = 'corr-1' AND noise = 'all' AND diff = 'true' AND since = '1d' AND cursor = 'opaque-cursor' LIMIT 20",
+  );
+});
+
+test("iac and iacDrift compose provenance and drift filters", async () => {
+  const provenance = capturing();
+  await provenance.gx.iac({
+    resource: "aws_instance.api",
+    status: "managed",
+    freshness: "6h",
+    limit: 20,
+    offset: 40,
+  });
+  assert.equal(
+    provenance.calls[0].body.sql,
+    "SELECT * FROM iac WHERE resource = 'aws_instance.api' AND status = 'managed' AND freshness = '6h' LIMIT 20 OFFSET 40",
+  );
+
+  const drift = capturing();
+  await drift.gx.iacDrift({
+    resource: "resource-id",
+    status: "unknown",
+    freshness: "1d",
+    limit: 10,
+  });
+  assert.equal(
+    drift.calls[0].body.sql,
+    "SELECT * FROM iac_drift WHERE resource = 'resource-id' AND status = 'unknown' AND freshness = '1d' LIMIT 10",
+  );
+});
+
 test("resolve composes term and limit SQL", async () => {
   const { gx, calls } = capturing();
   await gx.resolve({ term: "checkout api", limit: 20 });

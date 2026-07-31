@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.0 - 2026-07-31
+
+### Added
+
+- Added typed `cloudEvents`, `iac`, and `iacDrift` helpers.
+- Added structured AWS, Azure, and GCP change-event response types, including evidence
+  availability, actor attribution, sanitized diffs, provenance, and keyset pagination.
+- Added Terraform code-to-state-to-cloud provenance and evidence-aware drift response types.
+
+### Changed
+
+- Pinned the Graph API v0.2.26 contract and query-language 1.4 catalog.
+
 ## 0.4.1 - 2026-07-22
 
 ### Changed

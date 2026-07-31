@@ -20,6 +20,7 @@ Values may be bare words or single- or double-quoted strings.
 | --- | --- | --- |
 | [`resolve`](#resolve) | Resolve a resource name or fragment to ranked current graph resources. | `term` |
 | [`events`](#events) | Read the infrastructure change-event timeline. | `type`, `target`, `namespace`, `noise`, `since` |
+| [`cloud_events`](#cloud_events) | Read evidence-backed AWS, Azure, and GCP change events without parsing summaries. | `provider`, `scope`, `region`, `category`, `type`, `resource`, `actor`, `correlation`, `noise`, `diff`, `since`, `cursor` |
 | [`resources`](#resources) | Count and sample current resources of one graph resource type. | `type` |
 | [`connections`](#connections) | Inspect direct upstream and downstream relationships for a resource. | `resource` |
 | [`hotspots`](#hotspots) | Rank noisy resources, namespaces, alert rules, or alerting workloads. | `type`, `by`, `namespace`, `noise`, `since` |
@@ -52,6 +53,8 @@ Values may be bare words or single- or double-quoted strings.
 | [`alert_cause`](#alert_cause) | Join a firing service or workload to recent Kubernetes changes. | `target`, `since` |
 | [`slo`](#slo) | Inspect one SLO or rank breaching and at-risk SLOs. | `target` |
 | [`alertrules`](#alertrules) | Inspect Grafana and VictoriaMetrics alert-rule coverage and inventory. | `subject`, `namespace`, `target` |
+| [`iac`](#iac) | Inspect Terraform code-to-state-to-cloud provenance and linkage coverage. | `resource`, `status`, `freshness` |
+| [`iac_drift`](#iac_drift) | Compare last-applied Terraform state with fresh observed cloud properties. | `resource`, `status`, `freshness` |
 | [`gitops`](#gitops) | Inspect GitOps drift, unmanaged workloads, or resource ownership. | `subject`, `namespace`, `resource` |
 | [`image`](#image) | Inspect image usage, workload containers, or container hygiene gaps. | `target`, `workload`, `kind`, `namespace` |
 | [`netpol`](#netpol) | Inspect NetworkPolicy coverage, policies, or east-west reach. | `mode`, `namespace`, `target` |
@@ -115,6 +118,43 @@ Read recent events for a resource inside a time window.
 
 ```console
 $ annie graph query "SELECT * FROM events WHERE target = checkout AND since = 2h LIMIT 20"
+```
+
+## cloud_events
+
+Read evidence-backed AWS, Azure, and GCP change events without parsing summaries.
+
+Result intent: `cloudevents`.
+
+Table aliases: `cloudevents`, `cloud_event`.
+
+Modifiers: `LIMIT`; `OFFSET` is not applied.
+
+### Filters
+
+| Filter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `provider` | enum | No | `aws`<br />`azure`<br />`gcp` | Cloud provider. |
+| `scope` | string | No | Any value | Provider scope: AWS account, Azure subscription, or GCP project. |
+| `region` | string | No | Any value | Cloud region or location. |
+| `category` | enum | No | `security`<br />`identity`<br />`lifecycle`<br />`configuration`<br />`capacity`<br />`backup`<br />`other` | Normalized cloud-change category. |
+| `type` | string | No | Any value | Exact normalized event type. Underscores are preserved. |
+| `resource` | string | No | Any value | Exact ARN, ARM ID, graph id, or unambiguous resource name. |
+| `actor` | string | No | Any value | Actor identity, name, or graph id. |
+| `correlation` | string | No | Any value | Correlation id. |
+| `noise` | enum | No | `signal` (`false`, `exclude`)<br />`all` (`true`, `include`, `raw`) | Whether to include high-noise evidence. |
+| `diff` | enum | No | `false` (`no`, `none`)<br />`true` (`yes`, `include`) | Whether to include sanitized before/after values. |
+| `since` | duration | No | Any value | Relative lookback such as 30m, 2h, 1d, or today. |
+| `cursor` | string | No | Any value | Opaque seek cursor returned by the previous page. |
+
+### Forms
+
+#### Recent cloud changes
+
+Read a bounded provider-neutral cloud-change timeline.
+
+```console
+$ annie graph query "SELECT * FROM cloud_events WHERE provider = aws AND category = security AND since = 24h LIMIT 50"
 ```
 
 ## resources
@@ -1034,13 +1074,93 @@ Target subject requires target.
 $ annie graph query "SELECT * FROM alertrules WHERE subject = target AND target = checkout"
 ```
 
+## iac
+
+Inspect Terraform code-to-state-to-cloud provenance and linkage coverage.
+
+Result intent: `iac`.
+
+Table aliases: `terraform`, `iac_provenance`.
+
+Modifiers: `LIMIT`; `OFFSET`.
+
+### Filters
+
+| Filter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `resource` | string | No | Any value | Terraform address or Terraform, state, or cloud graph identifier. |
+| `status` | enum | No | `managed`<br />`unlinked`<br />`missing_cloud` (`missingcloud`, `state_only`)<br />`ambiguous`<br />`stale`<br />`invalid` | IaC linkage status. |
+| `freshness` | duration | No | Any value | Relative lookback such as 30m, 2h, 1d, or today. |
+
+### Forms
+
+#### IaC coverage
+
+Summarize Terraform code-to-state-to-cloud linkage and return a bounded resource page.
+
+```console
+$ annie graph query "SELECT * FROM iac LIMIT 50"
+```
+
+#### Resource provenance
+
+Show the Terraform, state, and cloud evidence for one resource.
+
+```console
+$ annie graph query "SELECT * FROM iac WHERE resource = aws_instance.api_server"
+```
+
+#### IaC linkage gaps
+
+List resources with one evidence-backed linkage status.
+
+```console
+$ annie graph query "SELECT * FROM iac WHERE status = unlinked LIMIT 50"
+```
+
+## iac_drift
+
+Compare last-applied Terraform state with fresh observed cloud properties.
+
+Result intent: `iacdrift`.
+
+Table aliases: `terraform_drift`, `drift`.
+
+Modifiers: `LIMIT`; `OFFSET`.
+
+### Filters
+
+| Filter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `resource` | string | No | Any value | Terraform address or Terraform, state, or cloud graph identifier. |
+| `status` | enum | No | `drifted`<br />`in_sync` (`insync`, `synced`)<br />`unknown` | Drift verdict. |
+| `freshness` | duration | No | Any value | Relative lookback such as 30m, 2h, 1d, or today. |
+
+### Forms
+
+#### Current IaC drift
+
+List supported state-to-cloud differences, excluding unknown evidence by default.
+
+```console
+$ annie graph query "SELECT * FROM iac_drift WHERE status = drifted LIMIT 50"
+```
+
+#### Resource drift
+
+Evaluate one Terraform resource using its state and cloud evidence.
+
+```console
+$ annie graph query "SELECT * FROM iac_drift WHERE resource = aws_instance.api_server"
+```
+
 ## gitops
 
 Inspect GitOps drift, unmanaged workloads, or resource ownership.
 
 Result intent: `gitops`.
 
-Table aliases: `argocd`, `drift`.
+Table aliases: `argocd`, `gitops_drift`, `argocd_drift`.
 
 Modifiers: `LIMIT`; `OFFSET` is not applied.
 

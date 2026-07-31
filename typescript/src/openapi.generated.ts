@@ -463,6 +463,29 @@ export interface components {
                 };
             }[];
         };
+        GraphCoverageResult: {
+            filter: {
+                source: string;
+            };
+            warnings: string[];
+            totals: {
+                sourcesObserved: number;
+                nodes: number;
+                relationships: number;
+                bridges: number;
+                events: number;
+            };
+            sources: {
+                /** @enum {string} */
+                source: "kubernetes" | "cloud" | "github" | "datadog" | "tempo" | "dynatrace" | "victoria" | "grafana";
+                /** @enum {string} */
+                status: "observed" | "absent";
+                nodes: number;
+                relationships: number;
+                bridges: number;
+                events: number;
+            }[];
+        };
         HotspotsResult: {
             /** @enum {string} */
             dimension: "namespace" | "resource" | "alertrule" | "alertworkload";
@@ -1544,6 +1567,22 @@ export interface components {
             /** @constant */
             intent: "ownership";
             ownership: components["schemas"]["OwnershipResult"] | null;
+        } | {
+            question: string;
+            summary: string;
+            countOnly?: boolean;
+            elapsedMs?: number;
+            resolved?: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            nodes?: components["schemas"]["GraphNode"][];
+            edges?: components["schemas"]["GraphEdge"][];
+            /** @constant */
+            intent: "graphcoverage";
+            graphCoverage: components["schemas"]["GraphCoverageResult"] | null;
         } | {
             question: string;
             summary: string;

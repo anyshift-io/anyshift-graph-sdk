@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("pinned OpenAPI exposes the executable 50-intent contract", async () => {
+test("pinned OpenAPI exposes the executable 51-intent contract", async () => {
   const raw = await readFile(new URL("../../openapi/graph-api.v1.json", import.meta.url), "utf8");
   const document = JSON.parse(raw);
   const schemas = document.components.schemas;
@@ -12,9 +12,9 @@ test("pinned OpenAPI exposes the executable 50-intent contract", async () => {
   assert.equal(schemas.QueryRequest.additionalProperties, false);
   assert.equal(schemas.AskRequest.additionalProperties, false);
   assert.equal(schemas.AskResult.discriminator.propertyName, "intent");
-  assert.equal(variants.length, 50);
-  assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, 50);
-  assert.equal(queryLanguage.version, "1.7");
+  assert.equal(variants.length, 51);
+  assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, 51);
+  assert.equal(queryLanguage.version, "1.8");
   assert.equal(queryLanguage.tables.length, variants.length);
   const inventorySample = schemas.InventoryResult.properties.sample.items;
   assert.deepEqual(inventorySample.properties.resourceId.type, ["string", "null"]);
@@ -40,6 +40,7 @@ test("pinned OpenAPI exposes the executable 50-intent contract", async () => {
   const delivery = queryLanguage.tables.find((table: any) => table.name === "delivery_events");
   const provenance = queryLanguage.tables.find((table: any) => table.name === "provenance");
   const ownership = queryLanguage.tables.find((table: any) => table.name === "ownership");
+  const graphCoverage = queryLanguage.tables.find((table: any) => table.name === "graph_coverage");
   assert.ok(cloudResources);
   assert.equal(cloudResources.intent, "cloudresources");
   assert.ok(cloudResources.filters.some((filter: any) => filter.name === "provenance"));
@@ -49,6 +50,9 @@ test("pinned OpenAPI exposes the executable 50-intent contract", async () => {
   assert.equal(delivery.intent, "deliveryevents");
   assert.equal(provenance.intent, "provenance");
   assert.equal(ownership.intent, "ownership");
+  assert.equal(graphCoverage.intent, "graphcoverage");
+  assert.ok(graphCoverage.filters.find((filter: any) => filter.name === "source").values.some((entry: any) => entry.value === "dynatrace"));
+  assert.ok(topology.filters.find((filter: any) => filter.name === "source").values.some((entry: any) => entry.value === "dynatrace"));
   assert.ok(iac.filters.some((filter: any) => filter.name === "freshness"));
   assert.ok(iacDrift.filters.some((filter: any) => filter.name === "status"));
 });

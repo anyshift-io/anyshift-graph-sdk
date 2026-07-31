@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.7",
+    "version": "1.8",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -529,6 +529,73 @@
             "name": "Observed code ownership",
             "description": "Return OWNS_CODE evidence and any linked people; missing edges remain unknown.",
             "example": "SELECT * FROM ownership WHERE resource = anyshift-io/checkout LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "graph_coverage",
+        "aliases": [
+          "graphcoverage",
+          "source_coverage"
+        ],
+        "intent": "graphcoverage",
+        "summary": "Inspect current node, relationship, bridge, and event evidence by graph source.",
+        "filters": [
+          {
+            "name": "source",
+            "type": "enum",
+            "description": "Source universe.",
+            "values": [
+              {
+                "value": "kubernetes",
+                "description": "Kubernetes resource graph.",
+                "aliases": [
+                  "k8s"
+                ]
+              },
+              {
+                "value": "cloud",
+                "description": "Provider cloud-resource graph."
+              },
+              {
+                "value": "github",
+                "description": "GitHub repositories, identities, pipelines, and releases.",
+                "aliases": [
+                  "scm"
+                ]
+              },
+              {
+                "value": "datadog",
+                "description": "Datadog observability graph."
+              },
+              {
+                "value": "tempo",
+                "description": "Grafana Tempo dependency graph."
+              },
+              {
+                "value": "dynatrace",
+                "description": "Dynatrace topology and Davis event graph."
+              },
+              {
+                "value": "victoria",
+                "description": "VictoriaTraces dependency graph."
+              },
+              {
+                "value": "grafana",
+                "description": "Grafana alert-rule graph."
+              }
+            ]
+          }
+        ],
+        "pagination": {
+          "limit": false,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Graph source coverage",
+            "description": "Report only observed graph evidence; absent does not imply configuration state.",
+            "example": "SELECT * FROM graph_coverage"
           }
         ]
       },
@@ -1531,6 +1598,10 @@
               {
                 "value": "tempo",
                 "description": "Use Grafana Tempo service and dependency nodes only."
+              },
+              {
+                "value": "dynatrace",
+                "description": "Use Dynatrace service and dependency nodes only."
               }
             ]
           }
@@ -1582,6 +1653,10 @@
               {
                 "value": "tempo",
                 "description": "Use Grafana Tempo service and dependency nodes only."
+              },
+              {
+                "value": "dynatrace",
+                "description": "Use Dynatrace service and dependency nodes only."
               }
             ]
           }
@@ -1628,6 +1703,10 @@
               {
                 "value": "tempo",
                 "description": "Use Grafana Tempo service and dependency nodes only."
+              },
+              {
+                "value": "dynatrace",
+                "description": "Use Dynatrace service and dependency nodes only."
               }
             ]
           }
@@ -1753,6 +1832,10 @@
               {
                 "value": "tempo",
                 "description": "Use Grafana Tempo service and dependency nodes only."
+              },
+              {
+                "value": "dynatrace",
+                "description": "Use Dynatrace service and dependency nodes only."
               }
             ]
           }
@@ -1799,6 +1882,10 @@
               {
                 "value": "tempo",
                 "description": "Use Grafana Tempo service and dependency nodes only."
+              },
+              {
+                "value": "dynatrace",
+                "description": "Use Dynatrace service and dependency nodes only."
               }
             ]
           }
@@ -2592,6 +2679,10 @@
               {
                 "value": "tempo",
                 "description": "Use Grafana Tempo service and dependency nodes only."
+              },
+              {
+                "value": "dynatrace",
+                "description": "Use Dynatrace service and dependency nodes only."
               }
             ]
           }
@@ -4657,6 +4748,122 @@
           "warnings",
           "total",
           "items"
+        ],
+        "additionalProperties": false
+      },
+      "GraphCoverageResult": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "source"
+            ],
+            "additionalProperties": false
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "sourcesObserved": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "nodes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "relationships": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "bridges": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "events": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "sourcesObserved",
+              "nodes",
+              "relationships",
+              "bridges",
+              "events"
+            ],
+            "additionalProperties": false
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "type": "string",
+                  "enum": [
+                    "kubernetes",
+                    "cloud",
+                    "github",
+                    "datadog",
+                    "tempo",
+                    "dynatrace",
+                    "victoria",
+                    "grafana"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "observed",
+                    "absent"
+                  ]
+                },
+                "nodes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "relationships": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "bridges": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "events": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "source",
+                "status",
+                "nodes",
+                "relationships",
+                "bridges",
+                "events"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "filter",
+          "warnings",
+          "totals",
+          "sources"
         ],
         "additionalProperties": false
       },
@@ -10584,6 +10791,90 @@
                 "oneOf": [
                   {
                     "$ref": "#/components/schemas/OwnershipResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "question",
+              "intent",
+              "summary",
+              "graphCoverage"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "countOnly": {
+                "type": "boolean"
+              },
+              "elapsedMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "resolved": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "term",
+                      "hashedID",
+                      "name",
+                      "type"
+                    ],
+                    "properties": {
+                      "term": {
+                        "type": "string"
+                      },
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphNode"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphEdge"
+                }
+              },
+              "intent": {
+                "const": "graphcoverage"
+              },
+              "graphCoverage": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/GraphCoverageResult"
                   },
                   {
                     "type": "null"

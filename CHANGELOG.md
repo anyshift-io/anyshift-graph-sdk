@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.4 - 2026-07-31
+
+### Added
+
+- Added Dynatrace source selection across APM dependency and topology helpers.
+- Added typed `graphCoverage` evidence counts for graph nodes, relationships, explicit bridges,
+  and events by producer source.
+
+### Changed
+
+- Pinned the Graph API v0.2.30 contract and query-language 1.8 catalog.
+
 ## 0.5.3 - 2026-07-31
 
 ### Added

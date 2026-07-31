@@ -447,23 +447,34 @@ test("datastore composes ranked and target SQL", async () => {
   assert.equal(t.calls[0].body.sql, "SELECT * FROM datastore WHERE target = 'mariadb-billing' LIMIT 5");
 });
 
-test("APM helpers compose explicit Tempo source selection", async () => {
-  const cases: Array<(gx: GraphAnswer) => Promise<unknown>> = [
-    (gx) => gx.datastore({ source: "tempo" }),
-    (gx) => gx.flow({ source: "tempo" }),
-    (gx) => gx.externalDep({ source: "tempo" }),
-    (gx) => gx.calls({ source: "tempo" }),
-    (gx) => gx.serviceTree({ source: "tempo" }),
-  ];
-  const tables = ["datastore", "flow", "external_dep", "calls", "servicetree"];
-  for (let i = 0; i < cases.length; i += 1) {
-    const { gx, calls } = capturing();
-    await cases[i](gx);
-    assert.equal(calls[0].body.sql, `SELECT * FROM ${tables[i]} WHERE source = 'tempo'`);
+test("APM helpers compose explicit Tempo and Dynatrace source selection", async () => {
+  for (const source of ["tempo", "dynatrace"] as const) {
+    const cases: Array<(gx: GraphAnswer) => Promise<unknown>> = [
+      (gx) => gx.datastore({ source }),
+      (gx) => gx.flow({ source }),
+      (gx) => gx.externalDep({ source }),
+      (gx) => gx.calls({ source }),
+      (gx) => gx.serviceTree({ source }),
+    ];
+    const tables = ["datastore", "flow", "external_dep", "calls", "servicetree"];
+    for (let i = 0; i < cases.length; i += 1) {
+      const { gx, calls } = capturing();
+      await cases[i](gx);
+      assert.equal(calls[0].body.sql, `SELECT * FROM ${tables[i]} WHERE source = '${source}'`);
+    }
+    const topology = capturing();
+    await topology.gx.topology({ service: "checkout-api", source });
+    assert.equal(
+      topology.calls[0].body.sql,
+      `SELECT * FROM topology WHERE service = 'checkout-api' AND source = '${source}'`,
+    );
   }
-  const topology = capturing();
-  await topology.gx.topology({ service: "checkout-api", source: "tempo" });
-  assert.equal(topology.calls[0].body.sql, "SELECT * FROM topology WHERE service = 'checkout-api' AND source = 'tempo'");
+});
+
+test("graphCoverage composes a provider-neutral source filter", async () => {
+  const { gx, calls } = capturing();
+  await gx.graphCoverage({ source: "dynatrace" });
+  assert.equal(calls[0].body.sql, "SELECT * FROM graph_coverage WHERE source = 'dynatrace'");
 });
 
 test("flow composes ranked and target SQL", async () => {

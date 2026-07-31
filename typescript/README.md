@@ -57,6 +57,9 @@ const resources = await graph.cloudResources({
 const provenance = await graph.iac({ resource: "aws_ecs_service.api" });
 const drift = await graph.iacDrift({ resource: "aws_ecs_service.api" });
 const impact = await graph.impact({ resource: "checkout-db", depth: 2 });
+const releases = await graph.deliveryEvents({ stage: "release", since: "7d" });
+const releaseProvenance = await graph.provenance({ resource: "checkout" });
+const owners = await graph.ownership({ resource: "anyshift-io/checkout" });
 ```
 
 ```ts

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.3 - 2026-07-31
+
+### Added
+
+- Added typed `deliveryEvents`, `provenance`, and `ownership` helpers for stored delivery,
+  release-to-commit-to-actor, and `OWNS_CODE` evidence.
+
+### Changed
+
+- Pinned the Graph API v0.2.29 contract and query-language 1.7 catalog.
+
 ## 0.5.2 - 2026-07-31
 
 ### Added

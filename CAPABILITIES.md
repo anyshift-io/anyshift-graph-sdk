@@ -24,6 +24,7 @@ All typed helpers call `graph.query(...)` and return an `AskResult` envelope wit
 | Capability | TypeScript helper | Graph query target | Use it to answer |
 | --- | --- | --- | --- |
 | Recent events | `graph.events()` | `events` | What changed recently for a resource, namespace, or event type. |
+| Delivery evidence | `graph.deliveryEvents()` | `delivery_events` | Which stored commit, CI, release, and deployment events match a stage, resource, actor, source, or time window. |
 | Event hotspots | `graph.hotspots()` | `hotspots` | Which resources, namespaces, alert rules, or alerting workloads are currently noisy. |
 | Correlated incident | `graph.incident({ target })` or `graph.incident({ id })` | `incidents` | Which root event caused an incident and how the correlated event chain unfolded. |
 | Failure feed | `graph.failures()` | `failures` | Which recent failure events affect a target or namespace. |
@@ -47,6 +48,8 @@ Common parameters:
 | Direct connections | `graph.connections({ resource })` | `connections` | What is directly connected to a resource. |
 | Inventory | `graph.inventory({ type })` | `resources` | Which resources of a type exist in the graph. |
 | Cloud inventory | `graph.cloudResources()` | `cloud_resources` | Which current or retained AWS, Azure, and GCP resources exist, with lifecycle, freshness, identity, and IaC provenance evidence. |
+| Release provenance | `graph.provenance({ resource })` | `provenance` | Which explicit release, commit, and actor evidence is linked to a resource. |
+| Observed code ownership | `graph.ownership({ resource })` | `ownership` | Which users or teams have stored `OWNS_CODE` edges, including explicit person identity links. |
 | Evidence-safe operational impact | `graph.impact({ resource, depth })` | `operational_impact` | Which resources are potentially reachable over reviewed directional operational edges, with every supporting path step. |
 | Blast radius | `graph.blast({ resource })` | `blast_radius` | Which workloads and services are affected if a resource changes or fails. |
 | Dependency path | `graph.path({ from, to, scope })` | `path` | How two resources are connected, including Tempo APM identity and dependency edges in `operational` scope. |
@@ -71,6 +74,9 @@ reported as unmanaged or drifted.
 
 `graph.impact()` reports potential reachability from stored graph edges. It does not claim that a
 failure will occur or that a reachable resource caused an incident.
+
+Delivery provenance and ownership helpers return only explicit stored joins. Missing joins remain
+`unknown`; the SDK does not synthesize actors, owners, or provenance from names or summaries.
 
 ## Topology And Diagrams
 

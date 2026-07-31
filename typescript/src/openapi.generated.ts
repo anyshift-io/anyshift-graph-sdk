@@ -334,6 +334,135 @@ export interface components {
                 nextCursor: string | null;
             };
         };
+        DeliveryEventsResult: {
+            filter: {
+                /** @enum {string} */
+                stage: "" | "commit" | "ci" | "release" | "deploy";
+                type: string;
+                resource: string;
+                actor: string;
+                source: string;
+                sinceHours: number;
+            };
+            availability: {
+                /** @enum {string} */
+                target: "available" | "partial" | "unavailable";
+                /** @enum {string} */
+                actor: "available" | "partial" | "unavailable";
+                /** @enum {string} */
+                commit: "available" | "partial" | "unavailable";
+            };
+            warnings: string[];
+            total: number;
+            byStage: {
+                /** @enum {string} */
+                stage: "commit" | "ci" | "release" | "deploy";
+                count: number;
+            }[];
+            items: {
+                id: string;
+                timestamp: string;
+                type: string;
+                /** @enum {string} */
+                stage: "commit" | "ci" | "release" | "deploy";
+                source: string | null;
+                summary: string | null;
+                target: {
+                    hashedID: string;
+                    id: string | null;
+                    name: string | null;
+                    kind: string | null;
+                };
+                actor: {
+                    hashedID: string;
+                    id: string | null;
+                    name: string | null;
+                    person: string | null;
+                    email: string | null;
+                } | null;
+                outcome: string | null;
+                commitSha: string | null;
+                correlationId: string | null;
+                evidence: {
+                    /** @enum {string} */
+                    status: "observed" | "partial" | "unknown";
+                    warnings: string[];
+                };
+            }[];
+            page: {
+                limit: number;
+                hasMore: boolean;
+                nextCursor: string | null;
+            };
+        };
+        ProvenanceResult: {
+            resolved: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            warnings: string[];
+            total: number;
+            items: {
+                release: {
+                    hashedID: string;
+                    id: string | null;
+                    name: string | null;
+                    kind: string | null;
+                    commitSha: string | null;
+                };
+                commit: {
+                    sha: string;
+                    timestamp: string | null;
+                    summary: string | null;
+                } | null;
+                actor: {
+                    hashedID: string;
+                    id: string | null;
+                    name: string | null;
+                    person: string | null;
+                    email: string | null;
+                } | null;
+                path: string[];
+                evidence: {
+                    /** @enum {string} */
+                    status: "observed" | "partial" | "unknown";
+                    warnings: string[];
+                };
+            }[];
+        };
+        OwnershipResult: {
+            resolved: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            /** @enum {string} */
+            status: "observed" | "unknown";
+            warnings: string[];
+            total: number;
+            items: {
+                owner: {
+                    hashedID: string;
+                    id: string | null;
+                    name: string;
+                    kind: string | null;
+                };
+                people: {
+                    hashedID: string;
+                    name: string;
+                    email: string | null;
+                }[];
+                evidence: {
+                    /** @constant */
+                    relationship: "OWNS_CODE";
+                    /** @constant */
+                    status: "observed";
+                };
+            }[];
+        };
         HotspotsResult: {
             /** @enum {string} */
             dimension: "namespace" | "resource" | "alertrule" | "alertworkload";
@@ -1367,6 +1496,54 @@ export interface components {
             /** @constant */
             intent: "cloudresources";
             cloudResources: components["schemas"]["CloudResourcesResult"] | null;
+        } | {
+            question: string;
+            summary: string;
+            countOnly?: boolean;
+            elapsedMs?: number;
+            resolved?: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            nodes?: components["schemas"]["GraphNode"][];
+            edges?: components["schemas"]["GraphEdge"][];
+            /** @constant */
+            intent: "deliveryevents";
+            deliveryEvents: components["schemas"]["DeliveryEventsResult"] | null;
+        } | {
+            question: string;
+            summary: string;
+            countOnly?: boolean;
+            elapsedMs?: number;
+            resolved?: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            nodes?: components["schemas"]["GraphNode"][];
+            edges?: components["schemas"]["GraphEdge"][];
+            /** @constant */
+            intent: "provenance";
+            provenance: components["schemas"]["ProvenanceResult"] | null;
+        } | {
+            question: string;
+            summary: string;
+            countOnly?: boolean;
+            elapsedMs?: number;
+            resolved?: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            nodes?: components["schemas"]["GraphNode"][];
+            edges?: components["schemas"]["GraphEdge"][];
+            /** @constant */
+            intent: "ownership";
+            ownership: components["schemas"]["OwnershipResult"] | null;
         } | {
             question: string;
             summary: string;

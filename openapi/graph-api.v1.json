@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.6",
+    "version": "1.7",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -392,6 +392,143 @@
             "name": "Current cloud inventory",
             "description": "List provider resources with explicit freshness and provenance evidence.",
             "example": "SELECT * FROM cloud_resources WHERE provider = aws AND type = EC2_INSTANCE LIMIT 50"
+          }
+        ]
+      },
+      {
+        "name": "delivery_events",
+        "aliases": [
+          "deliveryevents",
+          "delivery"
+        ],
+        "intent": "deliveryevents",
+        "summary": "Read commit, CI, release, and deployment evidence from the delivery graph.",
+        "filters": [
+          {
+            "name": "stage",
+            "type": "enum",
+            "description": "Delivery stage.",
+            "values": [
+              {
+                "value": "commit",
+                "description": "Source commit events."
+              },
+              {
+                "value": "ci",
+                "description": "CI pipeline run events.",
+                "aliases": [
+                  "pipeline"
+                ]
+              },
+              {
+                "value": "release",
+                "description": "Release publication events."
+              },
+              {
+                "value": "deploy",
+                "description": "GitOps, Helm, and workload deployment events.",
+                "aliases": [
+                  "deployment"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "type",
+            "type": "string",
+            "description": "Exact event type, such as event_release or argocd_synced."
+          },
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Exact graph id or unambiguous target name."
+          },
+          {
+            "name": "actor",
+            "type": "string",
+            "description": "Actor identity, name, or graph id."
+          },
+          {
+            "name": "source",
+            "type": "string",
+            "description": "Persisted event source."
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          },
+          {
+            "name": "cursor",
+            "type": "string",
+            "description": "Opaque seek cursor returned by the previous page."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Recent delivery activity",
+            "description": "Read a bounded software-delivery timeline without inferring missing actors or commits.",
+            "example": "SELECT * FROM delivery_events WHERE stage = release AND since = 7d LIMIT 50"
+          }
+        ]
+      },
+      {
+        "name": "provenance",
+        "aliases": [
+          "release_provenance",
+          "delivery_provenance"
+        ],
+        "intent": "provenance",
+        "summary": "Trace a resource to stored release, commit, and actor evidence.",
+        "filters": [
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Resource, repository, release, image, or service to trace.",
+            "required": true
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Release provenance",
+            "description": "Return only stored release-to-commit-to-actor evidence.",
+            "example": "SELECT * FROM provenance WHERE resource = checkout LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "ownership",
+        "aliases": [
+          "owners",
+          "code_ownership"
+        ],
+        "intent": "ownership",
+        "summary": "Resolve observed GitHub user or team code ownership and contact identities.",
+        "filters": [
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Repository or resource whose observed owner is required.",
+            "required": true
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Observed code ownership",
+            "description": "Return OWNS_CODE evidence and any linked people; missing edges remain unknown.",
+            "example": "SELECT * FROM ownership WHERE resource = anyshift-io/checkout LIMIT 20"
           }
         ]
       },
@@ -3821,6 +3958,705 @@
           "byType",
           "items",
           "page"
+        ],
+        "additionalProperties": false
+      },
+      "DeliveryEventsResult": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string",
+                "enum": [
+                  "",
+                  "commit",
+                  "ci",
+                  "release",
+                  "deploy"
+                ]
+              },
+              "type": {
+                "type": "string"
+              },
+              "resource": {
+                "type": "string"
+              },
+              "actor": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              },
+              "sinceHours": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            },
+            "required": [
+              "stage",
+              "type",
+              "resource",
+              "actor",
+              "source",
+              "sinceHours"
+            ],
+            "additionalProperties": false
+          },
+          "availability": {
+            "type": "object",
+            "properties": {
+              "target": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "partial",
+                  "unavailable"
+                ]
+              },
+              "actor": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "partial",
+                  "unavailable"
+                ]
+              },
+              "commit": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "partial",
+                  "unavailable"
+                ]
+              }
+            },
+            "required": [
+              "target",
+              "actor",
+              "commit"
+            ],
+            "additionalProperties": false
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "byStage": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "stage": {
+                  "type": "string",
+                  "enum": [
+                    "commit",
+                    "ci",
+                    "release",
+                    "deploy"
+                  ]
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "stage",
+                "count"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "stage": {
+                  "type": "string",
+                  "enum": [
+                    "commit",
+                    "ci",
+                    "release",
+                    "deploy"
+                  ]
+                },
+                "source": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "summary": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "target": {
+                  "type": "object",
+                  "properties": {
+                    "hashedID": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kind": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "hashedID",
+                    "id",
+                    "name",
+                    "kind"
+                  ],
+                  "additionalProperties": false
+                },
+                "actor": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "hashedID": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "name": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "person": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "email": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "hashedID",
+                        "id",
+                        "name",
+                        "person",
+                        "email"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "outcome": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "commitSha": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "correlationId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "evidence": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "observed",
+                        "partial",
+                        "unknown"
+                      ]
+                    },
+                    "warnings": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "warnings"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "id",
+                "timestamp",
+                "type",
+                "stage",
+                "source",
+                "summary",
+                "target",
+                "actor",
+                "outcome",
+                "commitSha",
+                "correlationId",
+                "evidence"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "page": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "hasMore": {
+                "type": "boolean"
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "limit",
+              "hasMore",
+              "nextCursor"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "filter",
+          "availability",
+          "warnings",
+          "total",
+          "byStage",
+          "items",
+          "page"
+        ],
+        "additionalProperties": false
+      },
+      "ProvenanceResult": {
+        "type": "object",
+        "properties": {
+          "resolved": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "term": {
+                    "type": "string"
+                  },
+                  "hashedID": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "term",
+                  "hashedID",
+                  "name",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "release": {
+                  "type": "object",
+                  "properties": {
+                    "hashedID": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kind": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "commitSha": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "hashedID",
+                    "id",
+                    "name",
+                    "kind",
+                    "commitSha"
+                  ],
+                  "additionalProperties": false
+                },
+                "commit": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "sha": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "summary": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "sha",
+                        "timestamp",
+                        "summary"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "actor": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "hashedID": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "name": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "person": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "email": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "hashedID",
+                        "id",
+                        "name",
+                        "person",
+                        "email"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "path": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "evidence": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "observed",
+                        "partial",
+                        "unknown"
+                      ]
+                    },
+                    "warnings": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "warnings"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "release",
+                "commit",
+                "actor",
+                "path",
+                "evidence"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "resolved",
+          "warnings",
+          "total",
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "OwnershipResult": {
+        "type": "object",
+        "properties": {
+          "resolved": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "term": {
+                    "type": "string"
+                  },
+                  "hashedID": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "term",
+                  "hashedID",
+                  "name",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "observed",
+              "unknown"
+            ]
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "owner": {
+                  "type": "object",
+                  "properties": {
+                    "hashedID": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "hashedID",
+                    "id",
+                    "name",
+                    "kind"
+                  ],
+                  "additionalProperties": false
+                },
+                "people": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "email": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "hashedID",
+                      "name",
+                      "email"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "evidence": {
+                  "type": "object",
+                  "properties": {
+                    "relationship": {
+                      "type": "string",
+                      "const": "OWNS_CODE"
+                    },
+                    "status": {
+                      "type": "string",
+                      "const": "observed"
+                    }
+                  },
+                  "required": [
+                    "relationship",
+                    "status"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "owner",
+                "people",
+                "evidence"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "resolved",
+          "status",
+          "warnings",
+          "total",
+          "items"
         ],
         "additionalProperties": false
       },
@@ -9496,6 +10332,258 @@
                 "oneOf": [
                   {
                     "$ref": "#/components/schemas/CloudResourcesResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "question",
+              "intent",
+              "summary",
+              "deliveryEvents"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "countOnly": {
+                "type": "boolean"
+              },
+              "elapsedMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "resolved": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "term",
+                      "hashedID",
+                      "name",
+                      "type"
+                    ],
+                    "properties": {
+                      "term": {
+                        "type": "string"
+                      },
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphNode"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphEdge"
+                }
+              },
+              "intent": {
+                "const": "deliveryevents"
+              },
+              "deliveryEvents": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/DeliveryEventsResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "question",
+              "intent",
+              "summary",
+              "provenance"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "countOnly": {
+                "type": "boolean"
+              },
+              "elapsedMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "resolved": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "term",
+                      "hashedID",
+                      "name",
+                      "type"
+                    ],
+                    "properties": {
+                      "term": {
+                        "type": "string"
+                      },
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphNode"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphEdge"
+                }
+              },
+              "intent": {
+                "const": "provenance"
+              },
+              "provenance": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/ProvenanceResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "question",
+              "intent",
+              "summary",
+              "ownership"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "countOnly": {
+                "type": "boolean"
+              },
+              "elapsedMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "resolved": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "term",
+                      "hashedID",
+                      "name",
+                      "type"
+                    ],
+                    "properties": {
+                      "term": {
+                        "type": "string"
+                      },
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphNode"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphEdge"
+                }
+              },
+              "intent": {
+                "const": "ownership"
+              },
+              "ownership": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/OwnershipResult"
                   },
                   {
                     "type": "null"

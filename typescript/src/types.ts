@@ -11,6 +11,9 @@ export type ResolveResult = Schemas["ResolveResult"];
 export type ResolveCandidate = ResolveResult["candidates"][number];
 export type CloudResourcesResult = Schemas["CloudResourcesResult"];
 export type CloudResourceItem = CloudResourcesResult["items"][number];
+export type ImpactResult = Schemas["ImpactResult"];
+export type ImpactItem = ImpactResult["items"][number];
+export type ImpactStep = ImpactItem["path"][number];
 
 /** Every successful Graph API response, discriminated by its exact intent payload. */
 export type AskResult = Schemas["AskResult"];

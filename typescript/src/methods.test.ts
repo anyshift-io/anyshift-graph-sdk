@@ -64,6 +64,15 @@ test("cloudResources composes inventory and evidence filters", async () => {
   );
 });
 
+test("impact composes a bounded reviewed-edge traversal", async () => {
+  const { gx, calls } = capturing();
+  await gx.impact({ resource: "checkout-db", depth: 3, limit: 25, offset: 50 });
+  assert.equal(
+    calls[0].body.sql,
+    "SELECT * FROM operational_impact WHERE resource = 'checkout-db' AND depth = '3' LIMIT 25 OFFSET 50",
+  );
+});
+
 test("iac and iacDrift compose provenance and drift filters", async () => {
   const provenance = capturing();
   await provenance.gx.iac({

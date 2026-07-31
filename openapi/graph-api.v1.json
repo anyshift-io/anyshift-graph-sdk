@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.5",
+    "version": "1.6",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -420,6 +420,38 @@
             "name": "Resource inventory",
             "description": "Return the inventory for one resource type.",
             "example": "SELECT * FROM resources WHERE type = deployment LIMIT 50"
+          }
+        ]
+      },
+      {
+        "name": "operational_impact",
+        "aliases": [
+          "potential_impact"
+        ],
+        "intent": "impact",
+        "summary": "Find potential operational impact through reviewed directional graph relationships.",
+        "filters": [
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Root resource whose potential impact to evaluate.",
+            "required": true
+          },
+          {
+            "name": "depth",
+            "type": "integer",
+            "description": "Maximum propagation depth from 1 to 3. Defaults to 2."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": true
+        },
+        "forms": [
+          {
+            "name": "Potential operational impact",
+            "description": "Return resources reachable through reviewed operational impact relationships.",
+            "example": "SELECT * FROM operational_impact WHERE resource = checkout-db AND depth = 2 LIMIT 50"
           }
         ]
       },
@@ -4765,6 +4797,210 @@
           "pods",
           "workloads",
           "services"
+        ],
+        "additionalProperties": false
+      },
+      "ImpactResult": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "type": "string"
+              },
+              "maxDepth": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 3
+              }
+            },
+            "required": [
+              "resource",
+              "maxDepth"
+            ],
+            "additionalProperties": false
+          },
+          "evidence": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "observed",
+                  "not_observed"
+                ]
+              },
+              "boundary": {
+                "type": "string",
+                "const": "reviewed_operational_edges"
+              },
+              "edgeTypes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "status",
+              "boundary",
+              "edgeTypes"
+            ],
+            "additionalProperties": false
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "hashedID": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "kind": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "namespace": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "scope": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "depth": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "pathCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "path": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string"
+                      },
+                      "to": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "semantic": {
+                        "type": "string",
+                        "enum": [
+                          "dependency",
+                          "ownership"
+                        ]
+                      },
+                      "relationshipDirection": {
+                        "type": "string",
+                        "enum": [
+                          "forward",
+                          "reverse"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "from",
+                      "to",
+                      "type",
+                      "semantic",
+                      "relationshipDirection"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "hashedID",
+                "id",
+                "name",
+                "kind",
+                "namespace",
+                "scope",
+                "depth",
+                "pathCount",
+                "path"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "page": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "hasMore": {
+                "type": "boolean"
+              },
+              "nextOffset": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "limit",
+              "offset",
+              "hasMore",
+              "nextOffset"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "filter",
+          "evidence",
+          "warnings",
+          "total",
+          "items",
+          "page"
         ],
         "additionalProperties": false
       },
@@ -10016,6 +10252,90 @@
                 "oneOf": [
                   {
                     "$ref": "#/components/schemas/BlastRadiusResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "question",
+              "intent",
+              "summary",
+              "impact"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "countOnly": {
+                "type": "boolean"
+              },
+              "elapsedMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "resolved": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "term",
+                      "hashedID",
+                      "name",
+                      "type"
+                    ],
+                    "properties": {
+                      "term": {
+                        "type": "string"
+                      },
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphNode"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphEdge"
+                }
+              },
+              "intent": {
+                "const": "impact"
+              },
+              "impact": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/ImpactResult"
                   },
                   {
                     "type": "null"

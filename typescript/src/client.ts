@@ -89,6 +89,14 @@ export interface CloudResourcesParams {
   cursor?: string;
   limit?: number;
 }
+export interface ImpactParams {
+  /** Root resource whose potential operational impact to evaluate. */
+  resource: string;
+  /** Maximum traversal depth over reviewed operational edges. Defaults to 2. */
+  depth?: 1 | 2 | 3;
+  limit?: number;
+  offset?: number;
+}
 export interface IacParams {
   /** Terraform address or Terraform, state, or cloud graph identifier. */
   resource?: string;
@@ -547,6 +555,14 @@ export class GraphAnswer {
       ["max_age", p.maxAge],
       ["cursor", p.cursor],
     ], p.limit));
+  }
+
+  /** Potential operational impact over a reviewed directional edge allowlist. */
+  impact(p: ImpactParams): Promise<AskResult> {
+    return this.typedQuery(compose("operational_impact", [
+      ["resource", p.resource],
+      ["depth", p.depth],
+    ], p.limit, p.offset));
   }
 
   hotspots(p: HotspotsParams = {}): Promise<AskResult> {

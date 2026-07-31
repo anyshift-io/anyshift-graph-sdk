@@ -23,6 +23,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`cloud_events`](#cloud_events) | Read evidence-backed AWS, Azure, and GCP change events without parsing summaries. | `provider`, `scope`, `region`, `category`, `type`, `resource`, `actor`, `correlation`, `noise`, `diff`, `since`, `cursor` |
 | [`cloud_resources`](#cloud_resources) | Inspect current or recently deleted AWS, Azure, and GCP resources with freshness and provenance. | `provider`, `scope`, `region`, `type`, `resource`, `lifecycle`, `provenance`, `freshness`, `max_age`, `cursor` |
 | [`resources`](#resources) | Count and sample current resources of one graph resource type. | `type` |
+| [`operational_impact`](#operational_impact) | Find potential operational impact through reviewed directional graph relationships. | `resource`, `depth` |
 | [`connections`](#connections) | Inspect direct upstream and downstream relationships for a resource. | `resource` |
 | [`hotspots`](#hotspots) | Rank noisy resources, namespaces, alert rules, or alerting workloads. | `type`, `by`, `namespace`, `noise`, `since` |
 | [`incidents`](#incidents) | Reconstruct a correlated incident around a target or correlation identifier. | `target`, `id`, `type`, `since` |
@@ -217,6 +218,33 @@ Return the inventory for one resource type.
 
 ```console
 $ annie graph query "SELECT * FROM resources WHERE type = deployment LIMIT 50"
+```
+
+## operational_impact
+
+Find potential operational impact through reviewed directional graph relationships.
+
+Result intent: `impact`.
+
+Table aliases: `potential_impact`.
+
+Modifiers: `LIMIT`; `OFFSET`.
+
+### Filters
+
+| Filter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `resource` | string | Yes | Any value | Root resource whose potential impact to evaluate. |
+| `depth` | integer | No | Any value | Maximum propagation depth from 1 to 3. Defaults to 2. |
+
+### Forms
+
+#### Potential operational impact
+
+Return resources reachable through reviewed operational impact relationships.
+
+```console
+$ annie graph query "SELECT * FROM operational_impact WHERE resource = checkout-db AND depth = 2 LIMIT 50"
 ```
 
 ## connections

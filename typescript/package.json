@@ -1,6 +1,6 @@
 {
   "name": "@anyshift/graph-sdk",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "TypeScript SDK for the Anyshift Graph API",
   "type": "module",
   "license": "Apache-2.0",

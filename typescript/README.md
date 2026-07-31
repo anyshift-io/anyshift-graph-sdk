@@ -56,6 +56,7 @@ const resources = await graph.cloudResources({
 });
 const provenance = await graph.iac({ resource: "aws_ecs_service.api" });
 const drift = await graph.iacDrift({ resource: "aws_ecs_service.api" });
+const impact = await graph.impact({ resource: "checkout-db", depth: 2 });
 ```
 
 ```ts

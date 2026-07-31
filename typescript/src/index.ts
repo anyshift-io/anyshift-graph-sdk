@@ -10,6 +10,7 @@ export type {
   EventsParams,
   CloudEventsParams,
   CloudResourcesParams,
+  ImpactParams,
   IacParams,
   IacDriftParams,
   HotspotsParams,
@@ -64,4 +65,7 @@ export type {
   ResolveCandidate,
   CloudResourcesResult,
   CloudResourceItem,
+  ImpactResult,
+  ImpactItem,
+  ImpactStep,
 } from "./types.js";

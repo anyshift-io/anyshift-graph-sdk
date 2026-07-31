@@ -42,6 +42,17 @@ console.log(recent.summary);
 ```
 
 ```ts
+const changes = await graph.cloudEvents({
+  provider: "aws",
+  resource: "arn:aws:ecs:eu-west-3:123456789012:service/prod/api",
+  since: "1d",
+  limit: 20,
+});
+const provenance = await graph.iac({ resource: "aws_ecs_service.api" });
+const drift = await graph.iacDrift({ resource: "aws_ecs_service.api" });
+```
+
+```ts
 const blast = await graph.blast({ resource: "checkout" });
 console.log(blast.summary);
 ```

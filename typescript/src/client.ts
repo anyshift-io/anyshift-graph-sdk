@@ -43,6 +43,52 @@ export interface EventsParams {
   limit?: number;
   offset?: number;
 }
+export interface CloudEventsParams {
+  /** Cloud provider. */
+  provider?: "aws" | "azure" | "gcp";
+  /** AWS account, Azure subscription, or GCP project scope. */
+  scope?: string;
+  /** Cloud region or provider location. */
+  region?: string;
+  /** Provider-neutral change category. */
+  category?: "security" | "identity" | "lifecycle" | "configuration" | "capacity" | "backup" | "other";
+  /** Exact normalized cloud event type. */
+  type?: string;
+  /** Exact native id, graph id, or unambiguous resource name. */
+  resource?: string;
+  /** Actor identity, name, or graph id. */
+  actor?: string;
+  /** Correlation id. */
+  correlation?: string;
+  /** Include high-noise evidence. */
+  noise?: "signal" | "all";
+  /** Include sanitized before/after values instead of changed field names only. */
+  diff?: boolean;
+  since?: Since;
+  limit?: number;
+  /** Opaque seek cursor from the preceding page. */
+  cursor?: string;
+}
+export interface IacParams {
+  /** Terraform address or Terraform, state, or cloud graph identifier. */
+  resource?: string;
+  /** IaC linkage status. */
+  status?: "managed" | "unlinked" | "missing_cloud" | "ambiguous" | "stale" | "invalid";
+  /** Evidence freshness window. */
+  freshness?: Since;
+  limit?: number;
+  offset?: number;
+}
+export interface IacDriftParams {
+  /** Terraform address or Terraform, state, or cloud graph identifier. */
+  resource?: string;
+  /** Drift verdict. */
+  status?: "in_sync" | "drifted" | "unknown";
+  /** Evidence freshness window. */
+  freshness?: Since;
+  limit?: number;
+  offset?: number;
+}
 export interface HotspotsParams {
   type?: string;
   // "resource" | "namespace" rank K8s change events; "alertrule" | "alertworkload" rank the
@@ -449,6 +495,24 @@ export class GraphAnswer {
     ], p.limit, p.offset));
   }
 
+  /** Evidence-backed AWS, Azure, and GCP change events with keyset pagination. */
+  cloudEvents(p: CloudEventsParams = {}): Promise<AskResult> {
+    return this.typedQuery(compose("cloud_events", [
+      ["provider", p.provider],
+      ["scope", p.scope],
+      ["region", p.region],
+      ["category", p.category],
+      ["type", p.type],
+      ["resource", p.resource],
+      ["actor", p.actor],
+      ["correlation", p.correlation],
+      ["noise", p.noise === "all" ? "all" : undefined],
+      ["diff", p.diff === true ? "true" : undefined],
+      ["since", p.since],
+      ["cursor", p.cursor],
+    ], p.limit));
+  }
+
   hotspots(p: HotspotsParams = {}): Promise<AskResult> {
     return this.typedQuery(compose("hotspots", [
       ["type", p.type],
@@ -593,6 +657,24 @@ export class GraphAnswer {
       ["resource", p.resource],
       ["namespace", p.namespace],
     ], p.limit));
+  }
+
+  /** Terraform code-to-state-to-cloud provenance and linkage coverage. */
+  iac(p: IacParams = {}): Promise<AskResult> {
+    return this.typedQuery(compose("iac", [
+      ["resource", p.resource],
+      ["status", p.status],
+      ["freshness", p.freshness],
+    ], p.limit, p.offset));
+  }
+
+  /** Compare supported last-applied Terraform state with fresh observed cloud properties. */
+  iacDrift(p: IacDriftParams = {}): Promise<AskResult> {
+    return this.typedQuery(compose("iac_drift", [
+      ["resource", p.resource],
+      ["status", p.status],
+      ["freshness", p.freshness],
+    ], p.limit, p.offset));
   }
 
   /**

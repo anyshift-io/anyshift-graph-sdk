@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.2",
+    "version": "1.4",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -101,6 +101,169 @@
             "name": "Recent resource events",
             "description": "Read recent events for a resource inside a time window.",
             "example": "SELECT * FROM events WHERE target = checkout AND since = 2h LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "cloud_events",
+        "aliases": [
+          "cloudevents",
+          "cloud_event"
+        ],
+        "intent": "cloudevents",
+        "summary": "Read evidence-backed AWS, Azure, and GCP change events without parsing summaries.",
+        "filters": [
+          {
+            "name": "provider",
+            "type": "enum",
+            "description": "Cloud provider.",
+            "values": [
+              {
+                "value": "aws",
+                "description": "Amazon Web Services."
+              },
+              {
+                "value": "azure",
+                "description": "Microsoft Azure."
+              },
+              {
+                "value": "gcp",
+                "description": "Google Cloud Platform."
+              }
+            ]
+          },
+          {
+            "name": "scope",
+            "type": "string",
+            "description": "Provider scope: AWS account, Azure subscription, or GCP project."
+          },
+          {
+            "name": "region",
+            "type": "string",
+            "description": "Cloud region or location."
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "description": "Normalized cloud-change category.",
+            "values": [
+              {
+                "value": "security",
+                "description": "Firewall, encryption, and network-access changes."
+              },
+              {
+                "value": "identity",
+                "description": "IAM, trust, role, policy, grant, and credential changes."
+              },
+              {
+                "value": "lifecycle",
+                "description": "Resource discovery, recreation, start, stop, and deletion evidence."
+              },
+              {
+                "value": "configuration",
+                "description": "Configuration and metadata changes."
+              },
+              {
+                "value": "capacity",
+                "description": "Scaling and capacity changes."
+              },
+              {
+                "value": "backup",
+                "description": "Backup, restore, and snapshot activity."
+              },
+              {
+                "value": "other",
+                "description": "Cloud changes outside the normalized categories."
+              }
+            ]
+          },
+          {
+            "name": "type",
+            "type": "string",
+            "description": "Exact normalized event type. Underscores are preserved."
+          },
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Exact ARN, ARM ID, graph id, or unambiguous resource name."
+          },
+          {
+            "name": "actor",
+            "type": "string",
+            "description": "Actor identity, name, or graph id."
+          },
+          {
+            "name": "correlation",
+            "type": "string",
+            "description": "Correlation id."
+          },
+          {
+            "name": "noise",
+            "type": "enum",
+            "description": "Whether to include high-noise evidence.",
+            "values": [
+              {
+                "value": "signal",
+                "description": "Return signal events only.",
+                "aliases": [
+                  "false",
+                  "exclude"
+                ]
+              },
+              {
+                "value": "all",
+                "description": "Include every stored event.",
+                "aliases": [
+                  "true",
+                  "include",
+                  "raw"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "diff",
+            "type": "enum",
+            "description": "Whether to include sanitized before/after values.",
+            "values": [
+              {
+                "value": "false",
+                "description": "Return changed field names only.",
+                "aliases": [
+                  "no",
+                  "none"
+                ]
+              },
+              {
+                "value": "true",
+                "description": "Return sanitized before/after values.",
+                "aliases": [
+                  "yes",
+                  "include"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          },
+          {
+            "name": "cursor",
+            "type": "string",
+            "description": "Opaque seek cursor returned by the previous page."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Recent cloud changes",
+            "description": "Read a bounded provider-neutral cloud-change timeline.",
+            "example": "SELECT * FROM cloud_events WHERE provider = aws AND category = security AND since = 24h LIMIT 50"
           }
         ]
       },
@@ -1478,10 +1641,148 @@
         ]
       },
       {
+        "name": "iac",
+        "aliases": [
+          "terraform",
+          "iac_provenance"
+        ],
+        "intent": "iac",
+        "summary": "Inspect Terraform code-to-state-to-cloud provenance and linkage coverage.",
+        "filters": [
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Terraform address or Terraform, state, or cloud graph identifier."
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "description": "IaC linkage status.",
+            "values": [
+              {
+                "value": "managed",
+                "description": "One Terraform resource links to one state resource and one fresh cloud resource."
+              },
+              {
+                "value": "unlinked",
+                "description": "Terraform resource has no state match."
+              },
+              {
+                "value": "missing_cloud",
+                "description": "Terraform state resource has no cloud match.",
+                "aliases": [
+                  "missingcloud",
+                  "state_only"
+                ]
+              },
+              {
+                "value": "ambiguous",
+                "description": "More than one state or cloud match exists."
+              },
+              {
+                "value": "stale",
+                "description": "The linked cloud observation exceeds the freshness threshold."
+              },
+              {
+                "value": "invalid",
+                "description": "A direct Terraform-to-cloud INSTANTIATES edge bypasses state."
+              }
+            ]
+          },
+          {
+            "name": "freshness",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": true
+        },
+        "forms": [
+          {
+            "name": "IaC coverage",
+            "description": "Summarize Terraform code-to-state-to-cloud linkage and return a bounded resource page.",
+            "example": "SELECT * FROM iac LIMIT 50"
+          },
+          {
+            "name": "Resource provenance",
+            "description": "Show the Terraform, state, and cloud evidence for one resource.",
+            "example": "SELECT * FROM iac WHERE resource = aws_instance.api_server"
+          },
+          {
+            "name": "IaC linkage gaps",
+            "description": "List resources with one evidence-backed linkage status.",
+            "example": "SELECT * FROM iac WHERE status = unlinked LIMIT 50"
+          }
+        ]
+      },
+      {
+        "name": "iac_drift",
+        "aliases": [
+          "terraform_drift",
+          "drift"
+        ],
+        "intent": "iacdrift",
+        "summary": "Compare last-applied Terraform state with fresh observed cloud properties.",
+        "filters": [
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Terraform address or Terraform, state, or cloud graph identifier."
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "description": "Drift verdict.",
+            "values": [
+              {
+                "value": "drifted",
+                "description": "At least one supported property differs."
+              },
+              {
+                "value": "in_sync",
+                "description": "Every supported property matches.",
+                "aliases": [
+                  "insync",
+                  "synced"
+                ]
+              },
+              {
+                "value": "unknown",
+                "description": "Linkage, support, or freshness is insufficient for a verdict."
+              }
+            ]
+          },
+          {
+            "name": "freshness",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": true
+        },
+        "forms": [
+          {
+            "name": "Current IaC drift",
+            "description": "List supported state-to-cloud differences, excluding unknown evidence by default.",
+            "example": "SELECT * FROM iac_drift WHERE status = drifted LIMIT 50"
+          },
+          {
+            "name": "Resource drift",
+            "description": "Evaluate one Terraform resource using its state and cloud evidence.",
+            "example": "SELECT * FROM iac_drift WHERE resource = aws_instance.api_server"
+          }
+        ]
+      },
+      {
         "name": "gitops",
         "aliases": [
           "argocd",
-          "drift"
+          "gitops_drift",
+          "argocd_drift"
         ],
         "intent": "gitops",
         "summary": "Inspect GitOps drift, unmanaged workloads, or resource ownership.",
@@ -2325,12 +2626,19 @@
                     "string",
                     "null"
                   ]
+                },
+                "externalId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
               "required": [
                 "name",
                 "namespace",
-                "resourceId"
+                "resourceId",
+                "externalId"
               ],
               "additionalProperties": false
             }
@@ -2556,6 +2864,450 @@
           "total",
           "byType",
           "recent",
+          "page"
+        ],
+        "additionalProperties": false
+      },
+      "CloudEventsResult": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "string"
+              },
+              "scope": {
+                "type": "string"
+              },
+              "region": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "resource": {
+                "type": "string"
+              },
+              "actor": {
+                "type": "string"
+              },
+              "correlation": {
+                "type": "string"
+              },
+              "includeNoise": {
+                "type": "boolean"
+              },
+              "includeDiff": {
+                "type": "boolean"
+              },
+              "sinceHours": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            },
+            "required": [
+              "provider",
+              "scope",
+              "region",
+              "category",
+              "type",
+              "resource",
+              "actor",
+              "correlation",
+              "includeNoise",
+              "includeDiff",
+              "sinceHours"
+            ],
+            "additionalProperties": false
+          },
+          "availability": {
+            "type": "object",
+            "properties": {
+              "targetIdentity": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "partial",
+                  "unavailable"
+                ]
+              },
+              "actor": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "partial",
+                  "unavailable"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "partial",
+                  "unavailable"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "partial",
+                  "unavailable"
+                ]
+              }
+            },
+            "required": [
+              "targetIdentity",
+              "actor",
+              "source",
+              "status"
+            ],
+            "additionalProperties": false
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "byType": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "type",
+                "count"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "category": {
+                  "type": "string",
+                  "enum": [
+                    "security",
+                    "identity",
+                    "lifecycle",
+                    "configuration",
+                    "capacity",
+                    "backup",
+                    "other"
+                  ]
+                },
+                "summary": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "aws",
+                    "azure",
+                    "gcp"
+                  ]
+                },
+                "scope": {
+                  "type": "string"
+                },
+                "region": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "target": {
+                  "type": "object",
+                  "properties": {
+                    "hashedID": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "kind": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "hashedID",
+                    "id",
+                    "name",
+                    "kind"
+                  ],
+                  "additionalProperties": false
+                },
+                "actor": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "hashedID": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "name": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "kind": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "hashedID",
+                        "id",
+                        "name",
+                        "kind"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "change": {
+                  "type": "object",
+                  "properties": {
+                    "fields": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "before": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "after": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "before",
+                          "after"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "fields",
+                    "details"
+                  ],
+                  "additionalProperties": false
+                },
+                "evidence": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "audit",
+                        "snapshot",
+                        "reconciliation",
+                        "unknown"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "success",
+                        "failed",
+                        "unknown"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "source",
+                    "status"
+                  ],
+                  "additionalProperties": false
+                },
+                "correlation": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "isRoot": {
+                      "type": "boolean"
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "confidence": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "isRoot",
+                    "reason",
+                    "confidence"
+                  ],
+                  "additionalProperties": false
+                },
+                "noiseClass": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "provenance": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "managed",
+                        "configured",
+                        "unknown"
+                      ]
+                    },
+                    "references": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "references"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "id",
+                "timestamp",
+                "type",
+                "category",
+                "summary",
+                "provider",
+                "scope",
+                "region",
+                "target",
+                "actor",
+                "change",
+                "evidence",
+                "correlation",
+                "noiseClass",
+                "provenance"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "page": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "hasMore": {
+                "type": "boolean"
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "limit",
+              "hasMore",
+              "nextCursor"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "filter",
+          "availability",
+          "warnings",
+          "total",
+          "byType",
+          "items",
           "page"
         ],
         "additionalProperties": false
@@ -6880,6 +7632,665 @@
         ],
         "additionalProperties": false
       },
+      "IacResult": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "freshnessHours": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "resource",
+              "status",
+              "freshnessHours"
+            ],
+            "additionalProperties": false
+          },
+          "coverage": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "managed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "unlinked": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "missingCloud": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "ambiguous": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "stale": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "invalid": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "total",
+              "managed",
+              "unlinked",
+              "missingCloud",
+              "ambiguous",
+              "stale",
+              "invalid"
+            ],
+            "additionalProperties": false
+          },
+          "resources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "terraform": {
+                  "type": "object",
+                  "properties": {
+                    "hashedID": {
+                      "type": "string"
+                    },
+                    "anyshiftID": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "address": {
+                      "type": "string"
+                    },
+                    "resourceType": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "resourceName": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "fileRef": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "githubUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "hashedID",
+                    "anyshiftID",
+                    "address",
+                    "resourceType",
+                    "resourceName",
+                    "fileRef",
+                    "githubUrl"
+                  ],
+                  "additionalProperties": false
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "managed",
+                    "unlinked",
+                    "missing_cloud",
+                    "ambiguous",
+                    "stale",
+                    "invalid"
+                  ]
+                },
+                "states": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "anyshiftID": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "graphType": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "resourceType": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "serial": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "lineage": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "terraformVersion": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "hashedID",
+                      "anyshiftID",
+                      "graphType",
+                      "resourceType",
+                      "serial",
+                      "lineage",
+                      "terraformVersion"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "clouds": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "anyshiftID": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "graphType": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "observedAt": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "hashedID",
+                      "anyshiftID",
+                      "graphType",
+                      "observedAt"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "directClouds": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "anyshiftID": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "graphType": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "observedAt": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "hashedID",
+                      "anyshiftID",
+                      "graphType",
+                      "observedAt"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "terraform",
+                "status",
+                "states",
+                "clouds",
+                "directClouds"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "page": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "hasMore": {
+                "type": "boolean"
+              },
+              "nextOffset": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "limit",
+              "offset",
+              "hasMore",
+              "nextOffset"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "filter",
+          "coverage",
+          "resources",
+          "page"
+        ],
+        "additionalProperties": false
+      },
+      "IacDriftResult": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "freshnessHours": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "resource",
+              "status",
+              "freshnessHours"
+            ],
+            "additionalProperties": false
+          },
+          "counts": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "inSync": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "drifted": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "unknown": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "total",
+              "inSync",
+              "drifted",
+              "unknown"
+            ],
+            "additionalProperties": false
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "terraform": {
+                  "type": "object",
+                  "properties": {
+                    "hashedID": {
+                      "type": "string"
+                    },
+                    "anyshiftID": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "address": {
+                      "type": "string"
+                    },
+                    "resourceType": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "resourceName": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "fileRef": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "githubUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "hashedID",
+                    "anyshiftID",
+                    "address",
+                    "resourceType",
+                    "resourceName",
+                    "fileRef",
+                    "githubUrl"
+                  ],
+                  "additionalProperties": false
+                },
+                "state": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "hashedID": {
+                          "type": "string"
+                        },
+                        "anyshiftID": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "graphType": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "resourceType": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "serial": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "lineage": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "terraformVersion": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "hashedID",
+                        "anyshiftID",
+                        "graphType",
+                        "resourceType",
+                        "serial",
+                        "lineage",
+                        "terraformVersion"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "cloud": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "hashedID": {
+                          "type": "string"
+                        },
+                        "anyshiftID": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "graphType": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "observedAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "hashedID",
+                        "anyshiftID",
+                        "graphType",
+                        "observedAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "in_sync",
+                    "drifted",
+                    "unknown"
+                  ]
+                },
+                "category": {
+                  "type": "string",
+                  "enum": [
+                    "none",
+                    "configuration",
+                    "existence",
+                    "linkage",
+                    "freshness",
+                    "unsupported"
+                  ]
+                },
+                "reason": {
+                  "type": "string",
+                  "enum": [
+                    "compared",
+                    "unsupported_resource_type",
+                    "unlinked",
+                    "missing_cloud",
+                    "ambiguous",
+                    "stale_evidence",
+                    "invalid_direct_link"
+                  ]
+                },
+                "supported": {
+                  "type": "boolean"
+                },
+                "comparedFields": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "differences": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "field": {
+                        "type": "string"
+                      },
+                      "lastApplied": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "observed": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "field",
+                      "lastApplied",
+                      "observed"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "terraform",
+                "state",
+                "cloud",
+                "status",
+                "category",
+                "reason",
+                "supported",
+                "comparedFields",
+                "differences"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "page": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "hasMore": {
+                "type": "boolean"
+              },
+              "nextOffset": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "limit",
+              "offset",
+              "hasMore",
+              "nextOffset"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "filter",
+          "counts",
+          "items",
+          "page"
+        ],
+        "additionalProperties": false
+      },
       "AskResult": {
         "oneOf": [
           {
@@ -7201,6 +8612,90 @@
                 "oneOf": [
                   {
                     "$ref": "#/components/schemas/EventsResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "question",
+              "intent",
+              "summary",
+              "cloudEvents"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "countOnly": {
+                "type": "boolean"
+              },
+              "elapsedMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "resolved": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "term",
+                      "hashedID",
+                      "name",
+                      "type"
+                    ],
+                    "properties": {
+                      "term": {
+                        "type": "string"
+                      },
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphNode"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphEdge"
+                }
+              },
+              "intent": {
+                "const": "cloudevents"
+              },
+              "cloudEvents": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/CloudEventsResult"
                   },
                   {
                     "type": "null"
@@ -10395,6 +11890,174 @@
                 "oneOf": [
                   {
                     "$ref": "#/components/schemas/PriorityResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "question",
+              "intent",
+              "summary",
+              "iac"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "countOnly": {
+                "type": "boolean"
+              },
+              "elapsedMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "resolved": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "term",
+                      "hashedID",
+                      "name",
+                      "type"
+                    ],
+                    "properties": {
+                      "term": {
+                        "type": "string"
+                      },
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphNode"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphEdge"
+                }
+              },
+              "intent": {
+                "const": "iac"
+              },
+              "iac": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/IacResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "question",
+              "intent",
+              "summary",
+              "iacDrift"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "countOnly": {
+                "type": "boolean"
+              },
+              "elapsedMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "resolved": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "term",
+                      "hashedID",
+                      "name",
+                      "type"
+                    ],
+                    "properties": {
+                      "term": {
+                        "type": "string"
+                      },
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphNode"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphEdge"
+                }
+              },
+              "intent": {
+                "const": "iacdrift"
+              },
+              "iacDrift": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/IacDriftResult"
                   },
                   {
                     "type": "null"

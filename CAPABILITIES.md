@@ -151,6 +151,18 @@ Each helper supports `target` for a drill-down view and `limit` for ranked lists
 | Unmanaged workloads | `graph.gitops({ subject: "unmanaged" })` | `gitops` | Which workloads are not managed by GitOps. |
 | Workload ownership | `graph.gitops({ subject: "owner", resource })` | `gitops` | Which ArgoCD app, repository, or owner manages a workload. |
 
+## Cloud And IaC Evidence
+
+| Capability | TypeScript helper | Graph query target | Use it to answer |
+| --- | --- | --- | --- |
+| Cloud resource changes | `graph.cloudEvents({ resource, since })` | `cloud_events` | Which normalized cloud-provider events changed a resource, with actor and source evidence when available. |
+| IaC provenance | `graph.iac({ resource, freshness })` | `iac` | Which Terraform address, file, repository, and state evidence define a cloud resource. |
+| IaC drift evidence | `graph.iacDrift({ resource, freshness })` | `iac_drift` | Whether state and observed cloud evidence agree, including field differences and the reason for an unknown result. |
+
+Use stable Anyshift resource IDs when they are available. `cloudEvents` also supports cursor
+pagination and a `diff` filter; `iac` and `iacDrift` accept bounded result limits. Treat an
+`unknown` drift result as missing or insufficient evidence, not as confirmed drift.
+
 ## Natural Language
 
 Use `graph.ask(question)` when the caller has a human question rather than a specific query shape.

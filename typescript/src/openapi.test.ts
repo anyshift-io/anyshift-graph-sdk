@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("pinned OpenAPI exposes the executable 42-intent contract", async () => {
+test("pinned OpenAPI exposes the executable 45-intent contract", async () => {
   const raw = await readFile(new URL("../../openapi/graph-api.v1.json", import.meta.url), "utf8");
   const document = JSON.parse(raw);
   const schemas = document.components.schemas;
@@ -12,9 +12,9 @@ test("pinned OpenAPI exposes the executable 42-intent contract", async () => {
   assert.equal(schemas.QueryRequest.additionalProperties, false);
   assert.equal(schemas.AskRequest.additionalProperties, false);
   assert.equal(schemas.AskResult.discriminator.propertyName, "intent");
-  assert.equal(variants.length, 42);
-  assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, 42);
-  assert.equal(queryLanguage.version, "1.2");
+  assert.equal(variants.length, 45);
+  assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, 45);
+  assert.equal(queryLanguage.version, "1.4");
   assert.equal(queryLanguage.tables.length, variants.length);
   const inventorySample = schemas.InventoryResult.properties.sample.items;
   assert.deepEqual(inventorySample.properties.resourceId.type, ["string", "null"]);
@@ -27,7 +27,14 @@ test("pinned OpenAPI exposes the executable 42-intent contract", async () => {
   ]);
   const path = queryLanguage.tables.find((table: any) => table.name === "path");
   const topology = queryLanguage.tables.find((table: any) => table.name === "topology");
+  const cloudEvents = queryLanguage.tables.find((table: any) => table.name === "cloud_events");
+  const iac = queryLanguage.tables.find((table: any) => table.name === "iac");
+  const iacDrift = queryLanguage.tables.find((table: any) => table.name === "iac_drift");
   assert.ok(path.filters.some((filter: any) => filter.name === "from_type"));
   assert.ok(path.filters.some((filter: any) => filter.name === "scope"));
   assert.ok(topology.filters.find((filter: any) => filter.name === "source").values.some((entry: any) => entry.value === "tempo"));
+  assert.ok(cloudEvents.filters.some((filter: any) => filter.name === "cursor"));
+  assert.ok(cloudEvents.filters.some((filter: any) => filter.name === "diff"));
+  assert.ok(iac.filters.some((filter: any) => filter.name === "freshness"));
+  assert.ok(iacDrift.filters.some((filter: any) => filter.name === "status"));
 });

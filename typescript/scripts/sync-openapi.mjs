@@ -14,11 +14,11 @@ const queryLanguage = document?.["x-anyshift-query-language"];
 if (
   document?.openapi !== "3.1.0"
   || askResult?.discriminator?.propertyName !== "intent"
-  || askResult?.oneOf?.length !== 42
-  || queryLanguage?.version !== "1.2"
+  || askResult?.oneOf?.length !== 45
+  || queryLanguage?.version !== "1.4"
   || queryLanguage?.tables?.length !== askResult.oneOf.length
 ) {
-  throw new Error(`${source} does not expose the expected executable 42-intent and query-language 1.2 contract`);
+  throw new Error(`${source} does not expose the expected executable 45-intent and query-language 1.4 contract`);
 }
 
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`);

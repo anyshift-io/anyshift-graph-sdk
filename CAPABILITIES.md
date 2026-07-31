@@ -47,6 +47,7 @@ Common parameters:
 | Direct connections | `graph.connections({ resource })` | `connections` | What is directly connected to a resource. |
 | Inventory | `graph.inventory({ type })` | `resources` | Which resources of a type exist in the graph. |
 | Cloud inventory | `graph.cloudResources()` | `cloud_resources` | Which current or retained AWS, Azure, and GCP resources exist, with lifecycle, freshness, identity, and IaC provenance evidence. |
+| Evidence-safe operational impact | `graph.impact({ resource, depth })` | `operational_impact` | Which resources are potentially reachable over reviewed directional operational edges, with every supporting path step. |
 | Blast radius | `graph.blast({ resource })` | `blast_radius` | Which workloads and services are affected if a resource changes or fails. |
 | Dependency path | `graph.path({ from, to, scope })` | `path` | How two resources are connected, including Tempo APM identity and dependency edges in `operational` scope. |
 | Downstream footprint | `graph.serviceTree()` | `servicetree` | A service's transitive downstream services and infrastructure leaves. |
@@ -67,6 +68,9 @@ from Grafana Tempo traces.
 Graph edges include a reviewed semantic class and conservative impact eligibility. Unknown
 relationship types remain non-impacting. Missing cloud provenance remains `unknown`; it is not
 reported as unmanaged or drifted.
+
+`graph.impact()` reports potential reachability from stored graph edges. It does not claim that a
+failure will occur or that a reachable resource caused an incident.
 
 ## Topology And Diagrams
 

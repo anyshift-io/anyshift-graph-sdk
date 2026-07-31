@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.2 - 2026-07-31
+
+### Added
+
+- Added typed `impact` traversal over the Graph API's reviewed, directional operational-edge
+  allowlist with bounded depth.
+
+### Changed
+
+- Pinned the Graph API v0.2.28 contract and query-language 1.6 catalog.
+
 ## 0.5.1 - 2026-07-31
 
 ### Added

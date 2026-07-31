@@ -511,6 +511,46 @@ export interface components {
                 affected: number;
             }[];
         };
+        ImpactResult: {
+            filter: {
+                resource: string;
+                maxDepth: number;
+            };
+            evidence: {
+                /** @enum {string} */
+                status: "observed" | "not_observed";
+                /** @constant */
+                boundary: "reviewed_operational_edges";
+                edgeTypes: string[];
+            };
+            warnings: string[];
+            total: number;
+            items: {
+                hashedID: string;
+                id: string | null;
+                name: string | null;
+                kind: string | null;
+                namespace: string | null;
+                scope: string | null;
+                depth: number;
+                pathCount: number;
+                path: {
+                    from: string;
+                    to: string;
+                    type: string;
+                    /** @enum {string} */
+                    semantic: "dependency" | "ownership";
+                    /** @enum {string} */
+                    relationshipDirection: "forward" | "reverse";
+                }[];
+            }[];
+            page: {
+                limit: number;
+                offset: number;
+                hasMore: boolean;
+                nextOffset: number | null;
+            };
+        };
         SpofResult: {
             /** @enum {string} */
             kind: "configmap" | "serviceaccount" | "node";
@@ -1471,6 +1511,22 @@ export interface components {
             /** @constant */
             intent: "blast";
             blastRadius: components["schemas"]["BlastRadiusResult"] | null;
+        } | {
+            question: string;
+            summary: string;
+            countOnly?: boolean;
+            elapsedMs?: number;
+            resolved?: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            nodes?: components["schemas"]["GraphNode"][];
+            edges?: components["schemas"]["GraphEdge"][];
+            /** @constant */
+            intent: "impact";
+            impact: components["schemas"]["ImpactResult"] | null;
         } | {
             question: string;
             summary: string;

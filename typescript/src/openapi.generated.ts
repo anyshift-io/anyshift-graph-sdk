@@ -111,6 +111,9 @@ export interface components {
             type: string;
             /** @enum {string} */
             direction: "upstream" | "downstream";
+            /** @enum {string} */
+            semantic: "dependency" | "ownership" | "identity" | "connectivity" | "context" | "plumbing" | "unknown";
+            impact: boolean;
         };
         ResolveResult: {
             term: string;
@@ -256,6 +259,74 @@ export interface components {
                     status: "managed" | "configured" | "unknown";
                     references: string[];
                 };
+            }[];
+            page: {
+                limit: number;
+                hasMore: boolean;
+                nextCursor: string | null;
+            };
+        };
+        CloudResourcesResult: {
+            filter: {
+                provider: string;
+                scope: string;
+                region: string;
+                type: string;
+                resource: string;
+                /** @enum {string} */
+                lifecycle: "alive" | "deleted" | "all";
+                /** @enum {string} */
+                provenance: "" | "managed" | "configured" | "unknown";
+                /** @enum {string} */
+                freshness: "" | "fresh" | "stale" | "unknown";
+                freshnessHours: number;
+            };
+            availability: {
+                /** @enum {string} */
+                source: "available" | "partial" | "unavailable";
+                /** @enum {string} */
+                identity: "available" | "partial" | "unavailable";
+                /** @enum {string} */
+                freshness: "available" | "partial" | "unavailable";
+                /** @enum {string} */
+                provenance: "available" | "partial" | "unavailable";
+            };
+            warnings: string[];
+            counts: {
+                total: number;
+                fresh: number;
+                stale: number;
+                unknown: number;
+            };
+            byProvider: {
+                /** @enum {string} */
+                provider: "aws" | "azure" | "gcp";
+                count: number;
+            }[];
+            byType: {
+                type: string;
+                count: number;
+            }[];
+            items: {
+                hashedID: string;
+                id: string | null;
+                name: string | null;
+                kind: string | null;
+                /** @enum {string} */
+                provider: "aws" | "azure" | "gcp";
+                scope: string;
+                region: string | null;
+                /** @enum {string} */
+                lifecycle: "alive" | "deleted";
+                observedAt: string | null;
+                /** @enum {string} */
+                freshness: "fresh" | "stale" | "unknown";
+                provenance: {
+                    /** @enum {string} */
+                    status: "managed" | "configured" | "unknown";
+                    references: string[];
+                };
+                relationshipCount: number;
             }[];
             page: {
                 limit: number;
@@ -1240,6 +1311,22 @@ export interface components {
             /** @constant */
             intent: "cloudevents";
             cloudEvents: components["schemas"]["CloudEventsResult"] | null;
+        } | {
+            question: string;
+            summary: string;
+            countOnly?: boolean;
+            elapsedMs?: number;
+            resolved?: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            nodes?: components["schemas"]["GraphNode"][];
+            edges?: components["schemas"]["GraphEdge"][];
+            /** @constant */
+            intent: "cloudresources";
+            cloudResources: components["schemas"]["CloudResourcesResult"] | null;
         } | {
             question: string;
             summary: string;

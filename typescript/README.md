@@ -48,6 +48,12 @@ const changes = await graph.cloudEvents({
   since: "1d",
   limit: 20,
 });
+const resources = await graph.cloudResources({
+  provider: "aws",
+  type: "EC2_INSTANCE",
+  lifecycle: "alive",
+  maxAge: "24h",
+});
 const provenance = await graph.iac({ resource: "aws_ecs_service.api" });
 const drift = await graph.iacDrift({ resource: "aws_ecs_service.api" });
 ```

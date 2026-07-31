@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.4",
+    "version": "1.5",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -264,6 +264,134 @@
             "name": "Recent cloud changes",
             "description": "Read a bounded provider-neutral cloud-change timeline.",
             "example": "SELECT * FROM cloud_events WHERE provider = aws AND category = security AND since = 24h LIMIT 50"
+          }
+        ]
+      },
+      {
+        "name": "cloud_resources",
+        "aliases": [
+          "cloudresources",
+          "cloud_inventory"
+        ],
+        "intent": "cloudresources",
+        "summary": "Inspect current or recently deleted AWS, Azure, and GCP resources with freshness and provenance.",
+        "filters": [
+          {
+            "name": "provider",
+            "type": "enum",
+            "description": "Cloud provider.",
+            "values": [
+              {
+                "value": "aws",
+                "description": "Amazon Web Services."
+              },
+              {
+                "value": "azure",
+                "description": "Microsoft Azure."
+              },
+              {
+                "value": "gcp",
+                "description": "Google Cloud Platform."
+              }
+            ]
+          },
+          {
+            "name": "scope",
+            "type": "string",
+            "description": "Provider scope: AWS account, Azure subscription, or GCP project."
+          },
+          {
+            "name": "region",
+            "type": "string",
+            "description": "Cloud region or location."
+          },
+          {
+            "name": "type",
+            "type": "string",
+            "description": "Provider resource type, such as EC2_INSTANCE or COMPUTE_INSTANCES."
+          },
+          {
+            "name": "resource",
+            "type": "string",
+            "description": "Exact native id, graph id, or unambiguous resource name."
+          },
+          {
+            "name": "lifecycle",
+            "type": "enum",
+            "description": "Resource lifecycle. Defaults to alive.",
+            "values": [
+              {
+                "value": "alive",
+                "description": "Current resources."
+              },
+              {
+                "value": "deleted",
+                "description": "Tombstoned resources still inside retention."
+              },
+              {
+                "value": "all",
+                "description": "Current and tombstoned resources."
+              }
+            ]
+          },
+          {
+            "name": "provenance",
+            "type": "enum",
+            "description": "IaC provenance status.",
+            "values": [
+              {
+                "value": "managed",
+                "description": "A STATE resource manages the cloud resource."
+              },
+              {
+                "value": "configured",
+                "description": "An ARN pattern configures the cloud resource."
+              },
+              {
+                "value": "unknown",
+                "description": "No stored IaC provenance evidence."
+              }
+            ]
+          },
+          {
+            "name": "freshness",
+            "type": "enum",
+            "description": "Freshness verdict relative to max_age.",
+            "values": [
+              {
+                "value": "fresh",
+                "description": "Observation is inside max_age."
+              },
+              {
+                "value": "stale",
+                "description": "Observation is older than max_age."
+              },
+              {
+                "value": "unknown",
+                "description": "No parseable observation time is stored."
+              }
+            ]
+          },
+          {
+            "name": "max_age",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          },
+          {
+            "name": "cursor",
+            "type": "string",
+            "description": "Opaque seek cursor returned by the previous page."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Current cloud inventory",
+            "description": "List provider resources with explicit freshness and provenance evidence.",
+            "example": "SELECT * FROM cloud_resources WHERE provider = aws AND type = EC2_INSTANCE LIMIT 50"
           }
         ]
       },
@@ -2507,13 +2635,30 @@
               "upstream",
               "downstream"
             ]
+          },
+          "semantic": {
+            "type": "string",
+            "enum": [
+              "dependency",
+              "ownership",
+              "identity",
+              "connectivity",
+              "context",
+              "plumbing",
+              "unknown"
+            ]
+          },
+          "impact": {
+            "type": "boolean"
           }
         },
         "required": [
           "from",
           "to",
           "type",
-          "direction"
+          "direction",
+          "semantic",
+          "impact"
         ],
         "additionalProperties": false
       },
@@ -3306,6 +3451,341 @@
           "availability",
           "warnings",
           "total",
+          "byType",
+          "items",
+          "page"
+        ],
+        "additionalProperties": false
+      },
+      "CloudResourcesResult": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "string"
+              },
+              "scope": {
+                "type": "string"
+              },
+              "region": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "resource": {
+                "type": "string"
+              },
+              "lifecycle": {
+                "type": "string",
+                "enum": [
+                  "alive",
+                  "deleted",
+                  "all"
+                ]
+              },
+              "provenance": {
+                "type": "string",
+                "enum": [
+                  "",
+                  "managed",
+                  "configured",
+                  "unknown"
+                ]
+              },
+              "freshness": {
+                "type": "string",
+                "enum": [
+                  "",
+                  "fresh",
+                  "stale",
+                  "unknown"
+                ]
+              },
+              "freshnessHours": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            },
+            "required": [
+              "provider",
+              "scope",
+              "region",
+              "type",
+              "resource",
+              "lifecycle",
+              "provenance",
+              "freshness",
+              "freshnessHours"
+            ],
+            "additionalProperties": false
+          },
+          "availability": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "partial",
+                  "unavailable"
+                ]
+              },
+              "identity": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "partial",
+                  "unavailable"
+                ]
+              },
+              "freshness": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "partial",
+                  "unavailable"
+                ]
+              },
+              "provenance": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "partial",
+                  "unavailable"
+                ]
+              }
+            },
+            "required": [
+              "source",
+              "identity",
+              "freshness",
+              "provenance"
+            ],
+            "additionalProperties": false
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "counts": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "fresh": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "stale": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "unknown": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "total",
+              "fresh",
+              "stale",
+              "unknown"
+            ],
+            "additionalProperties": false
+          },
+          "byProvider": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "aws",
+                    "azure",
+                    "gcp"
+                  ]
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "provider",
+                "count"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "byType": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "type",
+                "count"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "hashedID": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "kind": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "aws",
+                    "azure",
+                    "gcp"
+                  ]
+                },
+                "scope": {
+                  "type": "string"
+                },
+                "region": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "lifecycle": {
+                  "type": "string",
+                  "enum": [
+                    "alive",
+                    "deleted"
+                  ]
+                },
+                "observedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "freshness": {
+                  "type": "string",
+                  "enum": [
+                    "fresh",
+                    "stale",
+                    "unknown"
+                  ]
+                },
+                "provenance": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "managed",
+                        "configured",
+                        "unknown"
+                      ]
+                    },
+                    "references": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "references"
+                  ],
+                  "additionalProperties": false
+                },
+                "relationshipCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "hashedID",
+                "id",
+                "name",
+                "kind",
+                "provider",
+                "scope",
+                "region",
+                "lifecycle",
+                "observedAt",
+                "freshness",
+                "provenance",
+                "relationshipCount"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "page": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "hasMore": {
+                "type": "boolean"
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "limit",
+              "hasMore",
+              "nextCursor"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "filter",
+          "availability",
+          "warnings",
+          "counts",
+          "byProvider",
           "byType",
           "items",
           "page"
@@ -8696,6 +9176,90 @@
                 "oneOf": [
                   {
                     "$ref": "#/components/schemas/CloudEventsResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "question",
+              "intent",
+              "summary",
+              "cloudResources"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "countOnly": {
+                "type": "boolean"
+              },
+              "elapsedMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "resolved": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "term",
+                      "hashedID",
+                      "name",
+                      "type"
+                    ],
+                    "properties": {
+                      "term": {
+                        "type": "string"
+                      },
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphNode"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphEdge"
+                }
+              },
+              "intent": {
+                "const": "cloudresources"
+              },
+              "cloudResources": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/CloudResourcesResult"
                   },
                   {
                     "type": "null"

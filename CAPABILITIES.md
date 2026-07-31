@@ -46,6 +46,7 @@ Common parameters:
 | Resource resolution | `graph.resolve({ term })` | `resolve` | Which current resources best match a name or fragment before opening a drill-down. |
 | Direct connections | `graph.connections({ resource })` | `connections` | What is directly connected to a resource. |
 | Inventory | `graph.inventory({ type })` | `resources` | Which resources of a type exist in the graph. |
+| Cloud inventory | `graph.cloudResources()` | `cloud_resources` | Which current or retained AWS, Azure, and GCP resources exist, with lifecycle, freshness, identity, and IaC provenance evidence. |
 | Blast radius | `graph.blast({ resource })` | `blast_radius` | Which workloads and services are affected if a resource changes or fails. |
 | Dependency path | `graph.path({ from, to, scope })` | `path` | How two resources are connected, including Tempo APM identity and dependency edges in `operational` scope. |
 | Downstream footprint | `graph.serviceTree()` | `servicetree` | A service's transitive downstream services and infrastructure leaves. |
@@ -62,6 +63,10 @@ The APM dependency helpers `datastore`, `flow`, `externalDep`, `calls`, `service
 `topology` accept `source: "auto" | "datadog" | "tempo"`. Tempo mode reads the service maps,
 datastores, messaging destinations, external endpoints, and Kubernetes identity bridges derived
 from Grafana Tempo traces.
+
+Graph edges include a reviewed semantic class and conservative impact eligibility. Unknown
+relationship types remain non-impacting. Missing cloud provenance remains `unknown`; it is not
+reported as unmanaged or drifted.
 
 ## Topology And Diagrams
 

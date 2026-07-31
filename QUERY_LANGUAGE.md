@@ -21,6 +21,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`resolve`](#resolve) | Resolve a resource name or fragment to ranked current graph resources. | `term` |
 | [`events`](#events) | Read the infrastructure change-event timeline. | `type`, `target`, `namespace`, `noise`, `since` |
 | [`cloud_events`](#cloud_events) | Read evidence-backed AWS, Azure, and GCP change events without parsing summaries. | `provider`, `scope`, `region`, `category`, `type`, `resource`, `actor`, `correlation`, `noise`, `diff`, `since`, `cursor` |
+| [`cloud_resources`](#cloud_resources) | Inspect current or recently deleted AWS, Azure, and GCP resources with freshness and provenance. | `provider`, `scope`, `region`, `type`, `resource`, `lifecycle`, `provenance`, `freshness`, `max_age`, `cursor` |
 | [`resources`](#resources) | Count and sample current resources of one graph resource type. | `type` |
 | [`connections`](#connections) | Inspect direct upstream and downstream relationships for a resource. | `resource` |
 | [`hotspots`](#hotspots) | Rank noisy resources, namespaces, alert rules, or alerting workloads. | `type`, `by`, `namespace`, `noise`, `since` |
@@ -155,6 +156,41 @@ Read a bounded provider-neutral cloud-change timeline.
 
 ```console
 $ annie graph query "SELECT * FROM cloud_events WHERE provider = aws AND category = security AND since = 24h LIMIT 50"
+```
+
+## cloud_resources
+
+Inspect current or recently deleted AWS, Azure, and GCP resources with freshness and provenance.
+
+Result intent: `cloudresources`.
+
+Table aliases: `cloudresources`, `cloud_inventory`.
+
+Modifiers: `LIMIT`; `OFFSET` is not applied.
+
+### Filters
+
+| Filter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `provider` | enum | No | `aws`<br />`azure`<br />`gcp` | Cloud provider. |
+| `scope` | string | No | Any value | Provider scope: AWS account, Azure subscription, or GCP project. |
+| `region` | string | No | Any value | Cloud region or location. |
+| `type` | string | No | Any value | Provider resource type, such as EC2_INSTANCE or COMPUTE_INSTANCES. |
+| `resource` | string | No | Any value | Exact native id, graph id, or unambiguous resource name. |
+| `lifecycle` | enum | No | `alive`<br />`deleted`<br />`all` | Resource lifecycle. Defaults to alive. |
+| `provenance` | enum | No | `managed`<br />`configured`<br />`unknown` | IaC provenance status. |
+| `freshness` | enum | No | `fresh`<br />`stale`<br />`unknown` | Freshness verdict relative to max_age. |
+| `max_age` | duration | No | Any value | Relative lookback such as 30m, 2h, 1d, or today. |
+| `cursor` | string | No | Any value | Opaque seek cursor returned by the previous page. |
+
+### Forms
+
+#### Current cloud inventory
+
+List provider resources with explicit freshness and provenance evidence.
+
+```console
+$ annie graph query "SELECT * FROM cloud_resources WHERE provider = aws AND type = EC2_INSTANCE LIMIT 50"
 ```
 
 ## resources

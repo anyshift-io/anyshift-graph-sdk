@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.1 - 2026-07-31
+
+### Added
+
+- Added typed `cloudResources` inventory with lifecycle, freshness, native identity, IaC
+  provenance, and keyset pagination.
+- Added reviewed semantic classes and conservative impact eligibility to graph edges.
+
+### Changed
+
+- Pinned the Graph API v0.2.27 contract and query-language 1.5 catalog.
+
 ## 0.5.0 - 2026-07-31
 
 ### Added

@@ -9,6 +9,7 @@ export type {
   Since,
   EventsParams,
   CloudEventsParams,
+  CloudResourcesParams,
   IacParams,
   IacDriftParams,
   HotspotsParams,
@@ -61,4 +62,6 @@ export type {
   TopologyResult,
   ResolveResult,
   ResolveCandidate,
+  CloudResourcesResult,
+  CloudResourceItem,
 } from "./types.js";

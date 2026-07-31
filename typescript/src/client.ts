@@ -69,6 +69,26 @@ export interface CloudEventsParams {
   /** Opaque seek cursor from the preceding page. */
   cursor?: string;
 }
+export interface CloudResourcesParams {
+  /** Cloud provider. */
+  provider?: "aws" | "azure" | "gcp";
+  /** AWS account, Azure subscription, or GCP project scope. */
+  scope?: string;
+  /** Cloud region or provider location. */
+  region?: string;
+  /** Provider resource type, such as EC2_INSTANCE or COMPUTE_INSTANCES. */
+  type?: string;
+  /** Exact native id, graph id, or unambiguous resource name. */
+  resource?: string;
+  lifecycle?: "alive" | "deleted" | "all";
+  provenance?: "managed" | "configured" | "unknown";
+  freshness?: "fresh" | "stale" | "unknown";
+  /** Maximum observation age used for the freshness verdict. */
+  maxAge?: Since;
+  /** Opaque seek cursor from the preceding page. */
+  cursor?: string;
+  limit?: number;
+}
 export interface IacParams {
   /** Terraform address or Terraform, state, or cloud graph identifier. */
   resource?: string;
@@ -509,6 +529,22 @@ export class GraphAnswer {
       ["noise", p.noise === "all" ? "all" : undefined],
       ["diff", p.diff === true ? "true" : undefined],
       ["since", p.since],
+      ["cursor", p.cursor],
+    ], p.limit));
+  }
+
+  /** Current and retained cloud inventory with freshness and IaC provenance evidence. */
+  cloudResources(p: CloudResourcesParams = {}): Promise<AskResult> {
+    return this.typedQuery(compose("cloud_resources", [
+      ["provider", p.provider],
+      ["scope", p.scope],
+      ["region", p.region],
+      ["type", p.type],
+      ["resource", p.resource],
+      ["lifecycle", p.lifecycle],
+      ["provenance", p.provenance],
+      ["freshness", p.freshness],
+      ["max_age", p.maxAge],
       ["cursor", p.cursor],
     ], p.limit));
   }

@@ -88,6 +88,7 @@ integration is disconnected or misconfigured.
 | Capability | TypeScript helper | Graph query target | Use it to answer |
 | --- | --- | --- | --- |
 | Service topology | `graph.topology({ service, level })` | `topology` | Get a typed `{ nodes, edges }` graph for a service neighborhood. |
+| ECS configured topology | `graph.topology({ service, source: "configuration", endpoint, dependency })` | `topology` | Prove a configured dependency from an explicit endpoint alias without exposing environment values. |
 | Mermaid rendering | `toMermaid(result)` | n/a | Convert a topology result into Mermaid text for reports, PRs, and runbooks. |
 
 Topology levels:

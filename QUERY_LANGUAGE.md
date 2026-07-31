@@ -68,7 +68,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`storage`](#storage) | Inspect workload storage and find orphaned or unclaimed volumes. | `mode`, `workload`, `resource`, `class`, `namespace` |
 | [`pdb`](#pdb) | Find workloads without PodDisruptionBudgets or inspect one workload or PDB. | `target`, `workload`, `pdb` |
 | [`scaling`](#scaling) | Find workloads without HPAs, list autoscaled workloads, or inspect one target. | `mode`, `namespace`, `target` |
-| [`topology`](#topology) | Build a typed service topology at a selected level. | `service`, `level`, `source` |
+| [`topology`](#topology) | Build a typed service topology at a selected level. | `service`, `level`, `source`, `endpoint`, `dependency` |
 
 ## resolve
 
@@ -1603,7 +1603,9 @@ Modifiers: `LIMIT` is not applied; `OFFSET` is not applied.
 | --- | --- | --- | --- | --- |
 | `service` | string | Yes | Any value | Service or workload name. |
 | `level` | enum | No | `context`<br />`container`<br />`component`<br />`dynamic` | Topology level. Defaults to container. |
-| `source` | enum | No | `auto`<br />`datadog`<br />`tempo`<br />`dynatrace` | APM dependency source. Defaults to auto. |
+| `source` | enum | No | `auto`<br />`datadog`<br />`tempo`<br />`dynatrace`<br />`configuration` | Topology evidence source. Defaults to auto-discovered APM evidence. |
+| `endpoint` | string | No | Any value | Explicit endpoint alias used to prove a configured dependency. |
+| `dependency` | string | No | Any value | Catalog service name represented by the endpoint alias. |
 
 ### Forms
 

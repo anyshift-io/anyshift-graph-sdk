@@ -471,6 +471,21 @@ test("APM helpers compose explicit Tempo and Dynatrace source selection", async 
   }
 });
 
+test("topology composes explicit configuration evidence", async () => {
+  const { gx, calls } = capturing();
+  await gx.topology({
+    service: "developer-portal-production",
+    source: "configuration",
+    endpoint: "api.anyshift.io",
+    dependency: "anyshift-backend",
+    level: "context",
+  });
+  assert.equal(
+    calls[0].body.sql,
+    "SELECT * FROM topology WHERE service = 'developer-portal-production' AND level = 'context' AND source = 'configuration' AND endpoint = 'api.anyshift.io' AND dependency = 'anyshift-backend'",
+  );
+});
+
 test("graphCoverage composes a provider-neutral source filter", async () => {
   const { gx, calls } = capturing();
   await gx.graphCoverage({ source: "dynatrace" });

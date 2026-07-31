@@ -6,6 +6,7 @@ import type {
   GraphEdge,
   GraphIntent,
   ResourceSelector,
+  TopologySource,
 } from "../src/index.js";
 
 type Equal<A, B> =
@@ -75,5 +76,10 @@ void stableSelector;
 void ambiguousSelector;
 const tempoSource: ApmSource = "tempo";
 const dynatraceSource: ApmSource = "dynatrace";
+const configurationSource: TopologySource = "configuration";
 void tempoSource;
 void dynatraceSource;
+void configurationSource;
+const configurationEvidenceSource: "configuration" | undefined =
+  edge.evidence?.source;
+void configurationEvidenceSource;

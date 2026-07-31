@@ -93,8 +93,26 @@ const topology = await graph.topology({
 });
 ```
 
+ECS configuration evidence is explicit and read-only. Supply a reviewed endpoint alias; when a
+dependency name is present the endpoint is required:
+
+```ts
+const topology = await graph.topology({
+  service: "developer-portal-production",
+  source: "configuration",
+  endpoint: "api.anyshift.io",
+  dependency: "anyshift-backend",
+  level: "context",
+});
+```
+
+Matching edges use `CONFIGURES_ENDPOINT` and include the environment key and task-definition
+identity. Environment values are never returned, and configured edges are not marked as causal
+impact edges.
+
 The `datastore`, `flow`, `externalDep`, `calls`, `serviceTree`, and `topology` helpers support
-`source: "auto" | "datadog" | "tempo"`. Omitting it preserves the source-agnostic default.
+`source: "auto" | "datadog" | "tempo" | "dynatrace"`. Topology additionally supports the
+explicit `configuration` source. Omitting it preserves the source-agnostic default.
 
 ## Topology Diagrams
 

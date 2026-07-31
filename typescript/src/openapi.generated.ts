@@ -114,6 +114,13 @@ export interface components {
             /** @enum {string} */
             semantic: "dependency" | "ownership" | "identity" | "connectivity" | "context" | "plumbing" | "unknown";
             impact: boolean;
+            evidence?: {
+                /** @enum {string} */
+                source: "configuration";
+                key: string | null;
+                resourceId: string | null;
+                endpoint: string | null;
+            };
         };
         ResolveResult: {
             term: string;
@@ -1285,6 +1292,13 @@ export interface components {
                 type: string;
                 count: number;
             }[];
+            /** @enum {string} */
+            source?: "datadog" | "tempo" | "dynatrace" | "configuration";
+            evidence?: {
+                /** @enum {string} */
+                status: "observed" | "configured" | "missing";
+                reason: string | null;
+            };
         };
         PriorityResult: {
             /** @enum {string} */

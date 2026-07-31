@@ -334,6 +334,7 @@ export interface MonitorParams {
   target: string;
 }
 export type ApmSource = "auto" | "datadog" | "tempo" | "dynatrace";
+export type TopologySource = ApmSource | "configuration";
 export interface DataStoreParams {
   /** A datastore name to drill into; omit for the ranked top datastores. */
   target?: string;
@@ -411,11 +412,9 @@ export interface AlertRulesParams {
   target?: string;
   limit?: number;
 }
-export interface TopologyParams {
+interface TopologyParamsBase {
   /** The service (or K8s workload it bridges to) to diagram. */
   service: string;
-  /** Select the APM service universe. Auto preserves the existing Datadog-first behavior. */
-  source?: ApmSource;
   /**
    * The C4 level controlling depth + which node classes appear (default "container"):
    * "context" (service + direct collaborators), "container" (runtime containers + workloads +
@@ -424,6 +423,12 @@ export interface TopologyParams {
    */
   level?: "context" | "container" | "component" | "dynamic";
 }
+
+export type TopologyParams = TopologyParamsBase & (
+  | { source?: ApmSource; endpoint?: never; dependency?: never }
+  | { source: "configuration"; endpoint?: string; dependency?: never }
+  | { source: "configuration"; endpoint: string; dependency: string }
+);
 
 // Single-quote a value for the query language; strip embedded quotes.
 function lit(v: string): string {
@@ -902,7 +907,13 @@ export class GraphAnswer {
    * graph (in the result's `nodes` / `edges`), scoped by C4 `level`. Pair with `toMermaid()` to render.
    */
   topology(p: TopologyParams): Promise<AskResult> {
-    return this.typedQuery(compose("topology", [["service", p.service], ["level", p.level], ["source", p.source]]));
+    return this.typedQuery(compose("topology", [
+      ["service", p.service],
+      ["level", p.level],
+      ["source", p.source],
+      ["endpoint", p.endpoint],
+      ["dependency", p.dependency],
+    ]));
   }
 
   // Shared transport used by query/ask and (Task 4) the typed methods.

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.5 - 2026-07-31
+
+### Added
+
+- Added explicit ECS configuration topology parameters and typed redacted edge evidence.
+
+### Changed
+
+- Pinned the Graph API v0.2.31 contract and query-language 1.9 catalog.
+
 ## 0.5.4 - 2026-07-31
 
 ### Added

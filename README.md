@@ -45,6 +45,14 @@ pinned to, the OpenAPI contract in `openapi/`.
 
 The release prepared by this branch is `@anyshift/graph-sdk@0.5.0`.
 
+## Release
+
+After merging a versioned SDK change, create the matching `typescript-vX.Y.Z`
+GitHub release tag at the merge commit. Then dispatch the **Release TypeScript
+SDK** workflow with that tag. The workflow verifies the tag/package version,
+runs the complete TypeScript SDK checks, and publishes the public package from
+the immutable tag through the protected `npm` environment.
+
 Release checklist:
 
 - TypeScript package builds with `npm run build`.

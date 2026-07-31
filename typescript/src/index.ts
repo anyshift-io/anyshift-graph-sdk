@@ -42,6 +42,7 @@ export type {
   AlertImpactParams,
   MonitorParams,
   ApmSource,
+  TopologySource,
   DataStoreParams,
   FlowParams,
   ExternalDepParams,

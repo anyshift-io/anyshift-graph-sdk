@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.8",
+    "version": "1.9",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -2666,11 +2666,11 @@
           {
             "name": "source",
             "type": "enum",
-            "description": "APM dependency source. Defaults to auto.",
+            "description": "Topology evidence source. Defaults to auto-discovered APM evidence.",
             "values": [
               {
                 "value": "auto",
-                "description": "Use every supported APM source, preserving Datadog-first topology resolution."
+                "description": "Use every supported APM source, preserving Datadog-first resolution."
               },
               {
                 "value": "datadog",
@@ -2683,8 +2683,22 @@
               {
                 "value": "dynatrace",
                 "description": "Use Dynatrace service and dependency nodes only."
+              },
+              {
+                "value": "configuration",
+                "description": "Use explicit ECS task-definition endpoint evidence only."
               }
             ]
+          },
+          {
+            "name": "endpoint",
+            "type": "string",
+            "description": "Explicit endpoint alias used to prove a configured dependency."
+          },
+          {
+            "name": "dependency",
+            "type": "string",
+            "description": "Catalog service name represented by the endpoint alias."
           }
         ],
         "pagination": {
@@ -2910,6 +2924,42 @@
           },
           "impact": {
             "type": "boolean"
+          },
+          "evidence": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "enum": [
+                  "configuration"
+                ]
+              },
+              "key": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "resourceId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "endpoint": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "source",
+              "key",
+              "resourceId",
+              "endpoint"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -9264,6 +9314,39 @@
               ],
               "additionalProperties": false
             }
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "datadog",
+              "tempo",
+              "dynatrace",
+              "configuration"
+            ]
+          },
+          "evidence": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "observed",
+                  "configured",
+                  "missing"
+                ]
+              },
+              "reason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "status",
+              "reason"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [

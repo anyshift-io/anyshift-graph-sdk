@@ -62,7 +62,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`iac`](#iac) | Inspect Terraform code-to-state-to-cloud provenance and linkage coverage. | `resource`, `status`, `freshness` |
 | [`iac_drift`](#iac_drift) | Compare last-applied Terraform state with fresh observed cloud properties. | `resource`, `status`, `freshness` |
 | [`gitops`](#gitops) | Inspect GitOps drift, unmanaged workloads, or resource ownership. | `subject`, `namespace`, `resource` |
-| [`image`](#image) | Inspect image usage, workload containers, or container hygiene gaps. | `target`, `workload`, `kind`, `namespace` |
+| [`image`](#image) | Inspect image usage, workload containers, or container hygiene gaps. | `target`, `workload`, `digest`, `kind`, `namespace` |
 | [`netpol`](#netpol) | Inspect NetworkPolicy coverage, policies, or east-west reach. | `mode`, `namespace`, `target` |
 | [`priority`](#priority) | Inspect scheduling priority gaps, the class ladder, or one target's priority. | `kind`, `namespace`, `target` |
 | [`storage`](#storage) | Inspect workload storage and find orphaned or unclaimed volumes. | `mode`, `workload`, `resource`, `class`, `namespace` |
@@ -1384,10 +1384,19 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 | --- | --- | --- | --- | --- |
 | `target` | string | No | Any value | Image, service, or workload name. |
 | `workload` | string | No | Any value | Workload whose container resources should be inspected. |
+| `digest` | string | No | Any value | Exact running image digest (sha256, repository digest, or runtime image ID). |
 | `kind` | enum | No | `nomemlimit` (`no_mem_limit`, `nomemorylimit`)<br />`nocpurequest` (`no_cpu_request`)<br />`skew` (`versionskew`, `version_skew`) | Container hygiene scan. |
 | `namespace` | string | No | Any value | Namespace scope for a hygiene scan. |
 
 ### Forms
+
+#### Runtime digest usage
+
+Find live containers and owning workloads running an exact image digest.
+
+```console
+$ annie graph query "SELECT * FROM image WHERE digest = 'sha256:776129790f01a675bb6e98447c2a28d43a07144d5410691823dbf9a21d256b1e' LIMIT 50"
+```
 
 #### Image usage
 

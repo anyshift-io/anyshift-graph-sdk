@@ -387,6 +387,8 @@ export interface ServiceTreeParams {
 export interface ImageParams {
   /** An image name/repo/tag whose runners to find (the CVE blast radius); omit for the ranked top images. */
   target?: string;
+  /** Exact running image digest. Mutually exclusive with target, workload, kind, and namespace. */
+  digest?: string;
   /** A workload whose own container images + resource requests/limits to list (forces the target view). */
   workload?: string;
   /** A container-hygiene scan instead of a lookup: "nomemlimit" | "nocpurequest" | "skew". */
@@ -894,7 +896,11 @@ export class GraphAnswer {
 
   /** Container inventory by image — who runs an image (CVE blast radius), a workload's images, a hygiene scan, or the ranked top images. */
   image(p: ImageParams = {}): Promise<AskResult> {
+    if (p.digest && (p.target || p.workload || p.kind || p.namespace)) {
+      throw new TypeError("image digest cannot be combined with target, workload, kind, or namespace");
+    }
     return this.typedQuery(compose("image", [
+      ["digest", p.digest],
       ["target", p.target],
       ["workload", p.workload],
       ["kind", p.kind],

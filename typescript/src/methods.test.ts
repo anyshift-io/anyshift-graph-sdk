@@ -386,6 +386,20 @@ test("image composes default, target, and hygiene SQL", async () => {
   assert.equal(w.calls[0].body.sql, "SELECT * FROM image WHERE workload = 'payments-api'");
 });
 
+test("image composes exact runtime digest lookup and rejects mixed modes", async () => {
+  const hash = "776129790f01a675bb6e98447c2a28d43a07144d5410691823dbf9a21d256b1e";
+  const { gx, calls } = capturing();
+  await gx.image({ digest: `sha256:${hash}`, limit: 50 });
+  assert.equal(
+    calls[0].body.sql,
+    `SELECT * FROM image WHERE digest = 'sha256:${hash}' LIMIT 50`,
+  );
+  assert.throws(
+    () => gx.image({ digest: `sha256:${hash}`, target: "juice-shop" }),
+    /digest cannot be combined/i,
+  );
+});
+
 test("sharedConfig composes resource SQL", async () => {
   const { gx, calls } = capturing();
   await gx.sharedConfig({ resource: "payments-api" });

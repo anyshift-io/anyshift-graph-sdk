@@ -51,6 +51,14 @@ declare const resolved: AskResultFor<"resolve">;
 const firstCandidateName: string | undefined = resolved.resolve?.candidates[0]?.name;
 void firstCandidateName;
 
+declare const imageResult: AskResultFor<"image">;
+if (imageResult.image?.mode === "bydigest" && imageResult.image.byDigest) {
+  const runtimeImageId: string | undefined = imageResult.image.byDigest.matches[0]?.imageID;
+  const workloadIdentity: string | null | undefined = imageResult.image.byDigest.matches[0]?.workloadHashedID;
+  void runtimeImageId;
+  void workloadIdentity;
+}
+
 declare const cloudResource: CloudResourceItem;
 const provenanceStatus: "managed" | "configured" | "unknown" = cloudResource.provenance.status;
 void provenanceStatus;

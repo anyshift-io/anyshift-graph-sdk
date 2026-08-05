@@ -15,10 +15,10 @@ if (
   document?.openapi !== "3.1.0"
   || askResult?.discriminator?.propertyName !== "intent"
   || askResult?.oneOf?.length !== 51
-  || queryLanguage?.version !== "1.9"
+  || queryLanguage?.version !== "1.10"
   || queryLanguage?.tables?.length !== askResult.oneOf.length
 ) {
-  throw new Error(`${source} does not expose the expected executable 51-intent and query-language 1.9 contract`);
+  throw new Error(`${source} does not expose the expected executable 51-intent and query-language 1.10 contract`);
 }
 
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`);

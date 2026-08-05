@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.9",
+    "version": "1.10",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -2244,6 +2244,11 @@
             "description": "Workload whose container resources should be inspected."
           },
           {
+            "name": "digest",
+            "type": "string",
+            "description": "Exact running image digest (sha256, repository digest, or runtime image ID)."
+          },
+          {
             "name": "kind",
             "type": "enum",
             "description": "Container hygiene scan.",
@@ -2284,6 +2289,11 @@
           "offset": false
         },
         "forms": [
+          {
+            "name": "Runtime digest usage",
+            "description": "Find live containers and owning workloads running an exact image digest.",
+            "example": "SELECT * FROM image WHERE digest = 'sha256:776129790f01a675bb6e98447c2a28d43a07144d5410691823dbf9a21d256b1e' LIMIT 50"
+          },
           {
             "name": "Image usage",
             "description": "Inspect who runs an image or what image a target runs.",
@@ -8300,6 +8310,7 @@
             "enum": [
               "ranked",
               "byimage",
+              "bydigest",
               "workload",
               "hygiene"
             ]
@@ -8392,6 +8403,127 @@
                   "pods",
                   "workloadCount",
                   "workloads"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "byDigest": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "digest": {
+                    "type": "string"
+                  },
+                  "containers": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "pods": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "workloadCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "matchedImageIDs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "matches": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "containerHashedID": {
+                          "type": "string"
+                        },
+                        "containerName": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "image": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "imageID": {
+                          "type": "string"
+                        },
+                        "podHashedID": {
+                          "type": "string"
+                        },
+                        "podName": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "workloadHashedID": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "workloadName": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "workloadKind": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "namespace": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "scope": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "containerHashedID",
+                        "containerName",
+                        "image",
+                        "imageID",
+                        "podHashedID",
+                        "podName",
+                        "workloadHashedID",
+                        "workloadName",
+                        "workloadKind",
+                        "namespace",
+                        "scope"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "digest",
+                  "containers",
+                  "pods",
+                  "workloadCount",
+                  "matchedImageIDs",
+                  "matches"
                 ],
                 "additionalProperties": false
               },
@@ -8563,6 +8695,7 @@
           "mode",
           "ranking",
           "byImage",
+          "byDigest",
           "workload",
           "hygiene"
         ],

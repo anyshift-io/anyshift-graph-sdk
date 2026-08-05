@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.6 - 2026-08-05
+
+### Added
+
+- Added `graph.image({ digest })` for exact live runtime digest lookup, including typed container,
+  pod, workload, namespace, cluster, raw runtime image ID, and stable graph identities.
+
+### Changed
+
+- Pinned the Graph API contract and query-language 1.10 catalog.
+
 ## 0.5.5 - 2026-07-31
 
 ### Added

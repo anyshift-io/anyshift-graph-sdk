@@ -108,7 +108,7 @@ Topology levels:
 | Autoscaler coverage | `graph.scaling()` | `scaling` | Which workloads have no HPA, which are autoscaled, or what an HPA targets. |
 | Scheduling priority | `graph.priority()` | `priority` | Which workloads have no priority class, what the priority ladder is, or a target's priority. |
 | Persistent storage | `graph.storage()` | `storage` | Which PVC/PV/StorageClass chain a workload uses, and which storage is orphaned or unclaimed. |
-| Image inventory and hygiene | `graph.image()` | `image` | Who runs an image, what images a workload uses, or which containers miss resource controls. |
+| Image inventory and hygiene | `graph.image()` | `image` | Who runs an exact runtime digest or configured image, what images a workload uses, or which containers miss resource controls. |
 
 Selected modes:
 
@@ -118,6 +118,8 @@ Selected modes:
 - `priority({ kind })`: `nopriority` or `ladder`; use `target` to inspect one workload or pod.
 - `storage({ mode })`: `footprint`, `orphanpv`, `unclaimedpvc`, or `byclass`.
 - `image({ kind })`: `nomemlimit`, `nocpurequest`, or `skew`.
+- `image({ digest })`: exact live `sha256` runtime lookup with stable container, pod, workload,
+  namespace, and cluster identities. Digest mode cannot be mixed with target, workload, or hygiene filters.
 
 ## Security, Access, And Exposure
 

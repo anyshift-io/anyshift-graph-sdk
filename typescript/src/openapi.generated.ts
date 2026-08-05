@@ -1119,7 +1119,7 @@ export interface components {
         };
         ImageResult: {
             /** @enum {string} */
-            mode: "ranked" | "byimage" | "workload" | "hygiene";
+            mode: "ranked" | "byimage" | "bydigest" | "workload" | "hygiene";
             ranking: {
                 image: string;
                 containers: number;
@@ -1135,6 +1135,26 @@ export interface components {
                     name: string;
                     namespace: string | null;
                     kind: string | null;
+                }[];
+            } | null;
+            byDigest: {
+                digest: string;
+                containers: number;
+                pods: number;
+                workloadCount: number;
+                matchedImageIDs: string[];
+                matches: {
+                    containerHashedID: string;
+                    containerName: string | null;
+                    image: string | null;
+                    imageID: string;
+                    podHashedID: string;
+                    podName: string | null;
+                    workloadHashedID: string | null;
+                    workloadName: string | null;
+                    workloadKind: string | null;
+                    namespace: string | null;
+                    scope: string | null;
                 }[];
             } | null;
             workload: {

@@ -63,6 +63,23 @@ const owners = await graph.ownership({ resource: "anyshift-io/checkout" });
 const dynatraceCoverage = await graph.graphCoverage({ source: "dynatrace" });
 ```
 
+Join scanner evidence to the exact image digest observed in running containers:
+
+```ts
+const runtime = await graph.image({
+  digest: "sha256:776129790f01a675bb6e98447c2a28d43a07144d5410691823dbf9a21d256b1e",
+  limit: 50,
+});
+
+if (runtime.intent === "image" && runtime.image?.mode === "bydigest") {
+  console.log(runtime.image.byDigest?.matches);
+}
+```
+
+Digest lookup accepts a canonical digest, repository digest, or runtime-prefixed image ID. It
+matches the canonical digest exactly against live container `image_id` evidence. It cannot be
+combined with `target`, `workload`, `kind`, or `namespace`.
+
 ```ts
 const blast = await graph.blast({ resource: "checkout" });
 console.log(blast.summary);

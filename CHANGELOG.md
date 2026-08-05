@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.7 - 2026-08-05
+
+### Changed
+
+- Exact runtime digest matches now expose the configured `clusterName`, provider-native
+  `clusterID`, and stable `clusterHashedID` separately. The existing `scope` field remains the
+  provider-native cluster ID for backward compatibility.
+- Pinned the Graph API v0.2.38 contract.
+
 ## 0.5.6 - 2026-08-05
 
 ### Added

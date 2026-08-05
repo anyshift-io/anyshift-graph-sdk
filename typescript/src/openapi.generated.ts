@@ -1155,6 +1155,9 @@ export interface components {
                     workloadKind: string | null;
                     namespace: string | null;
                     scope: string | null;
+                    clusterID: string | null;
+                    clusterName: string | null;
+                    clusterHashedID: string | null;
                 }[];
             } | null;
             workload: {

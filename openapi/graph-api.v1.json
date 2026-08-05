@@ -8498,6 +8498,24 @@
                             "string",
                             "null"
                           ]
+                        },
+                        "clusterID": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "clusterName": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "clusterHashedID": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -8511,7 +8529,10 @@
                         "workloadName",
                         "workloadKind",
                         "namespace",
-                        "scope"
+                        "scope",
+                        "clusterID",
+                        "clusterName",
+                        "clusterHashedID"
                       ],
                       "additionalProperties": false
                     }

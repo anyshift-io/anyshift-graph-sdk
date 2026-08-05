@@ -55,8 +55,14 @@ declare const imageResult: AskResultFor<"image">;
 if (imageResult.image?.mode === "bydigest" && imageResult.image.byDigest) {
   const runtimeImageId: string | undefined = imageResult.image.byDigest.matches[0]?.imageID;
   const workloadIdentity: string | null | undefined = imageResult.image.byDigest.matches[0]?.workloadHashedID;
+  const clusterName: string | null | undefined = imageResult.image.byDigest.matches[0]?.clusterName;
+  const clusterId: string | null | undefined = imageResult.image.byDigest.matches[0]?.clusterID;
+  const clusterIdentity: string | null | undefined = imageResult.image.byDigest.matches[0]?.clusterHashedID;
   void runtimeImageId;
   void workloadIdentity;
+  void clusterName;
+  void clusterId;
+  void clusterIdentity;
 }
 
 declare const cloudResource: CloudResourceItem;

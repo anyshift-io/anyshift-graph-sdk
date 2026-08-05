@@ -72,13 +72,16 @@ const runtime = await graph.image({
 });
 
 if (runtime.intent === "image" && runtime.image?.mode === "bydigest") {
-  console.log(runtime.image.byDigest?.matches);
+  for (const match of runtime.image.byDigest?.matches ?? []) {
+    console.log(match.clusterName, match.clusterID, match.clusterHashedID);
+  }
 }
 ```
 
 Digest lookup accepts a canonical digest, repository digest, or runtime-prefixed image ID. It
 matches the canonical digest exactly against live container `image_id` evidence. It cannot be
-combined with `target`, `workload`, `kind`, or `namespace`.
+combined with `target`, `workload`, `kind`, or `namespace`. Each match separates the configured
+human cluster name from its provider-native ID and stable Anyshift graph identity.
 
 ```ts
 const blast = await graph.blast({ resource: "checkout" });

@@ -12,6 +12,31 @@ const resp = (status: number, body: unknown) => ({
   text: async () => JSON.stringify(body),
 });
 
+const canonicalExposureResponse = {
+  question: "",
+  intent: "exposure",
+  summary: "Public exposure confirmed.",
+  exposure: {
+    direction: "workload",
+    exposed: true,
+    services: [],
+    ingresses: [{ ingress: "public-ingress", namespace: "shop", via: "checkout" }],
+    perspective: "workload_to_edge",
+    verdict: "confirmed",
+    subject: {
+      id: "resource-hash",
+      name: "checkout-api",
+      type: "K8S_DEPLOYMENT",
+      provider: "kubernetes",
+      namespace: "shop",
+      scope: "prod-eu",
+    },
+    candidates: [],
+    paths: [],
+    page: { limit: 20, hasMore: false, nextCursor: null },
+  },
+};
+
 test("query posts to /v1/query with the sql body and returns the result", async () => {
   let captured: any;
   const gx = new GraphAnswer({
@@ -95,6 +120,7 @@ test("caller-supplied invocation id must be a UUID", () => {
 
 test("telemetry version matches the published package version", async () => {
   const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+  assert.equal(packageJson.version, "0.5.8");
   assert.equal(GRAPH_SDK_VERSION, packageJson.version);
 });
 
@@ -144,5 +170,93 @@ test("401 -> AuthError, 400 -> BadQueryError, 500 -> GraphAnswerError", async ()
   await assert.rejects(
     () => make(500, { error: { code: "internal", message: "boom" } }).query("x"),
     (e: any) => e instanceof GraphAnswerError && e.code === "internal" && e.status === 500
+  );
+});
+
+test("exposure accepts the canonical query-language 1.11 response", async () => {
+  const gx = new GraphAnswer({
+    baseUrl: "http://x",
+    fetch: async () => resp(200, canonicalExposureResponse),
+  });
+
+  const result = await gx.exposure({ resource: { id: "resource-hash" } });
+  assert.equal(result.intent, "exposure");
+  assert.equal(result.exposure.verdict, "confirmed");
+  assert.equal(result.exposure.subject?.id, "resource-hash");
+});
+
+test("additive 1.11 exposure responses preserve the public 0.5.7 successful transport seam", async () => {
+  const gx = new GraphAnswer({
+    baseUrl: "http://x",
+    fetch: async () => resp(200, canonicalExposureResponse),
+  });
+
+  // Public 0.5.7 JSON-parsed successful responses without runtime schema validation. `query()`
+  // keeps that transport behavior, while the 0.5.8 exposure helper adds its feature boundary.
+  const result = await gx.query("SELECT * FROM exposure WHERE resource = checkout-api");
+  assert.equal(result.intent, "exposure");
+  assert.equal(result.exposure.direction, "workload");
+  assert.equal(result.exposure.exposed, true);
+  assert.deepEqual(result.exposure.services, []);
+  assert.equal(result.exposure.ingresses[0]?.ingress, "public-ingress");
+});
+
+test("exposure reports a stable unsupported-server error for a legacy 2xx payload", async () => {
+  const gx = new GraphAnswer({
+    baseUrl: "http://x",
+    fetch: async () => resp(200, {
+      question: "",
+      intent: "exposure",
+      summary: "Legacy exposure response.",
+      exposure: {
+        direction: "workload",
+        exposed: true,
+        services: [],
+        ingresses: [],
+      },
+    }),
+  });
+
+  await assert.rejects(
+    () => gx.exposure({ resource: "checkout-api" }),
+    (error: unknown) => error instanceof GraphAnswerError
+      && error.code === "unsupported_server"
+      && error.status === undefined
+      && error.message === "Canonical exposure results require Graph API query-language 1.11 or newer; upgrade the server.",
+  );
+});
+
+test("exposure reports the same unsupported-server boundary for a null canonical payload", async () => {
+  const gx = new GraphAnswer({
+    baseUrl: "http://x",
+    fetch: async () => resp(200, {
+      question: "",
+      intent: "exposure",
+      summary: "No canonical payload.",
+      exposure: null,
+    }),
+  });
+
+  await assert.rejects(
+    () => gx.exposure({ resource: "checkout-api" }),
+    (error: unknown) => error instanceof GraphAnswerError
+      && error.code === "unsupported_server"
+      && /query-language 1\.11/.test(error.message),
+  );
+});
+
+test("new exposure selectors preserve an old server query-parser rejection", async () => {
+  const gx = new GraphAnswer({
+    baseUrl: "http://x",
+    fetch: async () => resp(400, {
+      error: { code: "bad_request", message: "Unknown column: resource_id" },
+    }),
+  });
+
+  await assert.rejects(
+    () => gx.exposure({ resource: { id: "resource-hash" } }),
+    (error: unknown) => error instanceof BadQueryError
+      && error.code === "bad_request"
+      && error.message === "Unknown column: resource_id",
   );
 });

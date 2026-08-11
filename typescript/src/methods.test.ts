@@ -2,14 +2,36 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { GraphAnswer } from "./client.js";
 
+const canonicalExposureResponse = {
+  question: "",
+  intent: "exposure",
+  summary: "ok",
+  exposure: {
+    direction: "workload",
+    exposed: true,
+    services: [],
+    ingresses: [],
+    perspective: "workload_to_edge",
+    verdict: "confirmed",
+    subject: null,
+    candidates: [],
+    paths: [],
+    page: { limit: 20, hasMore: false, nextCursor: null },
+  },
+};
+
 // Capture the composed SQL/body the method sends.
 function capturing() {
   const calls: { path: string; body: any }[] = [];
   const gx = new GraphAnswer({
     baseUrl: "http://x",
     fetch: async (url, init) => {
-      calls.push({ path: url.replace("http://x", ""), body: JSON.parse(init.body) });
-      return { ok: true, status: 200, text: async () => JSON.stringify({ intent: "events", summary: "ok" }) };
+      const body = JSON.parse(init.body);
+      calls.push({ path: url.replace("http://x", ""), body });
+      const response = body.sql.startsWith("SELECT * FROM exposure")
+        ? canonicalExposureResponse
+        : { intent: "events", summary: "ok" };
+      return { ok: true, status: 200, text: async () => JSON.stringify(response) };
     },
   });
   return { gx, calls };
@@ -353,13 +375,63 @@ test("access composes resource SQL and the privileged mode", async () => {
   assert.equal(p.calls[0].body.sql, "SELECT * FROM access WHERE mode = 'privileged' LIMIT 10");
 });
 
-test("exposure composes resource SQL", async () => {
+test("exposure keeps the legacy string selector SQL stable", async () => {
   const { gx, calls } = capturing();
   await gx.exposure({ resource: "public-ingress" });
   assert.equal(calls[0].body.sql, "SELECT * FROM exposure WHERE resource = 'public-ingress'");
   const l = capturing();
   await l.gx.exposure({ resource: "checkout-api", limit: 5 });
   assert.equal(l.calls[0].body.sql, "SELECT * FROM exposure WHERE resource = 'checkout-api' LIMIT 5");
+});
+
+test("exposure composes stable-id, qualified-name, and cursor selectors", async () => {
+  const byId = capturing();
+  await byId.gx.exposure({ resource: { id: "resource-hash" }, cursor: "next-page", limit: 5 });
+  assert.equal(
+    byId.calls[0].body.sql,
+    "SELECT * FROM exposure WHERE resource_id = 'resource-hash' AND cursor = 'next-page' LIMIT 5",
+  );
+
+  const qualified = capturing();
+  await qualified.gx.exposure({
+    resource: {
+      name: "checkout-api",
+      type: "K8S_DEPLOYMENT",
+      namespace: "shop",
+      cluster: "prod-eu",
+    },
+  });
+  assert.equal(
+    qualified.calls[0].body.sql,
+    "SELECT * FROM exposure WHERE resource = 'checkout-api' AND resource_type = 'K8S_DEPLOYMENT' AND resource_namespace = 'shop' AND resource_cluster = 'prod-eu'",
+  );
+
+  const minimallyQualified = capturing();
+  await minimallyQualified.gx.exposure({
+    resource: { name: "checkout-api", type: "K8S_SERVICE" },
+  });
+  assert.equal(
+    minimallyQualified.calls[0].body.sql,
+    "SELECT * FROM exposure WHERE resource = 'checkout-api' AND resource_type = 'K8S_SERVICE'",
+  );
+});
+
+test("exposure rejects ambiguous selectors and empty cursors before sending a request", async () => {
+  const invalid = [
+    { resource: "" },
+    { resource: { id: "resource-hash", name: "checkout-api", type: "K8S_DEPLOYMENT" } },
+    { resource: { id: "resource-hash", namespace: "shop" } },
+    { resource: { name: "checkout-api" } },
+    { resource: { name: "checkout-api", type: "" } },
+    { resource: { type: "K8S_DEPLOYMENT", namespace: "shop" } },
+    { resource: { name: "checkout-api", type: "K8S_DEPLOYMENT" }, cursor: "" },
+  ];
+
+  for (const params of invalid) {
+    const { gx, calls } = capturing();
+    await assert.rejects(() => gx.exposure(params as never), TypeError);
+    assert.equal(calls.length, 0);
+  }
 });
 
 test("tenancy composes resource SQL", async () => {

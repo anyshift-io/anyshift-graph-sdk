@@ -40,3 +40,4 @@ jobs:
       - run: npm test
       - run: npm run check:generated
       - run: npm run build
+      - run: npm run test:consumer

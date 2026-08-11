@@ -42,7 +42,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`orphans`](#orphans) | Find unused or dangling Kubernetes resources. | `kind`, `namespace` |
 | [`coverage`](#coverage) | Find service, monitor, or metrics coverage gaps. | `kind`, `namespace` |
 | [`access`](#access) | Inspect RBAC reach or rank over-privileged service accounts. | `resource`, `mode` |
-| [`exposure`](#exposure) | Trace public ingress exposure to or from a resource. | `resource` |
+| [`exposure`](#exposure) | Trace public ingress exposure to or from a resource. | `resource`, `resource_id`, `resource_type`, `resource_namespace`, `resource_cluster`, `cursor` |
 | [`tenancy`](#tenancy) | Find workloads co-located with a resource on the same node. | `resource` |
 | [`sharedconfig`](#sharedconfig) | Find workloads coupled through shared configuration. | `resource` |
 | [`path`](#path) | Find the shortest infrastructure or operational path between two resources. | `from`, `from_exact`, `from_id`, `from_type`, `from_namespace`, `from_cluster`, `to`, `to_exact`, `to_id`, `to_type`, `to_namespace`, `to_cluster`, `scope` |
@@ -54,7 +54,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`external_dep`](#external_dep) | Inspect external dependencies or rank high-fan-in external hosts. | `target`, `source` |
 | [`alerts`](#alerts) | List currently firing monitors, optionally scoped to a service. | `target` |
 | [`alert_noise`](#alert_noise) | Rank flapping or stuck monitors. | `target`, `kind`, `since` |
-| [`calls`](#calls) | Inspect service callers and callees or rank call-graph fan-in. | `target`, `source` |
+| [`calls`](#calls) | Inspect APM service callers, callees, and HTTP route evidence or rank call-graph fan-in. | `target`, `source` |
 | [`servicetree`](#servicetree) | Expand a service's downstream services, datastores, and external dependencies. | `target`, `source` |
 | [`alert_cause`](#alert_cause) | Join a firing service or workload to recent Kubernetes changes. | `target`, `since` |
 | [`slo`](#slo) | Inspect one SLO or rank breaching and at-risk SLOs. | `target` |
@@ -776,7 +776,12 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
-| `resource` | string | Yes | Any value | Ingress, service, or workload name. |
+| `resource` | string | No | Any value | Resource name; add type, namespace, or cluster for an exact selector. |
+| `resource_id` | string | No | Any value | Stable graph or provider resource identifier. |
+| `resource_type` | string | No | Any value | Resource type for an exact resource selector. |
+| `resource_namespace` | string | No | Any value | Namespace for an exact resource selector. |
+| `resource_cluster` | string | No | Any value | Cluster for an exact resource selector. |
+| `cursor` | string | No | Any value | Opaque cursor returned by the previous exposure page. |
 
 ### Forms
 
@@ -785,7 +790,7 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 Trace how a resource is publicly exposed.
 
 ```console
-$ annie graph query "SELECT * FROM exposure WHERE resource = checkout"
+$ annie graph query "SELECT * FROM exposure WHERE resource = api.example.com"
 ```
 
 ## tenancy
@@ -1111,7 +1116,7 @@ $ annie graph query "SELECT * FROM alert_noise WHERE kind = flapping AND since =
 
 ## calls
 
-Inspect service callers and callees or rank call-graph fan-in.
+Inspect APM service callers, callees, and HTTP route evidence or rank call-graph fan-in.
 
 Result intent: `calls`.
 
@@ -1130,7 +1135,7 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 
 #### Service calls
 
-Inspect callers and callees for one service.
+Inspect callers, callees, and available templated HTTP operations for one service.
 
 ```console
 $ annie graph query "SELECT * FROM calls WHERE target = checkout"

@@ -7,14 +7,7 @@ This guide covers the public TypeScript SDK release.
 - The release pull request is merged into `main`.
 - The package version in `typescript/package.json` matches the release version.
 - `CHANGELOG.md` contains the release notes.
-- The publisher is logged into npm with access to the `@anyshift` scope.
-
-Check npm access:
-
-```bash
-npm whoami
-npm access ls-packages @anyshift
-```
+- The matching `typescript-v<version>` tag will identify the immutable merge commit.
 
 ## Verify
 
@@ -24,29 +17,28 @@ From `typescript/`:
 npm ci
 npm run typecheck
 npm test
+npm run check:generated
 npm run build
+npm run test:consumer
 npm pack --dry-run
 ```
 
-## Publish
+## Tag And Publish
 
-From `typescript/`:
-
-```bash
-npm publish --access public
-```
-
-## Tag and GitHub Release
-
-After npm publish succeeds:
+Tag the verified merge commit and push the tag:
 
 ```bash
 git tag typescript-v<version>
 git push origin typescript-v<version>
 ```
 
-Create a GitHub release named `@anyshift/graph-sdk v<version>` using the matching entry from
-`CHANGELOG.md`.
+Dispatch the **Release TypeScript SDK** workflow with the existing tag. The workflow checks that
+the tag matches `package.json`, repeats the complete verification suite, and publishes from that
+immutable tag through the protected `npm` environment with provenance. Do not publish the package
+from a local checkout.
+
+After the workflow succeeds, create a GitHub release named `@anyshift/graph-sdk v<version>` using
+the matching entry from `CHANGELOG.md`.
 
 ## Post-release Verification
 

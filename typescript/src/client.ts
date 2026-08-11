@@ -1,5 +1,5 @@
 import { GraphAnswerError, AuthError, BadQueryError } from "./errors.js";
-import type { AskResult } from "./types.js";
+import type { AskResult, AskResultFor } from "./types.js";
 import { GRAPH_SDK_VERSION } from "./version.js";
 
 // Minimal shape we need from fetch — keeps real `fetch` and test stubs both valid
@@ -290,9 +290,11 @@ export interface AccessParams {
   limit?: number;
 }
 export interface ExposureParams {
-  /** The ingress whose targets to list, OR a service / pod / workload whose fronting ingress to find. */
-  resource: string;
-  /** Top-N services to return (ingress direction; ignored for the workload direction). */
+  /** Stable id, legacy name, or a type-qualified resource selector to trace. */
+  resource: ResourceSelector;
+  /** Opaque cursor returned by the preceding canonical exposure page. */
+  cursor?: string;
+  /** Top-N exposure paths to return. */
   limit?: number;
 }
 export interface TenancyParams {
@@ -309,8 +311,8 @@ export interface SharedConfigParams {
 }
 export type ResourceSelector =
   | string
-  | { id: string }
-  | { name: string; type: string; namespace?: string; cluster?: string };
+  | { id: string; name?: never; type?: never; namespace?: never; cluster?: never }
+  | { id?: never; name: string; type: string; namespace?: string; cluster?: string };
 export interface PathParams {
   /** The first resource (start of the path). */
   from: ResourceSelector;
@@ -456,7 +458,7 @@ function compose(
 
 function selectorConditions(prefix: "from" | "to", selector: ResourceSelector): Array<[string, string]> {
   if (typeof selector === "string") return [[prefix, selector]];
-  if ("id" in selector) return [[`${prefix}_id`, selector.id]];
+  if (selector.id !== undefined) return [[`${prefix}_id`, selector.id]];
   return [
     [prefix, selector.name],
     [`${prefix}_exact`, "true"],
@@ -464,6 +466,54 @@ function selectorConditions(prefix: "from" | "to", selector: ResourceSelector): 
     [`${prefix}_namespace`, selector.namespace ?? ""],
     [`${prefix}_cluster`, selector.cluster ?? ""],
   ];
+}
+
+function nonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function exposureSelectorConditions(selector: ResourceSelector): Array<[string, string]> {
+  if (typeof selector === "string") {
+    if (!nonEmptyString(selector)) throw new TypeError("exposure resource must be a non-empty string or selector");
+    return [["resource", selector]];
+  }
+  if (!selector || typeof selector !== "object" || Array.isArray(selector)) {
+    throw new TypeError("exposure resource must be a non-empty string or selector");
+  }
+
+  const value = selector as Record<string, unknown>;
+  const keys = Object.keys(value);
+  if ("id" in value) {
+    if (!nonEmptyString(value.id) || keys.some((key) => key !== "id")) {
+      throw new TypeError("exposure id selector must contain only a non-empty id");
+    }
+    return [["resource_id", value.id]];
+  }
+
+  const allowed = new Set(["name", "type", "namespace", "cluster"]);
+  if (
+    keys.some((key) => !allowed.has(key))
+    || !nonEmptyString(value.name)
+    || !nonEmptyString(value.type)
+    || (value.namespace !== undefined && !nonEmptyString(value.namespace))
+    || (value.cluster !== undefined && !nonEmptyString(value.cluster))
+  ) {
+    throw new TypeError("exposure name selector requires non-empty name and type with optional namespace and cluster");
+  }
+  return [
+    ["resource", value.name],
+    ["resource_type", value.type],
+    ["resource_namespace", value.namespace ?? ""],
+    ["resource_cluster", value.cluster ?? ""],
+  ] as Array<[string, string]>;
+}
+
+function isCanonicalExposureResult(result: AskResult): result is AskResultFor<"exposure"> {
+  if (result.intent !== "exposure") return false;
+  const exposure = (result as { exposure?: unknown }).exposure;
+  if (!exposure || typeof exposure !== "object" || Array.isArray(exposure)) return false;
+  const required = ["direction", "exposed", "services", "ingresses", "perspective", "verdict", "subject", "candidates", "paths", "page"];
+  return required.every((field) => Object.prototype.hasOwnProperty.call(exposure, field));
 }
 
 function generateInvocationId(): string {
@@ -792,11 +842,22 @@ export class GraphAnswer {
     ], p.limit));
   }
 
-  /** Attack surface — what an ingress fronts, or the ingress(es) fronting a service/workload. */
-  exposure(p: ExposureParams): Promise<AskResult> {
-    return this.typedQuery(compose("exposure", [
-      ["resource", p.resource],
+  /** Canonical evidence paths from an internet edge to a workload, with explicit gaps and controls. */
+  async exposure(p: ExposureParams): Promise<AskResultFor<"exposure">> {
+    if (p.cursor !== undefined && !nonEmptyString(p.cursor)) {
+      throw new TypeError("exposure cursor must be a non-empty opaque string");
+    }
+    const result = await this.typedQuery(compose("exposure", [
+      ...exposureSelectorConditions(p.resource),
+      ["cursor", p.cursor],
     ], p.limit));
+    if (!isCanonicalExposureResult(result)) {
+      throw new GraphAnswerError(
+        "unsupported_server",
+        "Canonical exposure results require Graph API query-language 1.11 or newer; upgrade the server.",
+      );
+    }
+    return result;
   }
 
   /** Co-location / noisy neighbors — the workloads sharing a node with the resource. */

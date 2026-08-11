@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.10",
+    "version": "1.11",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -1303,8 +1303,32 @@
           {
             "name": "resource",
             "type": "string",
-            "description": "Ingress, service, or workload name.",
-            "required": true
+            "description": "Resource name; add type, namespace, or cluster for an exact selector."
+          },
+          {
+            "name": "resource_id",
+            "type": "string",
+            "description": "Stable graph or provider resource identifier."
+          },
+          {
+            "name": "resource_type",
+            "type": "string",
+            "description": "Resource type for an exact resource selector."
+          },
+          {
+            "name": "resource_namespace",
+            "type": "string",
+            "description": "Namespace for an exact resource selector."
+          },
+          {
+            "name": "resource_cluster",
+            "type": "string",
+            "description": "Cluster for an exact resource selector."
+          },
+          {
+            "name": "cursor",
+            "type": "string",
+            "description": "Opaque cursor returned by the previous exposure page."
           }
         ],
         "pagination": {
@@ -1315,7 +1339,7 @@
           {
             "name": "Public exposure",
             "description": "Trace how a resource is publicly exposed.",
-            "example": "SELECT * FROM exposure WHERE resource = checkout"
+            "example": "SELECT * FROM exposure WHERE resource = api.example.com"
           }
         ]
       },
@@ -1809,7 +1833,7 @@
           "callgraph"
         ],
         "intent": "calls",
-        "summary": "Inspect service callers and callees or rank call-graph fan-in.",
+        "summary": "Inspect APM service callers, callees, and HTTP route evidence or rank call-graph fan-in.",
         "filters": [
           {
             "name": "target",
@@ -1847,7 +1871,7 @@
         "forms": [
           {
             "name": "Service calls",
-            "description": "Inspect callers and callees for one service.",
+            "description": "Inspect callers, callees, and available templated HTTP operations for one service.",
             "example": "SELECT * FROM calls WHERE target = checkout"
           }
         ]
@@ -2934,6 +2958,42 @@
           },
           "impact": {
             "type": "boolean"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "datadog",
+              "tempo",
+              "dynatrace"
+            ]
+          },
+          "observedAt": {
+            "type": "string"
+          },
+          "operations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "method": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "pathTemplate": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "method",
+                "pathTemplate"
+              ],
+              "additionalProperties": false
+            }
           },
           "evidence": {
             "type": "object",
@@ -7041,6 +7101,126 @@
                     "items": {
                       "type": "string"
                     }
+                  },
+                  "incoming": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "service": {
+                          "type": "string"
+                        },
+                        "direction": {
+                          "type": "string",
+                          "enum": [
+                            "upstream",
+                            "downstream"
+                          ]
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "datadog",
+                            "tempo",
+                            "dynatrace"
+                          ]
+                        },
+                        "observedAt": {
+                          "type": "string"
+                        },
+                        "operations": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "method": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "pathTemplate": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "method",
+                              "pathTemplate"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "service",
+                        "direction",
+                        "source"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "outgoing": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "service": {
+                          "type": "string"
+                        },
+                        "direction": {
+                          "type": "string",
+                          "enum": [
+                            "upstream",
+                            "downstream"
+                          ]
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "datadog",
+                            "tempo",
+                            "dynatrace"
+                          ]
+                        },
+                        "observedAt": {
+                          "type": "string"
+                        },
+                        "operations": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "method": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "pathTemplate": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "method",
+                              "pathTemplate"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "service",
+                        "direction",
+                        "source"
+                      ],
+                      "additionalProperties": false
+                    }
                   }
                 },
                 "required": [
@@ -7048,7 +7228,9 @@
                   "callerCount",
                   "calleeCount",
                   "callers",
-                  "callees"
+                  "callees",
+                  "incoming",
+                  "outgoing"
                 ],
                 "additionalProperties": false
               },
@@ -7594,13 +7776,447 @@
               ],
               "additionalProperties": false
             }
+          },
+          "perspective": {
+            "type": "string",
+            "enum": [
+              "edge_to_workload",
+              "workload_to_edge"
+            ]
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "partial",
+              "not_observed",
+              "unknown"
+            ]
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "provider": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "namespace": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "scope": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "type",
+                  "provider",
+                  "namespace",
+                  "scope"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "candidates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "provider": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "namespace": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "scope": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "type",
+                "provider",
+                "namespace",
+                "scope"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "complete",
+                    "partial"
+                  ]
+                },
+                "hops": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "resource": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "provider": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "namespace": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "scope": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "type",
+                          "provider",
+                          "namespace",
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "relationship": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "evidence": {
+                        "type": "object",
+                        "properties": {
+                          "class": {
+                            "type": "string",
+                            "enum": [
+                              "observed",
+                              "inferred",
+                              "ambiguous"
+                            ]
+                          },
+                          "source": {
+                            "type": "string"
+                          },
+                          "observedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "confidence": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "high",
+                                  "medium",
+                                  "low"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "class",
+                          "source",
+                          "observedAt",
+                          "confidence"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "resource",
+                      "relationship",
+                      "evidence"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "controls": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "dns",
+                          "tls",
+                          "waf",
+                          "rate_limit",
+                          "access"
+                        ]
+                      },
+                      "resource": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "provider": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "namespace": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "scope": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "type",
+                          "provider",
+                          "namespace",
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "relationship": {
+                        "type": "string"
+                      },
+                      "evidence": {
+                        "type": "object",
+                        "properties": {
+                          "class": {
+                            "type": "string",
+                            "enum": [
+                              "observed",
+                              "inferred",
+                              "ambiguous"
+                            ]
+                          },
+                          "source": {
+                            "type": "string"
+                          },
+                          "observedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "confidence": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "high",
+                                  "medium",
+                                  "low"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "class",
+                          "source",
+                          "observedAt",
+                          "confidence"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "resource",
+                      "relationship",
+                      "evidence"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "gaps": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "afterResourceId": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "affects": {
+                        "type": "string",
+                        "enum": [
+                          "traffic",
+                          "control"
+                        ]
+                      },
+                      "expectedNext": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "hostname",
+                            "edge_control",
+                            "origin",
+                            "ingress",
+                            "service",
+                            "workload"
+                          ]
+                        }
+                      },
+                      "reason": {
+                        "type": "string",
+                        "enum": [
+                          "missing_relationship",
+                          "missing_inventory",
+                          "ambiguous_target",
+                          "permission_denied",
+                          "stale_evidence"
+                        ]
+                      },
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "afterResourceId",
+                      "affects",
+                      "expectedNext",
+                      "reason",
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "status",
+                "hops",
+                "controls",
+                "gaps"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "page": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "hasMore": {
+                "type": "boolean"
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "limit",
+              "hasMore",
+              "nextCursor"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
           "direction",
           "exposed",
           "services",
-          "ingresses"
+          "ingresses",
+          "perspective",
+          "verdict",
+          "subject",
+          "candidates",
+          "paths",
+          "page"
         ],
         "additionalProperties": false
       },
@@ -13209,14 +13825,7 @@
                 "const": "exposure"
               },
               "exposure": {
-                "oneOf": [
-                  {
-                    "$ref": "#/components/schemas/ExposureResult"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "$ref": "#/components/schemas/ExposureResult"
               }
             },
             "additionalProperties": false

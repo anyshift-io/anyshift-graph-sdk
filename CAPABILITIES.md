@@ -128,13 +128,25 @@ Selected modes:
 | RBAC reach | `graph.access({ resource })` | `access` | What a service account, pod, workload, or role can reach. |
 | Over-privileged identities | `graph.access({ mode: "privileged" })` | `access` | Which service accounts have broad or risky permissions. |
 | NetworkPolicy coverage | `graph.netpol()` | `netpol` | Which namespaces are default-allow, which policies apply, or who can reach a target east-west. |
-| Public exposure | `graph.exposure({ resource })` | `exposure` | What an ingress fronts, or which ingress fronts a service/workload. |
+| Public exposure | `graph.exposure({ resource, cursor? })` | `exposure` | Which evidence-backed public-edge paths reach a resource, including controls, gaps, verdict, and pagination. |
 
 Selected modes:
 
 - `access({ resource })`: follow effective RBAC from a workload, pod, service account, or role.
 - `access({ mode: "privileged" })`: rank service accounts with broad or risky permissions.
 - `netpol({ mode })`: `uncovered`, `policy`, or `segmentation`.
+- `exposure({ resource })`: accepts a string, stable `{ id }`, or exact
+  `{ name, type, namespace?, cluster? }` selector. Continue a result with its opaque
+  `page.nextCursor`.
+
+Canonical exposure payloads require Graph API query-language 1.11 or newer. The TypeScript helper
+returns `AskResultFor<"exposure">` and exposes the canonical result directly as `answer.exposure`.
+If a legacy server returns a successful response without that canonical payload, the SDK throws a
+stable `GraphAnswerError` with code `unsupported_server`; newer selectors may instead be rejected by
+the old query parser as `bad_request`.
+
+Exposure verdicts follow fresh traffic evidence. Stale controls and partial sibling paths remain
+explicit without downgrading an independently confirmed fresh traffic path.
 
 ## Observability And Alerting
 

@@ -1,6 +1,6 @@
 {
   "name": "@anyshift/graph-sdk",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "description": "TypeScript SDK for the Anyshift Graph API",
   "type": "module",
   "license": "Apache-2.0",
@@ -29,12 +29,13 @@
     "generate": "npm run sync:openapi && npm run generate:types && npm run generate:query-language",
     "generate:types": "openapi-typescript ../openapi/graph-api.v1.json -o src/openapi.generated.ts",
     "generate:query-language": "node scripts/generate-query-language.mjs",
-    "check:generated": "node scripts/generate-query-language.mjs --check",
+    "check:generated": "node scripts/check-openapi-generated.mjs && node scripts/generate-query-language.mjs --check",
     "sync:openapi": "node scripts/sync-openapi.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "node --import tsx --test src/*.test.ts && npm run test:types",
     "test:types": "tsc -p tsconfig.type-tests.json",
-    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+    "test:consumer": "node scripts/check-clean-consumer.mjs",
+    "prepublishOnly": "npm run typecheck && npm test && npm run check:generated && npm run build && npm run test:consumer"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",

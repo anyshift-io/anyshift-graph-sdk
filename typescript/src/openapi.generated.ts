@@ -114,6 +114,13 @@ export interface components {
             /** @enum {string} */
             semantic: "dependency" | "ownership" | "identity" | "connectivity" | "context" | "plumbing" | "unknown";
             impact: boolean;
+            /** @enum {string} */
+            source?: "datadog" | "tempo" | "dynatrace";
+            observedAt?: string;
+            operations?: {
+                method: string | null;
+                pathTemplate: string | null;
+            }[];
             evidence?: {
                 /** @enum {string} */
                 source: "configuration";
@@ -889,6 +896,30 @@ export interface components {
                 calleeCount: number;
                 callers: string[];
                 callees: string[];
+                incoming: {
+                    service: string;
+                    /** @enum {string} */
+                    direction: "upstream" | "downstream";
+                    /** @enum {string} */
+                    source: "datadog" | "tempo" | "dynatrace";
+                    observedAt?: string;
+                    operations?: {
+                        method: string | null;
+                        pathTemplate: string | null;
+                    }[];
+                }[];
+                outgoing: {
+                    service: string;
+                    /** @enum {string} */
+                    direction: "upstream" | "downstream";
+                    /** @enum {string} */
+                    source: "datadog" | "tempo" | "dynatrace";
+                    observedAt?: string;
+                    operations?: {
+                        method: string | null;
+                        pathTemplate: string | null;
+                    }[];
+                }[];
             } | null;
         };
         ServiceTreeResult: {
@@ -987,6 +1018,82 @@ export interface components {
                 namespace: string | null;
                 via: string | null;
             }[];
+            /** @enum {string} */
+            perspective: "edge_to_workload" | "workload_to_edge";
+            /** @enum {string} */
+            verdict: "confirmed" | "partial" | "not_observed" | "unknown";
+            subject: {
+                id: string;
+                name: string;
+                type: string;
+                provider: string | null;
+                namespace: string | null;
+                scope: string | null;
+            } | null;
+            candidates: {
+                id: string;
+                name: string;
+                type: string;
+                provider: string | null;
+                namespace: string | null;
+                scope: string | null;
+            }[];
+            paths: {
+                /** @enum {string} */
+                status: "complete" | "partial";
+                hops: {
+                    resource: {
+                        id: string;
+                        name: string;
+                        type: string;
+                        provider: string | null;
+                        namespace: string | null;
+                        scope: string | null;
+                    };
+                    relationship: string | null;
+                    evidence: {
+                        /** @enum {string} */
+                        class: "observed" | "inferred" | "ambiguous";
+                        source: string;
+                        observedAt: string | null;
+                        confidence: ("high" | "medium" | "low") | null;
+                    };
+                }[];
+                controls: {
+                    /** @enum {string} */
+                    kind: "dns" | "tls" | "waf" | "rate_limit" | "access";
+                    resource: {
+                        id: string;
+                        name: string;
+                        type: string;
+                        provider: string | null;
+                        namespace: string | null;
+                        scope: string | null;
+                    };
+                    relationship: string;
+                    evidence: {
+                        /** @enum {string} */
+                        class: "observed" | "inferred" | "ambiguous";
+                        source: string;
+                        observedAt: string | null;
+                        confidence: ("high" | "medium" | "low") | null;
+                    };
+                }[];
+                gaps: {
+                    afterResourceId: string | null;
+                    /** @enum {string} */
+                    affects: "traffic" | "control";
+                    expectedNext: ("hostname" | "edge_control" | "origin" | "ingress" | "service" | "workload")[];
+                    /** @enum {string} */
+                    reason: "missing_relationship" | "missing_inventory" | "ambiguous_target" | "permission_denied" | "stale_evidence";
+                    message: string;
+                }[];
+            }[];
+            page: {
+                limit: number;
+                hasMore: boolean;
+                nextCursor: string | null;
+            };
         };
         OrphansResult: {
             /** @enum {string} */
@@ -2019,7 +2126,7 @@ export interface components {
             edges?: components["schemas"]["GraphEdge"][];
             /** @constant */
             intent: "exposure";
-            exposure: components["schemas"]["ExposureResult"] | null;
+            exposure: components["schemas"]["ExposureResult"];
         } | {
             question: string;
             summary: string;

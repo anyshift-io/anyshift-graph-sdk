@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.5.8 - 2026-08-11
+
+### Added
+
+- Added stable-id and type-qualified selectors plus keyset cursor pagination to
+  `graph.exposure()`.
+- Added canonical public-exposure types for perspectives, verdicts, resources, evidence, hops,
+  controls, gaps, paths, and pages.
+- Added typed APM source, observation time, and HTTP operation evidence to graph edges and detailed
+  incoming/outgoing call results from the synchronized canonical contract.
+- Added generated OpenAPI drift detection and a clean pack/install/typecheck/import/use consumer
+  test to CI and the release workflow.
+
+### Changed
+
+- Pinned the Graph API query-language 1.11 contract with a required, non-null canonical exposure
+  payload.
+- `graph.exposure()` now returns `AskResultFor<"exposure">` and rejects successful legacy payloads
+  without canonical evidence using the stable `unsupported_server` error code.
+
+### Compatibility
+
+- Existing string selectors still emit the same query. Public SDK 0.5.7 and earlier continue to
+  consume the additive 1.11 response at runtime. Canonical exposure in SDK 0.5.8 requires a 1.11
+  server; new selector columns can be rejected by older query parsers before response validation.
+
 ## 0.5.7 - 2026-08-05
 
 ### Changed

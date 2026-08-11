@@ -23,6 +23,17 @@ export type GraphCoverageSource = GraphCoverageResult["sources"][number]["source
 export type ImpactResult = Schemas["ImpactResult"];
 export type ImpactItem = ImpactResult["items"][number];
 export type ImpactStep = ImpactItem["path"][number];
+export type ExposureResult = Schemas["ExposureResult"];
+export type ExposureService = ExposureResult["services"][number];
+export type ExposureIngressRef = ExposureResult["ingresses"][number];
+export type ExposurePerspective = ExposureResult["perspective"];
+export type ExposureVerdict = ExposureResult["verdict"];
+export type ExposureResource = NonNullable<ExposureResult["subject"]>;
+export type ExposurePath = ExposureResult["paths"][number];
+export type ExposureHop = ExposurePath["hops"][number];
+export type ExposureControl = ExposurePath["controls"][number];
+export type ExposureGap = ExposurePath["gaps"][number];
+export type ExposureEvidence = ExposureHop["evidence"];
 
 /** Every successful Graph API response, discriminated by its exact intent payload. */
 export type AskResult = Schemas["AskResult"];

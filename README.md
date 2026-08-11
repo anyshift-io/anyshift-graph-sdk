@@ -43,7 +43,7 @@ pinned to, the OpenAPI contract in `openapi/`.
 
 ## Release Status
 
-The release prepared by this branch is `@anyshift/graph-sdk@0.5.7`.
+The release prepared by this branch is `@anyshift/graph-sdk@0.5.8`.
 
 ## Release
 
@@ -57,5 +57,8 @@ Release checklist:
 
 - TypeScript package builds with `npm run build`.
 - TypeScript tests pass with `npm test`.
+- Generated OpenAPI and query-language artifacts pass `npm run check:generated`.
+- A packed package installs, typechecks, imports, and runs in a clean consumer via
+  `npm run test:consumer`.
 - Package contents are verified with `npm pack --dry-run`.
 - Developer documentation is published in the Anyshift documentation site.

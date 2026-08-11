@@ -101,6 +101,66 @@ Typed selectors are deterministic when multiple resource types share the same na
 `{ id: candidate.id }` with an id returned by `graph.resolve()` when name, type, namespace, and
 cluster still do not identify one node. Existing string selectors retain fuzzy-name resolution.
 
+## Canonical Public Exposure
+
+Trace a qualified workload from the public edge through observed hops and controls:
+
+```ts
+import {
+  GraphAnswer,
+  GraphAnswerError,
+  type ExposureResult,
+} from "@anyshift/graph-sdk";
+
+try {
+  const answer = await graph.exposure({
+    resource: {
+      name: "checkout-api",
+      type: "K8S_DEPLOYMENT",
+      namespace: "shop",
+      cluster: "prod-eu",
+    },
+    limit: 20,
+  });
+
+  const exposure: ExposureResult = answer.exposure;
+  console.log(exposure.verdict, exposure.subject, exposure.paths);
+
+  if (exposure.page.nextCursor) {
+    const next = await graph.exposure({
+      resource: { id: exposure.subject!.id },
+      cursor: exposure.page.nextCursor,
+      limit: exposure.page.limit,
+    });
+    console.log(next.exposure.paths);
+  }
+} catch (error) {
+  if (error instanceof GraphAnswerError && error.code === "unsupported_server") {
+    console.error("Upgrade the Graph API server before using canonical exposure results.");
+  }
+}
+```
+
+`resource` accepts a legacy non-empty string, a stable `{ id }`, or a deterministic
+`{ name, type, namespace?, cluster? }` selector. Do not combine the selector modes. `cursor` is
+the opaque `page.nextCursor` from the preceding result.
+
+The canonical payload distinguishes perspective and verdict, identifies the resolved subject and
+ambiguous candidates, and returns evidence-backed paths with hops, controls, explicit gaps, and a
+keyset page. The package exports `ExposureResult`, `ExposureService`, `ExposureIngressRef`,
+`ExposurePerspective`, `ExposureVerdict`, `ExposureResource`, `ExposureEvidence`, `ExposureGap`,
+`ExposureHop`, `ExposureControl`, and `ExposurePath` for consumer APIs.
+
+A confirmed verdict is grounded in a fresh traffic path. Stale control evidence and partial sibling
+branches remain visible as evidence or gaps; they do not erase a separately confirmed fresh path.
+
+Canonical exposure requires Graph API query-language 1.11 or newer. When a legacy server accepts a
+string exposure query but returns the older four-field payload, the helper throws
+`GraphAnswerError` with code `unsupported_server`. ID, qualified-name, and cursor selectors can be
+rejected as `bad_request` by older servers before a payload exists. Public SDK 0.5.7 and earlier do
+not runtime-validate successful responses, so their existing string-selector calls and reads of
+`direction`, `exposed`, `services`, and `ingresses` continue to work with a 1.11 server.
+
 Tempo-backed APM helpers accept `source: "tempo"`:
 
 ```ts
@@ -206,6 +266,7 @@ Runnable examples are available in `examples/`:
 - `recent-events.ts`
 - `blast-radius.ts`
 - `path.ts`
+- `exposure.ts`
 - `raw-query.ts`
 - `topology-mermaid.ts`
 
@@ -224,5 +285,7 @@ npm install
 npm run generate
 npm run typecheck
 npm test
+npm run check:generated
 npm run build
+npm run test:consumer
 ```

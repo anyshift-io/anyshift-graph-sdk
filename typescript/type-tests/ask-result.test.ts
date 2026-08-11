@@ -3,6 +3,17 @@ import type {
   AskResult,
   AskResultFor,
   CloudResourceItem,
+  ExposureControl,
+  ExposureEvidence,
+  ExposureGap,
+  ExposureHop,
+  ExposureIngressRef,
+  ExposurePath,
+  ExposurePerspective,
+  ExposureResource,
+  ExposureResult,
+  ExposureService,
+  ExposureVerdict,
   GraphEdge,
   GraphIntent,
   ResourceSelector,
@@ -65,6 +76,37 @@ if (imageResult.image?.mode === "bydigest" && imageResult.image.byDigest) {
   void clusterIdentity;
 }
 
+declare const exposureResult: AskResultFor<"exposure">;
+const canonicalExposure: ExposureResult = exposureResult.exposure;
+const exposurePerspective: ExposurePerspective = canonicalExposure.perspective;
+const exposureVerdict: ExposureVerdict = canonicalExposure.verdict;
+const exposureService: ExposureService | undefined = canonicalExposure.services[0];
+const exposureIngress: ExposureIngressRef | undefined = canonicalExposure.ingresses[0];
+const exposureResource: ExposureResource | null = canonicalExposure.subject;
+const exposurePath: ExposurePath | undefined = canonicalExposure.paths[0];
+declare const exposureHop: ExposureHop;
+declare const exposureControl: ExposureControl;
+declare const exposureGap: ExposureGap;
+const exposureEvidence: ExposureEvidence = exposureHop.evidence;
+type PublicSdk057ExposureResult = {
+  direction: "ingress" | "workload";
+  exposed: boolean;
+  services: Array<{ service: string; namespace: string | null; pods: number; workloads: string[] }>;
+  ingresses: Array<{ ingress: string; namespace: string | null; via: string | null }>;
+};
+// Query-language 1.11 is additive for the four fields consumed by the public 0.5.7 SDK.
+const publicSdk057CompatibleExposure: PublicSdk057ExposureResult = canonicalExposure;
+void exposurePerspective;
+void exposureVerdict;
+void exposureService;
+void exposureIngress;
+void exposureResource;
+void exposurePath;
+void exposureControl;
+void exposureGap;
+void exposureEvidence;
+void publicSdk057CompatibleExposure;
+
 declare const cloudResource: CloudResourceItem;
 const provenanceStatus: "managed" | "configured" | "unknown" = cloudResource.provenance.status;
 void provenanceStatus;
@@ -85,9 +127,15 @@ const typedSelector: ResourceSelector = {
 const stableSelector: ResourceSelector = { id: "resource-hash" };
 // @ts-expect-error Name-based selectors must include a resource type to be deterministic.
 const ambiguousSelector: ResourceSelector = { name: "checkout-api" };
+// @ts-expect-error Stable ids cannot be combined with the name selector mode.
+const mixedSelector: ResourceSelector = { id: "resource-hash", name: "checkout-api", type: "K8S_DEPLOYMENT" };
+// @ts-expect-error Stable ids cannot carry name qualifiers.
+const qualifiedStableSelector: ResourceSelector = { id: "resource-hash", namespace: "shop" };
 void typedSelector;
 void stableSelector;
 void ambiguousSelector;
+void mixedSelector;
+void qualifiedStableSelector;
 const tempoSource: ApmSource = "tempo";
 const dynatraceSource: ApmSource = "dynatrace";
 const configurationSource: TopologySource = "configuration";

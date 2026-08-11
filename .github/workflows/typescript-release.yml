@@ -44,6 +44,7 @@ jobs:
       - run: npm test
       - run: npm run check:generated
       - run: npm run build
+      - run: npm run test:consumer
       - name: Publish public package
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

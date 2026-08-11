@@ -13,5 +13,6 @@ Run examples from the `typescript/` directory with `tsx`:
 npx tsx examples/recent-events.ts
 npx tsx examples/blast-radius.ts checkout
 npx tsx examples/path.ts checkout checkout-postgres
+npx tsx examples/exposure.ts checkout-api K8S_DEPLOYMENT shop
 npx tsx examples/raw-query.ts "SELECT * FROM events LIMIT 5"
 ```

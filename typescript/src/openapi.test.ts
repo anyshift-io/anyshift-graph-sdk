@@ -14,7 +14,7 @@ test("pinned OpenAPI exposes the executable 51-intent contract", async () => {
   assert.equal(schemas.AskResult.discriminator.propertyName, "intent");
   assert.equal(variants.length, 51);
   assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, 51);
-  assert.equal(queryLanguage.version, "1.10");
+  assert.equal(queryLanguage.version, "1.11");
   assert.equal(queryLanguage.tables.length, variants.length);
   const inventorySample = schemas.InventoryResult.properties.sample.items;
   assert.deepEqual(inventorySample.properties.resourceId.type, ["string", "null"]);
@@ -41,6 +41,7 @@ test("pinned OpenAPI exposes the executable 51-intent contract", async () => {
   const provenance = queryLanguage.tables.find((table: any) => table.name === "provenance");
   const ownership = queryLanguage.tables.find((table: any) => table.name === "ownership");
   const graphCoverage = queryLanguage.tables.find((table: any) => table.name === "graph_coverage");
+  const exposureTable = queryLanguage.tables.find((table: any) => table.name === "exposure");
   assert.ok(cloudResources);
   assert.equal(cloudResources.intent, "cloudresources");
   assert.ok(cloudResources.filters.some((filter: any) => filter.name === "provenance"));
@@ -55,4 +56,29 @@ test("pinned OpenAPI exposes the executable 51-intent contract", async () => {
   assert.ok(topology.filters.find((filter: any) => filter.name === "source").values.some((entry: any) => entry.value === "dynatrace"));
   assert.ok(iac.filters.some((filter: any) => filter.name === "freshness"));
   assert.ok(iacDrift.filters.some((filter: any) => filter.name === "status"));
+  assert.deepEqual(
+    exposureTable.filters.map((filter: any) => filter.name),
+    ["resource", "resource_id", "resource_type", "resource_namespace", "resource_cluster", "cursor"],
+  );
+
+  const exposureResult = schemas.ExposureResult;
+  assert.deepEqual(
+    [...exposureResult.required].sort(),
+    [
+      "candidates",
+      "direction",
+      "exposed",
+      "ingresses",
+      "page",
+      "paths",
+      "perspective",
+      "services",
+      "subject",
+      "verdict",
+    ].sort(),
+  );
+  const exposureVariant = variants.find((variant: any) => variant.properties.intent.const === "exposure");
+  assert.ok(exposureVariant.required.includes("exposure"));
+  assert.equal(exposureVariant.properties.exposure.$ref, "#/components/schemas/ExposureResult");
+  assert.equal(exposureVariant.properties.exposure.anyOf, undefined);
 });

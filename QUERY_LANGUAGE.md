@@ -42,7 +42,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`orphans`](#orphans) | Find unused or dangling Kubernetes resources. | `kind`, `namespace` |
 | [`coverage`](#coverage) | Find service, monitor, or metrics coverage gaps. | `kind`, `namespace` |
 | [`access`](#access) | Inspect RBAC reach or rank over-privileged service accounts. | `resource`, `mode` |
-| [`exposure`](#exposure) | Trace public ingress exposure to or from a resource. | `resource`, `resource_id`, `resource_type`, `resource_namespace`, `resource_cluster`, `cursor` |
+| [`exposure`](#exposure) | Trace bidirectional stored public-exposure routes and attached controls for one resource. | `resource`, `resource_id`, `resource_type`, `resource_namespace`, `resource_cluster`, `cursor` |
 | [`tenancy`](#tenancy) | Find workloads co-located with a resource on the same node. | `resource` |
 | [`sharedconfig`](#sharedconfig) | Find workloads coupled through shared configuration. | `resource` |
 | [`path`](#path) | Find the shortest infrastructure or operational path between two resources. | `from`, `from_exact`, `from_id`, `from_type`, `from_namespace`, `from_cluster`, `to`, `to_exact`, `to_id`, `to_type`, `to_namespace`, `to_cluster`, `scope` |
@@ -764,7 +764,7 @@ $ annie graph query "SELECT * FROM access WHERE mode = privileged LIMIT 10"
 
 ## exposure
 
-Trace public ingress exposure to or from a resource.
+Trace bidirectional stored public-exposure routes and attached controls for one resource.
 
 Result intent: `exposure`.
 
@@ -776,21 +776,37 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
-| `resource` | string | No | Any value | Resource name; add type, namespace, or cluster for an exact selector. |
-| `resource_id` | string | No | Any value | Stable graph or provider resource identifier. |
-| `resource_type` | string | No | Any value | Resource type for an exact resource selector. |
-| `resource_namespace` | string | No | Any value | Namespace for an exact resource selector. |
-| `resource_cluster` | string | No | Any value | Cluster for an exact resource selector. |
-| `cursor` | string | No | Any value | Opaque cursor returned by the previous exposure page. |
+| `resource` | string | No | Any value | Non-empty resource name or FQDN; exactly one of resource and resource_id is required. |
+| `resource_id` | string | No | Any value | Non-empty stable graph or provider id; cannot be combined with resource or name qualifiers. |
+| `resource_type` | string | No | Any value | Non-empty name-only qualifier; requires resource and sets exact selection. |
+| `resource_namespace` | string | No | Any value | Non-empty name-only qualifier; requires resource and sets exact selection. |
+| `resource_cluster` | string | No | Any value | Non-empty name-only qualifier; requires resource and sets exact selection. |
+| `cursor` | string | No | Any value | Non-empty opaque seek cursor bound to the subject and perspective of the previous exposure page. |
 
 ### Forms
 
-#### Public exposure
+#### Public exposure by name
 
-Trace how a resource is publicly exposed.
+Resolve one name or FQDN and select the traversal perspective from that subject.
 
 ```console
 $ annie graph query "SELECT * FROM exposure WHERE resource = api.example.com"
+```
+
+#### Public exposure by stable id
+
+Bypass name resolution with one stable graph or provider identity.
+
+```console
+$ annie graph query "SELECT * FROM exposure WHERE resource_id = 'cf://accounts/a/zones/z/hostnames/api.example.com'"
+```
+
+#### Qualified exact public exposure
+
+Use name-only qualifiers to force exact typed subject selection.
+
+```console
+$ annie graph query "SELECT * FROM exposure WHERE resource = checkout AND resource_type = K8S_SERVICE AND resource_namespace = payments"
 ```
 
 ## tenancy

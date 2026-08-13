@@ -190,13 +190,15 @@ Each helper supports `target` for a drill-down view and `limit` for ranked lists
 
 | Capability | TypeScript helper | Graph query target | Use it to answer |
 | --- | --- | --- | --- |
-| Cloud resource changes | `graph.cloudEvents({ resource, since })` | `cloud_events` | Which normalized cloud-provider events changed a resource, with actor and source evidence when available. |
+| Cloud resource changes | `graph.cloudEvents({ resource, operation, since })` | `cloud_events` | Which normalized cloud-provider events changed a resource, including exact provider-operation, actor, source, status, and Anyshift correlation evidence when available. |
 | IaC provenance | `graph.iac({ resource, freshness })` | `iac` | Which Terraform address, file, repository, and state evidence define a cloud resource. |
 | IaC drift evidence | `graph.iacDrift({ resource, freshness })` | `iac_drift` | Whether state and observed cloud evidence agree, including field differences and the reason for an unknown result. |
 
-Use stable Anyshift resource IDs when they are available. `cloudEvents` also supports cursor
-pagination and a `diff` filter; `iac` and `iacDrift` accept bounded result limits. Treat an
-`unknown` drift result as missing or insufficient evidence, not as confirmed drift.
+Use stable Anyshift resource IDs when they are available. `cloudEvents` also supports exact
+provider-operation filtering, cursor pagination, and a `diff` filter. Provider operation IDs group
+provider-native activity; Anyshift correlation IDs group the broader retained event story. `iac`
+and `iacDrift` accept bounded result limits. Treat an `unknown` drift result as missing or
+insufficient evidence, not as confirmed drift.
 
 ## Natural Language
 

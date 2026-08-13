@@ -204,6 +204,7 @@ export interface components {
                 resource: string;
                 actor: string;
                 correlation: string;
+                operation: string;
                 includeNoise: boolean;
                 includeDiff: boolean;
                 sinceHours: number;
@@ -263,6 +264,7 @@ export interface components {
                 };
                 correlation: {
                     id: string | null;
+                    providerOperationId: string | null;
                     isRoot: boolean;
                     reason: string | null;
                     confidence: string | null;

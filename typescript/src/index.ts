@@ -67,6 +67,8 @@ export type {
   TopologyResult,
   ResolveResult,
   ResolveCandidate,
+  CloudEventsResult,
+  CloudEventItem,
   CloudResourcesResult,
   CloudResourceItem,
   DeliveryEventsResult,

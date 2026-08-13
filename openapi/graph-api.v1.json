@@ -618,6 +618,29 @@
             "type": "string",
             "description": "Graph resource type, such as service or deployment.",
             "required": true
+          },
+          {
+            "name": "source",
+            "type": "enum",
+            "description": "Stored inventory provenance. The filter is applied before canonical deduplication.",
+            "values": [
+              {
+                "value": "cloud_api",
+                "description": "Observed directly through a cloud provider API."
+              },
+              {
+                "value": "terraform_state",
+                "description": "Observed in Terraform state, without direct cloud confirmation."
+              },
+              {
+                "value": "evaluation",
+                "description": "Stored evaluation, fixture, or test evidence."
+              },
+              {
+                "value": "unknown",
+                "description": "No supported stored provenance evidence."
+              }
+            ]
           }
         ],
         "pagination": {
@@ -1447,7 +1470,7 @@
           "paths"
         ],
         "intent": "path",
-        "summary": "Find the shortest infrastructure or operational path between two resources.",
+        "summary": "Find the shortest infrastructure or operational path between two resources; both scopes include reviewed Cloudflare traffic edges.",
         "filters": [
           {
             "name": "from",
@@ -1516,7 +1539,7 @@
             "values": [
               {
                 "value": "infrastructure",
-                "description": "Traverse infrastructure structure only."
+                "description": "Traverse infrastructure structure, including reviewed Cloudflare traffic edges."
               },
               {
                 "value": "operational",
@@ -2821,6 +2844,15 @@
           "type": "string"
         },
         "description": "Anyshift project id whose graph should be queried."
+      },
+      "GraphCapabilities": {
+        "name": "x-anyshift-graph-capabilities",
+        "in": "header",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields."
       }
     },
     "schemas": {
@@ -2854,6 +2886,61 @@
               },
               "message": {
                 "type": "string"
+              },
+              "selectionCode": {
+                "type": "string",
+                "enum": [
+                  "ambiguous_resource"
+                ],
+                "description": "Present when a resource term has multiple equally authoritative candidates."
+              },
+              "candidates": {
+                "type": "array",
+                "maxItems": 10,
+                "description": "Bounded retry candidates for an ambiguous resource term.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "anyshiftID",
+                    "name",
+                    "type",
+                    "namespace",
+                    "cluster"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "anyshiftID": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "namespace": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "cluster": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
               }
             }
           }
@@ -3196,6 +3283,25 @@
                     "string",
                     "null"
                   ]
+                },
+                "source": {
+                  "type": "string",
+                  "enum": [
+                    "cloud_api",
+                    "terraform_state",
+                    "evaluation",
+                    "unknown"
+                  ]
+                },
+                "observedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "duplicateCount": {
+                  "type": "integer",
+                  "minimum": 0
                 }
               },
               "required": [
@@ -3203,6 +3309,32 @@
                 "namespace",
                 "resourceId",
                 "externalId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "bySource": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "type": "string",
+                  "enum": [
+                    "cloud_api",
+                    "terraform_state",
+                    "evaluation",
+                    "unknown"
+                  ]
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "source",
+                "count"
               ],
               "additionalProperties": false
             }
@@ -8205,6 +8337,16 @@
                           "ambiguous_target",
                           "permission_denied",
                           "stale_evidence"
+                        ]
+                      },
+                      "inventoryState": {
+                        "type": "string",
+                        "enum": [
+                          "scanned_empty",
+                          "inventory_unbound",
+                          "permission_denied",
+                          "collection_failed",
+                          "not_collected"
                         ]
                       },
                       "message": {
@@ -15246,6 +15388,11 @@
             "bearerAuth": []
           }
         ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GraphCapabilities"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -15325,6 +15472,9 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/GraphCapabilities"
           }
         ],
         "requestBody": {
@@ -15423,6 +15573,11 @@
             "bearerAuth": []
           }
         ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GraphCapabilities"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -15502,6 +15657,9 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/GraphCapabilities"
           }
         ],
         "requestBody": {

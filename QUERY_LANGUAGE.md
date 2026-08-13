@@ -26,7 +26,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`provenance`](#provenance) | Trace a resource to stored release, commit, and actor evidence. | `resource` |
 | [`ownership`](#ownership) | Resolve observed GitHub user or team code ownership and contact identities. | `resource` |
 | [`graph_coverage`](#graph_coverage) | Inspect current node, relationship, bridge, and event evidence by graph source. | `source` |
-| [`resources`](#resources) | Count and sample current resources of one graph resource type. | `type` |
+| [`resources`](#resources) | Count and sample current resources of one graph resource type. | `type`, `source` |
 | [`operational_impact`](#operational_impact) | Find potential operational impact through reviewed directional graph relationships. | `resource`, `depth` |
 | [`connections`](#connections) | Inspect direct upstream and downstream relationships for a resource. | `resource` |
 | [`hotspots`](#hotspots) | Rank noisy resources, namespaces, alert rules, or alerting workloads. | `type`, `by`, `namespace`, `noise`, `since` |
@@ -45,7 +45,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`exposure`](#exposure) | Trace bidirectional stored public-exposure routes and attached controls for one resource. | `resource`, `resource_id`, `resource_type`, `resource_namespace`, `resource_cluster`, `cursor` |
 | [`tenancy`](#tenancy) | Find workloads co-located with a resource on the same node. | `resource` |
 | [`sharedconfig`](#sharedconfig) | Find workloads coupled through shared configuration. | `resource` |
-| [`path`](#path) | Find the shortest infrastructure or operational path between two resources. | `from`, `from_exact`, `from_id`, `from_type`, `from_namespace`, `from_cluster`, `to`, `to_exact`, `to_id`, `to_type`, `to_namespace`, `to_cluster`, `scope` |
+| [`path`](#path) | Find the shortest infrastructure or operational path between two resources; both scopes include reviewed Cloudflare traffic edges. | `from`, `from_exact`, `from_id`, `from_type`, `from_namespace`, `from_cluster`, `to`, `to_exact`, `to_id`, `to_type`, `to_namespace`, `to_cluster`, `scope` |
 | [`cascade`](#cascade) | Trace an incident correlation group in propagation order. | `target`, `id`, `since` |
 | [`alert_impact`](#alert_impact) | Find monitors and SLOs affected by a resource failure. | `resource` |
 | [`monitor`](#monitor) | Resolve a monitor to the infrastructure it observes. | `target` |
@@ -324,6 +324,7 @@ Modifiers: `LIMIT`; `OFFSET`.
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
 | `type` | string | Yes | Any value | Graph resource type, such as service or deployment. |
+| `source` | enum | No | `cloud_api`<br />`terraform_state`<br />`evaluation`<br />`unknown` | Stored inventory provenance. The filter is applied before canonical deduplication. |
 
 ### Forms
 
@@ -864,7 +865,7 @@ $ annie graph query "SELECT * FROM sharedconfig WHERE resource = checkout LIMIT 
 
 ## path
 
-Find the shortest infrastructure or operational path between two resources.
+Find the shortest infrastructure or operational path between two resources; both scopes include reviewed Cloudflare traffic edges.
 
 Result intent: `path`.
 

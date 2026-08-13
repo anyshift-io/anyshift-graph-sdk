@@ -18,4 +18,6 @@ test("AuthError and BadQueryError are GraphAnswerError subclasses with codes", (
   assert.ok(b instanceof GraphAnswerError);
   assert.equal(b.code, "bad_request");
   assert.equal(b.message, "bad sql");
+  assert.equal(b.selectionCode, undefined);
+  assert.deepEqual(b.candidates, []);
 });

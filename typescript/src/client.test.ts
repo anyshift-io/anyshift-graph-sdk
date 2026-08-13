@@ -120,7 +120,7 @@ test("caller-supplied invocation id must be a UUID", () => {
 
 test("telemetry version matches the published package version", async () => {
   const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
-  assert.equal(packageJson.version, "0.5.9");
+  assert.equal(packageJson.version, "0.5.10");
   assert.equal(GRAPH_SDK_VERSION, packageJson.version);
 });
 
@@ -170,6 +170,54 @@ test("401 -> AuthError, 400 -> BadQueryError, 500 -> GraphAnswerError", async ()
   await assert.rejects(
     () => make(500, { error: { code: "internal", message: "boom" } }).query("x"),
     (e: any) => e instanceof GraphAnswerError && e.code === "internal" && e.status === 500
+  );
+});
+
+test("400 ambiguity envelopes preserve bounded resource candidates", async () => {
+  const candidates = [{
+    id: "service-api-hash",
+    anyshiftID: "//run.googleapis.com/projects/example/locations/us-central1/services/three-tier-app-api",
+    name: "three-tier-app-api",
+    type: "RUN_SERVICES",
+    namespace: "us-central1",
+    cluster: "gcp/example",
+  }];
+  const gx = new GraphAnswer({
+    baseUrl: "http://x",
+    fetch: async () => resp(400, {
+      error: {
+        code: "bad_request",
+        message: "Resource is ambiguous.",
+        selectionCode: "ambiguous_resource",
+        candidates,
+      },
+    }),
+  });
+  await assert.rejects(
+    () => gx.query("SELECT * FROM connections WHERE resource = three-tier-app"),
+    (error: unknown) => error instanceof BadQueryError &&
+      error.selectionCode === "ambiguous_resource" &&
+      JSON.stringify(error.candidates) === JSON.stringify(candidates),
+  );
+});
+
+test("400 ambiguity envelopes discard malformed resource candidates", async () => {
+  const gx = new GraphAnswer({
+    baseUrl: "http://x",
+    fetch: async () => resp(400, {
+      error: {
+        code: "bad_request",
+        message: "Resource is ambiguous.",
+        selectionCode: "ambiguous_resource",
+        candidates: [{ id: "incomplete", name: "missing nullable fields" }],
+      },
+    }),
+  });
+  await assert.rejects(
+    () => gx.query("SELECT * FROM connections WHERE resource = three-tier-app"),
+    (error: unknown) => error instanceof BadQueryError &&
+      error.selectionCode === "ambiguous_resource" &&
+      error.candidates.length === 0,
   );
 });
 

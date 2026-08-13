@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.10 - 2026-08-13
+
+### Added
+
+- Added exported `ResourceSelectionCandidate` and candidate-aware `BadQueryError` fields for
+  ambiguous topology resource terms.
+- Added bounded ambiguity examples that retry with stable resource IDs.
+
+### Compatibility
+
+- Exact selectors and uniquely ranked fuzzy selectors retain their existing behavior. Ambiguous
+  fuzzy topology terms now fail closed on a compatible Graph API server instead of traversing from
+  an arbitrary first match.
+
 ## 0.5.9 - 2026-08-13
 
 ### Added

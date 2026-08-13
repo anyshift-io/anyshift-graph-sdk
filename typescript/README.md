@@ -125,7 +125,26 @@ console.log(path.summary);
 
 Typed selectors are deterministic when multiple resource types share the same name. Use
 `{ id: candidate.id }` with an id returned by `graph.resolve()` when name, type, namespace, and
-cluster still do not identify one node. Existing string selectors retain fuzzy-name resolution.
+cluster still do not identify one node. When a fuzzy selector has multiple equally authoritative
+matches, the API rejects the traversal instead of choosing one silently. The SDK preserves the
+bounded retry set on `BadQueryError`:
+
+```ts
+import { BadQueryError } from "@anyshift/graph-sdk";
+
+try {
+  await graph.connections({ resource: "three-tier-app" });
+} catch (error) {
+  if (error instanceof BadQueryError && error.selectionCode === "ambiguous_resource") {
+    for (const candidate of error.candidates) {
+      console.error(candidate.id, candidate.name, candidate.type, candidate.namespace);
+    }
+    // Retry with the selected stable `candidate.id`.
+  }
+}
+```
+
+Existing exact selectors and uniquely ranked fuzzy-name selectors remain compatible.
 
 ## Canonical Public Exposure
 

@@ -213,5 +213,10 @@ dashboards, or tests.
 The TypeScript SDK package is public and versioned as `@anyshift/graph-sdk`. The OpenAPI contract
 snapshot in `openapi/graph-api.v1.json` is the compatibility boundary for SDK releases.
 
+Topology helpers reject fuzzy resource terms that have multiple equally authoritative matches.
+`BadQueryError.selectionCode` is `ambiguous_resource` in that case, and
+`BadQueryError.candidates` carries the bounded stable-ID retry set. Exact IDs and uniquely ranked
+fuzzy selectors retain their existing behavior.
+
 The capabilities above reflect the current public SDK surface. New SDKs for Python and Go should use
 this matrix as the baseline for parity.

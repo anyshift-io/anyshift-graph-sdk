@@ -81,6 +81,20 @@ export interface components {
                 /** @enum {string} */
                 code: "unauthorized" | "bad_request" | "project_required" | "forbidden" | "not_found" | "payload_too_large" | "timeout" | "project_graph_unconfigured" | "project_events_graph_unconfigured" | "internal";
                 message: string;
+                /**
+                 * @description Present when a resource term has multiple equally authoritative candidates.
+                 * @enum {string}
+                 */
+                selectionCode?: "ambiguous_resource";
+                /** @description Bounded retry candidates for an ambiguous resource term. */
+                candidates?: {
+                    id: string;
+                    anyshiftID: string | null;
+                    name: string;
+                    type: string | null;
+                    namespace: string | null;
+                    cluster: string | null;
+                }[];
             };
         };
         QueryRequest: {
@@ -152,6 +166,15 @@ export interface components {
                 namespace: string | null;
                 resourceId: string | null;
                 externalId: string | null;
+                /** @enum {string} */
+                source?: "cloud_api" | "terraform_state" | "evaluation" | "unknown";
+                observedAt?: string | null;
+                duplicateCount?: number;
+            }[];
+            bySource?: {
+                /** @enum {string} */
+                source: "cloud_api" | "terraform_state" | "evaluation" | "unknown";
+                count: number;
             }[];
             availableTypes: {
                 label: string;
@@ -1088,6 +1111,8 @@ export interface components {
                     expectedNext: ("hostname" | "edge_control" | "origin" | "ingress" | "service" | "workload")[];
                     /** @enum {string} */
                     reason: "missing_relationship" | "missing_inventory" | "ambiguous_target" | "permission_denied" | "stale_evidence";
+                    /** @enum {string} */
+                    inventoryState?: "scanned_empty" | "inventory_unbound" | "permission_denied" | "collection_failed" | "not_collected";
                     message: string;
                 }[];
             }[];
@@ -2391,6 +2416,8 @@ export interface components {
     parameters: {
         /** @description Anyshift project id whose graph should be queried. */
         ProjectId: string;
+        /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields. */
+        GraphCapabilities: string;
     };
     requestBodies: never;
     headers: never;
@@ -2401,7 +2428,10 @@ export interface operations {
     queryGraph: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields. */
+                "x-anyshift-graph-capabilities"?: components["parameters"]["GraphCapabilities"];
+            };
             path?: never;
             cookie?: never;
         };
@@ -2461,7 +2491,10 @@ export interface operations {
     queryProjectGraph: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields. */
+                "x-anyshift-graph-capabilities"?: components["parameters"]["GraphCapabilities"];
+            };
             path: {
                 /** @description Anyshift project id whose graph should be queried. */
                 projectId: components["parameters"]["ProjectId"];
@@ -2542,7 +2575,10 @@ export interface operations {
     askGraph: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields. */
+                "x-anyshift-graph-capabilities"?: components["parameters"]["GraphCapabilities"];
+            };
             path?: never;
             cookie?: never;
         };
@@ -2602,7 +2638,10 @@ export interface operations {
     askProjectGraph: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields. */
+                "x-anyshift-graph-capabilities"?: components["parameters"]["GraphCapabilities"];
+            };
             path: {
                 /** @description Anyshift project id whose graph should be queried. */
                 projectId: components["parameters"]["ProjectId"];

@@ -1,4 +1,9 @@
-import { GraphAnswerError, AuthError, BadQueryError } from "./errors.js";
+import {
+  GraphAnswerError,
+  AuthError,
+  BadQueryError,
+  type ResourceSelectionCandidate,
+} from "./errors.js";
 import type { AskResult, AskResultFor } from "./types.js";
 import { GRAPH_SDK_VERSION } from "./version.js";
 
@@ -1029,7 +1034,26 @@ export class GraphAnswer {
       const code = (env && typeof env === "object" && env.code) ||
         (res.status === 401 ? "unauthorized" : res.status === 400 ? "bad_request" : "internal");
       if (res.status === 401) throw new AuthError(message, res.status);
-      if (res.status === 400) throw new BadQueryError(message, res.status);
+      if (res.status === 400) {
+        const selectionCode = env?.selectionCode === "ambiguous_resource"
+          ? "ambiguous_resource" as const
+          : undefined;
+        const candidates = Array.isArray(env?.candidates)
+          ? env.candidates.filter((candidate: unknown): candidate is ResourceSelectionCandidate => {
+              if (!candidate || typeof candidate !== "object") return false;
+              const value = candidate as Record<string, unknown>;
+              const nullableString = (field: string) =>
+                value[field] === null || typeof value[field] === "string";
+              return typeof value.id === "string" &&
+                typeof value.name === "string" &&
+                nullableString("anyshiftID") &&
+                nullableString("type") &&
+                nullableString("namespace") &&
+                nullableString("cluster");
+            })
+          : [];
+        throw new BadQueryError(message, res.status, selectionCode, candidates);
+      }
       throw new GraphAnswerError(code, message, res.status);
     }
 

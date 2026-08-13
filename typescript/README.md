@@ -48,9 +48,29 @@ const changes = await graph.cloudEvents({
   since: "1d",
   limit: 20,
 });
+const gcpOperation = await graph.cloudEvents({
+  provider: "gcp",
+  operation: "operation-123",
+  diff: true,
+});
+if (gcpOperation.intent === "cloudevents") {
+  for (const event of gcpOperation.cloudEvents?.items ?? []) {
+    console.log(
+      event.correlation.providerOperationId,
+      event.correlation.id,
+      event.evidence.source,
+      event.evidence.status,
+    );
+  }
+}
 const resources = await graph.cloudResources({
   provider: "aws",
   type: "EC2_INSTANCE",
+  lifecycle: "alive",
+  maxAge: "24h",
+});
+const gcpResources = await graph.cloudResources({
+  provider: "gcp",
   lifecycle: "alive",
   maxAge: "24h",
 });
@@ -62,6 +82,12 @@ const releaseProvenance = await graph.provenance({ resource: "checkout" });
 const owners = await graph.ownership({ resource: "anyshift-io/checkout" });
 const dynatraceCoverage = await graph.graphCoverage({ source: "dynatrace" });
 ```
+
+For cloud events, `correlation.providerOperationId` groups provider-native activity while
+`correlation.id` groups the broader Anyshift event story. `audit`, `snapshot`, and
+`reconciliation` identify different evidence sources. A failed attempted mutation is `failed`;
+missing outcome evidence remains `unknown`. Cloud-resource `provenance: "unknown"` does not mean
+unmanaged, and `freshness: "unknown"` does not mean stale.
 
 Join scanner evidence to the exact image digest observed in running containers:
 

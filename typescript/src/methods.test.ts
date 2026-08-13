@@ -54,6 +54,7 @@ test("cloudEvents composes evidence filters and keyset pagination", async () => 
     resource: "arn:aws:ec2:eu-west-3:123456789012:security-group/sg-1",
     actor: "ops",
     correlation: "corr-1",
+    operation: "operation-123",
     noise: "all",
     diff: true,
     since: "1d",
@@ -62,7 +63,7 @@ test("cloudEvents composes evidence filters and keyset pagination", async () => 
   });
   assert.equal(
     calls[0].body.sql,
-    "SELECT * FROM cloud_events WHERE provider = 'aws' AND scope = '123456789012' AND region = 'eu-west-3' AND category = 'security' AND resource = 'arn:aws:ec2:eu-west-3:123456789012:security-group/sg-1' AND actor = 'ops' AND correlation = 'corr-1' AND noise = 'all' AND diff = 'true' AND since = '1d' AND cursor = 'opaque-cursor' LIMIT 20",
+    "SELECT * FROM cloud_events WHERE provider = 'aws' AND scope = '123456789012' AND region = 'eu-west-3' AND category = 'security' AND resource = 'arn:aws:ec2:eu-west-3:123456789012:security-group/sg-1' AND actor = 'ops' AND correlation = 'corr-1' AND operation = 'operation-123' AND noise = 'all' AND diff = 'true' AND since = '1d' AND cursor = 'opaque-cursor' LIMIT 20",
   );
 });
 

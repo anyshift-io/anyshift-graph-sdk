@@ -58,8 +58,10 @@ export interface CloudEventsParams {
   resource?: string;
   /** Actor identity, name, or graph id. */
   actor?: string;
-  /** Correlation id. */
+  /** Anyshift event-story correlation id. */
   correlation?: string;
+  /** Provider-native operation id, such as a GCP operation identifier. */
+  operation?: string;
   /** Include high-noise evidence. */
   noise?: "signal" | "all";
   /** Include sanitized before/after values instead of changed field names only. */
@@ -608,6 +610,7 @@ export class GraphAnswer {
       ["resource", p.resource],
       ["actor", p.actor],
       ["correlation", p.correlation],
+      ["operation", p.operation],
       ["noise", p.noise === "all" ? "all" : undefined],
       ["diff", p.diff === true ? "true" : undefined],
       ["since", p.since],

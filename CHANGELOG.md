@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.5.9 - 2026-08-13
+
+### Added
+
+- Added exact provider-operation filtering to `graph.cloudEvents({ operation })` for GCP and
+  other provider-native event streams.
+- Added exported `CloudEventsResult` and `CloudEventItem` types, including the distinct
+  `correlation.providerOperationId` and Anyshift `correlation.id` fields.
+- Added GCP event and inventory examples with explicit evidence-source, status, freshness, and
+  provenance boundaries.
+
+### Changed
+
+- Pinned the Graph API query-language 1.12 contract and regenerated TypeScript response types and
+  the deterministic query reference.
+
+### Compatibility
+
+- Existing cloud-event calls emit the same SQL. The optional `operation` filter requires a Graph
+  API server with query-language 1.12; older servers reject that selector instead of silently
+  broadening the result.
+
 ## 0.5.8 - 2026-08-11
 
 ### Added

@@ -14,7 +14,7 @@ test("pinned OpenAPI exposes the executable 51-intent contract", async () => {
   assert.equal(schemas.AskResult.discriminator.propertyName, "intent");
   assert.equal(variants.length, 51);
   assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, 51);
-  assert.equal(queryLanguage.version, "1.11");
+  assert.equal(queryLanguage.version, "1.12");
   assert.equal(queryLanguage.tables.length, variants.length);
   const inventorySample = schemas.InventoryResult.properties.sample.items;
   assert.deepEqual(inventorySample.properties.resourceId.type, ["string", "null"]);
@@ -35,6 +35,10 @@ test("pinned OpenAPI exposes the executable 51-intent contract", async () => {
   assert.ok(topology.filters.find((filter: any) => filter.name === "source").values.some((entry: any) => entry.value === "tempo"));
   assert.ok(cloudEvents.filters.some((filter: any) => filter.name === "cursor"));
   assert.ok(cloudEvents.filters.some((filter: any) => filter.name === "diff"));
+  assert.ok(cloudEvents.filters.some((filter: any) => filter.name === "operation"));
+  const cloudEventCorrelation = schemas.CloudEventsResult.properties.items.items.properties.correlation;
+  assert.deepEqual(cloudEventCorrelation.properties.providerOperationId.type, ["string", "null"]);
+  assert.ok(cloudEventCorrelation.required.includes("providerOperationId"));
   const cloudResources = queryLanguage.tables.find((table: any) => table.name === "cloud_resources");
   const impact = queryLanguage.tables.find((table: any) => table.name === "operational_impact");
   const delivery = queryLanguage.tables.find((table: any) => table.name === "delivery_events");

@@ -2,6 +2,7 @@ import type {
   ApmSource,
   AskResult,
   AskResultFor,
+  CloudEventItem,
   CloudResourceItem,
   ExposureControl,
   ExposureEvidence,
@@ -110,6 +111,12 @@ void publicSdk057CompatibleExposure;
 declare const cloudResource: CloudResourceItem;
 const provenanceStatus: "managed" | "configured" | "unknown" = cloudResource.provenance.status;
 void provenanceStatus;
+
+declare const cloudEvent: CloudEventItem;
+const providerOperationId: string | null = cloudEvent.correlation.providerOperationId;
+const anyshiftCorrelationId: string | null = cloudEvent.correlation.id;
+void providerOperationId;
+void anyshiftCorrelationId;
 
 declare const edge: GraphEdge;
 const edgeSemantic:

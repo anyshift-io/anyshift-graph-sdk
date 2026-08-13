@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.11",
+    "version": "1.12",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -195,7 +195,12 @@
           {
             "name": "correlation",
             "type": "string",
-            "description": "Correlation id."
+            "description": "Anyshift event-story correlation id."
+          },
+          {
+            "name": "operation",
+            "type": "string",
+            "description": "Provider-native operation id."
           },
           {
             "name": "noise",
@@ -2103,7 +2108,7 @@
             "values": [
               {
                 "value": "managed",
-                "description": "One Terraform resource links to one state resource and one fresh cloud resource."
+                "description": "One Terraform-to-state-to-cloud chain remains in the selected scope and its cloud evidence is fresh."
               },
               {
                 "value": "unlinked",
@@ -2119,7 +2124,7 @@
               },
               {
                 "value": "ambiguous",
-                "description": "More than one state or cloud match exists."
+                "description": "More than one state or cloud relationship remains after exact-identity scoping."
               },
               {
                 "value": "stale",
@@ -2149,7 +2154,7 @@
           },
           {
             "name": "Resource provenance",
-            "description": "Show the Terraform, state, and cloud evidence for one resource.",
+            "description": "Show one resource's Terraform, state, and cloud evidence. Exact state/cloud identifiers select their relationship chain; a generic Terraform declaration keeps all instances.",
             "example": "SELECT * FROM iac WHERE resource = aws_instance.api_server"
           },
           {
@@ -3457,6 +3462,9 @@
               "correlation": {
                 "type": "string"
               },
+              "operation": {
+                "type": "string"
+              },
               "includeNoise": {
                 "type": "boolean"
               },
@@ -3477,6 +3485,7 @@
               "resource",
               "actor",
               "correlation",
+              "operation",
               "includeNoise",
               "includeDiff",
               "sinceHours"
@@ -3760,6 +3769,12 @@
                         "null"
                       ]
                     },
+                    "providerOperationId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
                     "isRoot": {
                       "type": "boolean"
                     },
@@ -3778,6 +3793,7 @@
                   },
                   "required": [
                     "id",
+                    "providerOperationId",
                     "isRoot",
                     "reason",
                     "confidence"

@@ -67,6 +67,22 @@ test("cloudEvents composes evidence filters and keyset pagination", async () => 
   );
 });
 
+test("cloudEvents keeps GCP provider operation and Anyshift correlation filters distinct", async () => {
+  const { gx, calls } = capturing();
+  await gx.cloudEvents({
+    provider: "gcp",
+    scope: "checkout-prod",
+    type: "compute_instances_set_metadata",
+    correlation: "story-123",
+    operation: "operation-123",
+    diff: true,
+  });
+  assert.equal(
+    calls[0].body.sql,
+    "SELECT * FROM cloud_events WHERE provider = 'gcp' AND scope = 'checkout-prod' AND type = 'compute_instances_set_metadata' AND correlation = 'story-123' AND operation = 'operation-123' AND diff = 'true'",
+  );
+});
+
 test("cloudResources composes inventory and evidence filters", async () => {
   const { gx, calls } = capturing();
   await gx.cloudResources({

@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.11 - 2026-08-14
+
+### Changed
+
+- Clarified that current event producers exclude provider-rejected mutations from change-event
+  results because they did not change provider state.
+- Documented that an absent rejected mutation does not prove no rejected call occurred, while a
+  retained legacy row can still report `failed` and missing outcome evidence remains `unknown`.
+
+### Compatibility
+
+- No API or TypeScript runtime surface changed. Existing status values and legacy-row handling are
+  preserved.
+
 ## 0.5.10 - 2026-08-13
 
 ### Added

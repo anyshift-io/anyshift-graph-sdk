@@ -85,8 +85,10 @@ const dynatraceCoverage = await graph.graphCoverage({ source: "dynatrace" });
 
 For cloud events, `correlation.providerOperationId` groups provider-native activity while
 `correlation.id` groups the broader Anyshift event story. `audit`, `snapshot`, and
-`reconciliation` identify different evidence sources. A failed attempted mutation is `failed`;
-missing outcome evidence remains `unknown`. Cloud-resource `provenance: "unknown"` does not mean
+`reconciliation` identify different evidence sources. Current producers exclude provider-rejected
+mutations because they did not change provider state, so their absence does not prove that no
+rejected calls occurred. A retained legacy row can still be `failed`; missing outcome evidence
+remains `unknown`, never inferred as success. Cloud-resource `provenance: "unknown"` does not mean
 unmanaged, and `freshness: "unknown"` does not mean stale.
 
 Join scanner evidence to the exact image digest observed in running containers:

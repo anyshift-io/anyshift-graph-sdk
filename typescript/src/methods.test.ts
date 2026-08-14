@@ -83,6 +83,21 @@ test("cloudEvents keeps GCP provider operation and Anyshift correlation filters 
   );
 });
 
+test("cloudEvents composes explicit statistics mode without changing legacy omission", async () => {
+  const { gx, calls } = capturing();
+  await gx.cloudEvents({ provider: "gcp", stats: "none", since: "72h", limit: 100 });
+  await gx.cloudEvents({ provider: "gcp", since: "72h", limit: 100 });
+
+  assert.equal(
+    calls[0].body.sql,
+    "SELECT * FROM cloud_events WHERE provider = 'gcp' AND stats = 'none' AND since = '72h' LIMIT 100",
+  );
+  assert.equal(
+    calls[1].body.sql,
+    "SELECT * FROM cloud_events WHERE provider = 'gcp' AND since = '72h' LIMIT 100",
+  );
+});
+
 test("cloudResources composes inventory and evidence filters", async () => {
   const { gx, calls } = capturing();
   await gx.cloudResources({

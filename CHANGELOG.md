@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.5.12 - 2026-08-14
+
+### Added
+
+- Added `graph.cloudEvents({ stats: "none" })` for bounded page browsing without an exact
+  full-window count.
+- Added explicit cloud-event statistics metadata and nullable totals from the synchronized Graph
+  API query-language 1.13 contract.
+
+### Compatibility
+
+- Omitting `stats`, or passing `stats: "exact"`, preserves the existing exact `total` and
+  `byType` behavior. Page mode returns `total: null`, an empty `byType`, and
+  `statistics: { mode: "none", exact: false }`; it never presents the page length as a total.
+
 ## 0.5.11 - 2026-08-14
 
 ### Changed

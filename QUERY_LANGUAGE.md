@@ -20,7 +20,7 @@ Values may be bare words or single- or double-quoted strings.
 | --- | --- | --- |
 | [`resolve`](#resolve) | Resolve a resource name or fragment to ranked current graph resources. | `term` |
 | [`events`](#events) | Read the infrastructure change-event timeline. | `type`, `target`, `namespace`, `noise`, `since` |
-| [`cloud_events`](#cloud_events) | Read evidence-backed AWS, Azure, and GCP change events without parsing summaries. | `provider`, `scope`, `region`, `category`, `type`, `resource`, `actor`, `correlation`, `operation`, `noise`, `diff`, `since`, `cursor` |
+| [`cloud_events`](#cloud_events) | Read evidence-backed AWS, Azure, and GCP change events without parsing summaries. | `provider`, `scope`, `region`, `category`, `type`, `resource`, `actor`, `correlation`, `operation`, `stats`, `noise`, `diff`, `since`, `cursor` |
 | [`cloud_resources`](#cloud_resources) | Inspect current or recently deleted AWS, Azure, and GCP resources with freshness and provenance. | `provider`, `scope`, `region`, `type`, `resource`, `lifecycle`, `provenance`, `freshness`, `max_age`, `cursor` |
 | [`delivery_events`](#delivery_events) | Read commit, CI, release, and deployment evidence from the delivery graph. | `stage`, `type`, `resource`, `actor`, `source`, `since`, `cursor` |
 | [`provenance`](#provenance) | Trace a resource to stored release, commit, and actor evidence. | `resource` |
@@ -149,6 +149,7 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 | `actor` | string | No | Any value | Actor identity, name, or graph id. |
 | `correlation` | string | No | Any value | Anyshift event-story correlation id. |
 | `operation` | string | No | Any value | Provider-native operation id. |
+| `stats` | enum | No | `exact`<br />`none` | Whether to calculate exact full-window statistics. |
 | `noise` | enum | No | `signal` (`false`, `exclude`)<br />`all` (`true`, `include`, `raw`) | Whether to include high-noise evidence. |
 | `diff` | enum | No | `false` (`no`, `none`)<br />`true` (`yes`, `include`) | Whether to include sanitized before/after values. |
 | `since` | duration | No | Any value | Relative lookback such as 30m, 2h, 1d, or today. |

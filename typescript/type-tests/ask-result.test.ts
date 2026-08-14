@@ -118,6 +118,14 @@ const anyshiftCorrelationId: string | null = cloudEvent.correlation.id;
 void providerOperationId;
 void anyshiftCorrelationId;
 
+declare const cloudEventsResult: AskResultFor<"cloudevents">;
+const cloudEventTotal: number | null | undefined = cloudEventsResult.cloudEvents?.total;
+const cloudEventStatisticsMode: "exact" | "none" | undefined = cloudEventsResult.cloudEvents?.statistics.mode;
+const cloudEventStatisticsExact: boolean | undefined = cloudEventsResult.cloudEvents?.statistics.exact;
+void cloudEventTotal;
+void cloudEventStatisticsMode;
+void cloudEventStatisticsExact;
+
 declare const edge: GraphEdge;
 const edgeSemantic:
   | "dependency" | "ownership" | "identity" | "connectivity" | "context" | "plumbing" | "unknown" =

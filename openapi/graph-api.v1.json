@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.12",
+    "version": "1.13",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -201,6 +201,21 @@
             "name": "operation",
             "type": "string",
             "description": "Provider-native operation id."
+          },
+          {
+            "name": "stats",
+            "type": "enum",
+            "description": "Whether to calculate exact full-window statistics.",
+            "values": [
+              {
+                "value": "exact",
+                "description": "Return an exact total and event-type counts."
+              },
+              {
+                "value": "none",
+                "description": "Return only the bounded page without calculating full-window statistics."
+              }
+            ]
           },
           {
             "name": "noise",
@@ -3675,8 +3690,15 @@
             }
           },
           "total": {
-            "type": "integer",
-            "minimum": 0
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "byType": {
             "type": "array",
@@ -3697,6 +3719,26 @@
               ],
               "additionalProperties": false
             }
+          },
+          "statistics": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "exact",
+                  "none"
+                ]
+              },
+              "exact": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "mode",
+              "exact"
+            ],
+            "additionalProperties": false
           },
           "items": {
             "type": "array",
@@ -4014,6 +4056,7 @@
           "warnings",
           "total",
           "byType",
+          "statistics",
           "items",
           "page"
         ],

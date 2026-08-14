@@ -243,11 +243,16 @@ export interface components {
                 status: "available" | "partial" | "unavailable";
             };
             warnings: string[];
-            total: number;
+            total: number | null;
             byType: {
                 type: string;
                 count: number;
             }[];
+            statistics: {
+                /** @enum {string} */
+                mode: "exact" | "none";
+                exact: boolean;
+            };
             items: {
                 id: string;
                 timestamp: string;

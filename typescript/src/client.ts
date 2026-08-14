@@ -67,6 +67,8 @@ export interface CloudEventsParams {
   correlation?: string;
   /** Provider-native operation id, such as a GCP operation identifier. */
   operation?: string;
+  /** Exact statistics are the legacy default; none skips the full-window count for bounded browsing. */
+  stats?: "exact" | "none";
   /** Include high-noise evidence. */
   noise?: "signal" | "all";
   /** Include sanitized before/after values instead of changed field names only. */
@@ -616,6 +618,7 @@ export class GraphAnswer {
       ["actor", p.actor],
       ["correlation", p.correlation],
       ["operation", p.operation],
+      ["stats", p.stats],
       ["noise", p.noise === "all" ? "all" : undefined],
       ["diff", p.diff === true ? "true" : undefined],
       ["since", p.since],

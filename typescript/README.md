@@ -45,6 +45,7 @@ console.log(recent.summary);
 const changes = await graph.cloudEvents({
   provider: "aws",
   resource: "arn:aws:ecs:eu-west-3:123456789012:service/prod/api",
+  stats: "none",
   since: "1d",
   limit: 20,
 });
@@ -88,7 +89,9 @@ For cloud events, `correlation.providerOperationId` groups provider-native activ
 `reconciliation` identify different evidence sources. Current producers exclude provider-rejected
 mutations because they did not change provider state, so their absence does not prove that no
 rejected calls occurred. A retained legacy row can still be `failed`; missing outcome evidence
-remains `unknown`, never inferred as success. Cloud-resource `provenance: "unknown"` does not mean
+remains `unknown`, never inferred as success. `stats: "none"` skips exact full-window statistics
+and returns `total: null` with explicit non-exact metadata; omit `stats` or pass `"exact"` when an
+exact total is required. Cloud-resource `provenance: "unknown"` does not mean
 unmanaged, and `freshness: "unknown"` does not mean stale.
 
 Join scanner evidence to the exact image digest observed in running containers:

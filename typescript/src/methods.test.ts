@@ -221,7 +221,19 @@ test("hotspots ranks alert-rule firings by dimension", async () => {
   assert.equal(calls[0].body.sql, "SELECT * FROM hotspots WHERE by = 'alertrule' AND namespace = 'storefront' LIMIT 5");
 });
 
-test("incident by target and by id", async () => {
+test("correlations by target, id, type, and since", async () => {
+  const a = capturing();
+  await a.gx.correlations({ target: "places", since: "2h" });
+  assert.equal(a.calls[0].body.sql, "SELECT * FROM correlations WHERE target = 'places' AND since = '2h'");
+  const b = capturing();
+  await b.gx.correlations({ id: "519a304c-7b21-5c0f-86b9-05944e36c8ae", type: "oom" });
+  assert.equal(
+    b.calls[0].body.sql,
+    "SELECT * FROM correlations WHERE id = '519a304c-7b21-5c0f-86b9-05944e36c8ae' AND type = 'oom'",
+  );
+});
+
+test("incident remains the deprecated legacy alias", async () => {
   const a = capturing();
   await a.gx.incident({ target: "places" });
   assert.equal(a.calls[0].body.sql, "SELECT * FROM incidents WHERE target = 'places'");

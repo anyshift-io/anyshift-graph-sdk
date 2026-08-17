@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("pinned OpenAPI exposes the executable 51-intent contract", async () => {
+test("pinned OpenAPI exposes the executable 52-intent contract", async () => {
   const raw = await readFile(new URL("../../openapi/graph-api.v1.json", import.meta.url), "utf8");
   const document = JSON.parse(raw);
   const schemas = document.components.schemas;
@@ -12,9 +12,9 @@ test("pinned OpenAPI exposes the executable 51-intent contract", async () => {
   assert.equal(schemas.QueryRequest.additionalProperties, false);
   assert.equal(schemas.AskRequest.additionalProperties, false);
   assert.equal(schemas.AskResult.discriminator.propertyName, "intent");
-  assert.equal(variants.length, 51);
-  assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, 51);
-  assert.equal(queryLanguage.version, "1.13");
+  assert.equal(variants.length, 52);
+  assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, 52);
+  assert.equal(queryLanguage.version, "1.14");
   assert.equal(queryLanguage.tables.length, variants.length);
   const inventorySample = schemas.InventoryResult.properties.sample.items;
   assert.deepEqual(inventorySample.properties.resourceId.type, ["string", "null"]);
@@ -93,4 +93,24 @@ test("pinned OpenAPI exposes the executable 51-intent contract", async () => {
   assert.ok(exposureVariant.required.includes("exposure"));
   assert.equal(exposureVariant.properties.exposure.$ref, "#/components/schemas/ExposureResult");
   assert.equal(exposureVariant.properties.exposure.anyOf, undefined);
+
+  const correlations = queryLanguage.tables.find((table: any) => table.name === "correlations");
+  const incidents = queryLanguage.tables.find((table: any) => table.name === "incidents");
+  assert.equal(correlations.intent, "correlations");
+  assert.equal(correlations.deprecated, undefined);
+  assert.deepEqual(
+    correlations.filters.map((filter: any) => filter.name),
+    ["target", "id", "type", "since"],
+  );
+  assert.equal(incidents.intent, "incident");
+  assert.deepEqual(incidents.deprecated, { since: "v1", replacement: "correlations" });
+  const correlationsVariant = variants.find((variant: any) => variant.properties.intent.const === "correlations");
+  assert.ok(correlationsVariant.required.includes("correlations"));
+  assert.ok(
+    correlationsVariant.properties.correlations.oneOf.some(
+      (entry: any) => entry.$ref === "#/components/schemas/CorrelationsResult",
+    ),
+  );
+  assert.ok(correlationsVariant.properties.correlations.oneOf.some((entry: any) => entry.type === "null"));
+  assert.ok(schemas.CorrelationsResult.required.includes("correlationId"));
 });

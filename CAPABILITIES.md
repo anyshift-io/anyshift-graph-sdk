@@ -26,7 +26,8 @@ All typed helpers call `graph.query(...)` and return an `AskResult` envelope wit
 | Recent events | `graph.events()` | `events` | What changed recently for a resource, namespace, or event type. |
 | Delivery evidence | `graph.deliveryEvents()` | `delivery_events` | Which stored commit, CI, release, and deployment events match a stage, resource, actor, source, or time window. |
 | Event hotspots | `graph.hotspots()` | `hotspots` | Which resources, namespaces, alert rules, or alerting workloads are currently noisy. |
-| Correlated incident | `graph.incident({ target })` or `graph.incident({ id })` | `incidents` | Which root event caused an incident and how the correlated event chain unfolded. |
+| Correlated event group | `graph.correlations({ target })` or `graph.correlations({ id })` | `correlations` | Which root event started a correlated Anyshift event group and how the chain unfolded. |
+| Correlated incident (deprecated) | `graph.incident({ target })` or `graph.incident({ id })` | `incidents` | Deprecated alias for correlations. Prefer `graph.correlations()`. |
 | Failure feed | `graph.failures()` | `failures` | Which recent failure events affect a target or namespace. |
 | Deployments | `graph.deployments()` | `deployments` | Which rollout events happened recently, optionally scoped to a target or namespace. |
 | Audit changes | `graph.audit()` | `audit` | Which configuration or identity changes happened recently. |

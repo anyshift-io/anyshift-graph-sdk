@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.5.13 - 2026-08-17
+
+### Added
+
+- Added `graph.correlations({ target?, id?, type?, since? })` for the canonical Graph API
+  `correlations` target and `correlations` result intent.
+- Pinned Graph API query-language 1.14 and regenerated TypeScript response types plus the
+  deterministic query reference.
+
+### Changed
+
+- Marked `graph.incident()` as deprecated. It still queries the legacy `incidents` target and
+  returns the `incident` intent for v1 compatibility.
+
+### Compatibility
+
+- Existing `graph.incident()` callers keep the same SQL and response shape. New code should call
+  `graph.correlations()`, which requires a Graph API server with query-language 1.14.
+
 ## 0.5.12 - 2026-08-14
 
 ### Added

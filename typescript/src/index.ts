@@ -18,6 +18,7 @@ export type {
   IacParams,
   IacDriftParams,
   HotspotsParams,
+  CorrelationsParams,
   FeedParams,
   AuditParams,
   NodeParams,
@@ -95,4 +96,6 @@ export type {
   ExposureHop,
   ExposureControl,
   ExposurePath,
+  CorrelationsResult,
+  IncidentResult,
 } from "./types.js";

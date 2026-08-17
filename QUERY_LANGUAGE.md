@@ -30,7 +30,8 @@ Values may be bare words or single- or double-quoted strings.
 | [`operational_impact`](#operational_impact) | Find potential operational impact through reviewed directional graph relationships. | `resource`, `depth` |
 | [`connections`](#connections) | Inspect direct upstream and downstream relationships for a resource. | `resource` |
 | [`hotspots`](#hotspots) | Rank noisy resources, namespaces, alert rules, or alerting workloads. | `type`, `by`, `namespace`, `noise`, `since` |
-| [`incidents`](#incidents) | Reconstruct a correlated incident around a target or correlation identifier. | `target`, `id`, `type`, `since` |
+| [`correlations`](#correlations) | Reconstruct a correlated Anyshift event group around a target or correlation identifier. | `target`, `id`, `type`, `since` |
+| [`incidents`](#incidents) | Deprecated alias for correlations. Reconstruct a correlated Anyshift event group around a target or correlation identifier. | `target`, `id`, `type`, `since` |
 | [`failures`](#failures) | Read recent failure-class infrastructure events. | `target`, `namespace`, `since` |
 | [`deployments`](#deployments) | Read recent workload deployments and image changes. | `target`, `namespace`, `since` |
 | [`audit`](#audit) | Read configuration, identity, and infrastructure audit events. | `target`, `namespace`, `type`, `since` |
@@ -420,9 +421,46 @@ Rank resources by recent event activity.
 $ annie graph query "SELECT * FROM hotspots WHERE by = resource AND since = 24h LIMIT 10"
 ```
 
+## correlations
+
+Reconstruct a correlated Anyshift event group around a target or correlation identifier.
+
+Result intent: `correlations`.
+
+Table aliases: `correlation`.
+
+Modifiers: `LIMIT` is not applied; `OFFSET` is not applied.
+
+### Filters
+
+| Filter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `target` | string | No | Any value | Resource name or fragment. |
+| `id` | string | No | Any value | Correlation identifier. |
+| `type` | string | No | Any value | Optional event type filter. |
+| `since` | duration | No | Any value | Relative lookback such as 30m, 2h, 1d, or today. |
+
+### Forms
+
+#### Correlation by target
+
+At least one of target or id is required; since bounds target resolution.
+
+```console
+$ annie graph query "SELECT * FROM correlations WHERE target = checkout AND since = 2h"
+```
+
+#### Correlation by id
+
+Load one exact correlation group.
+
+```console
+$ annie graph query "SELECT * FROM correlations WHERE id = incident-123"
+```
+
 ## incidents
 
-Reconstruct a correlated incident around a target or correlation identifier.
+Deprecated alias for correlations. Reconstruct a correlated Anyshift event group around a target or correlation identifier.
 
 Result intent: `incident`.
 
@@ -443,7 +481,7 @@ Modifiers: `LIMIT` is not applied; `OFFSET` is not applied.
 
 #### Incident by target
 
-At least one of target or id is required; since bounds target resolution.
+Deprecated. Prefer correlations. At least one of target or id is required; since bounds target resolution.
 
 ```console
 $ annie graph query "SELECT * FROM incidents WHERE target = checkout AND since = 2h"
@@ -451,7 +489,7 @@ $ annie graph query "SELECT * FROM incidents WHERE target = checkout AND since =
 
 #### Incident by correlation id
 
-Load one exact correlation group.
+Deprecated. Prefer correlations. Load one exact correlation group.
 
 ```console
 $ annie graph query "SELECT * FROM incidents WHERE id = incident-123"

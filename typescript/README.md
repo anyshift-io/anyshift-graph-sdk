@@ -228,10 +228,11 @@ try {
 the opaque `page.nextCursor` from the preceding result.
 
 The canonical payload distinguishes perspective and verdict, identifies the resolved subject and
-ambiguous candidates, and returns evidence-backed paths with hops, controls, explicit gaps, and a
-keyset page. The package exports `ExposureResult`, `ExposureService`, `ExposureIngressRef`,
-`ExposurePerspective`, `ExposureVerdict`, `ExposureResource`, `ExposureEvidence`, `ExposureGap`,
-`ExposureHop`, `ExposureControl`, and `ExposurePath` for consumer APIs.
+ambiguous candidates, and returns evidence-backed paths with hops, controls, explicit gaps, optional
+managed `platform` context, and a keyset page. The package exports `ExposureResult`,
+`ExposureService`, `ExposureIngressRef`, `ExposurePerspective`, `ExposureVerdict`,
+`ExposureResource`, `ExposureEvidence`, `ExposureGap`, `ExposureHop`, `ExposureControl`,
+`ExposurePath`, and `ExposurePlatform` for consumer APIs.
 
 A confirmed verdict is grounded in a fresh traffic path. Stale control evidence and partial sibling
 branches remain visible as evidence or gaps; they do not erase a separately confirmed fresh path.

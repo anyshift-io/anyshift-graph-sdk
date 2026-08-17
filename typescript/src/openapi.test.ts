@@ -92,6 +92,16 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
   assert.ok(exposureVariant.required.includes("exposure"));
   assert.equal(exposureVariant.properties.exposure.$ref, "#/components/schemas/ExposureResult");
   assert.equal(exposureVariant.properties.exposure.anyOf, undefined);
+  const exposurePath = exposureResult.properties.paths.items;
+  assert.ok(exposurePath.required.includes("platform"));
+  const platformObject = exposurePath.properties.platform.anyOf.find((entry: any) => entry.type === "object");
+  assert.ok(exposurePath.properties.platform.anyOf.some((entry: any) => entry.type === "null"));
+  assert.deepEqual(
+    [...platformObject.required].sort(),
+    ["accountId", "id", "name", "observedAt", "provenance", "region", "relationship", "type"],
+  );
+  assert.equal(platformObject.properties.relationship.const, "HOSTS");
+  assert.deepEqual(platformObject.properties.provenance.required, ["source"]);
 
   const correlations = queryLanguage.tables.find((table: any) => table.name === "correlations");
   const incidents = queryLanguage.tables.find((table: any) => table.name === "incidents");

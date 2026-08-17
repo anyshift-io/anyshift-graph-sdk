@@ -1396,6 +1396,19 @@ export interface components {
                     inventoryState?: "scanned_empty" | "inventory_unbound" | "permission_denied" | "collection_failed" | "not_collected";
                     message: string;
                 }[];
+                platform: {
+                    type: string;
+                    id: string;
+                    name: string;
+                    accountId: string | null;
+                    region: string | null;
+                    /** @constant */
+                    relationship: "HOSTS";
+                    observedAt: string | null;
+                    provenance: {
+                        source: string;
+                    };
+                } | null;
             }[];
             page: {
                 limit: number;

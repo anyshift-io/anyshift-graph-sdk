@@ -99,6 +99,7 @@ export type {
   ExposureHop,
   ExposureControl,
   ExposurePath,
+  ExposurePlatform,
   CorrelationsResult,
   IncidentResult,
   OperationalProvider,

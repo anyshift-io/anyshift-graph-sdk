@@ -129,7 +129,7 @@ Selected modes:
 | RBAC reach | `graph.access({ resource })` | `access` | What a service account, pod, workload, or role can reach. |
 | Over-privileged identities | `graph.access({ mode: "privileged" })` | `access` | Which service accounts have broad or risky permissions. |
 | NetworkPolicy coverage | `graph.netpol()` | `netpol` | Which namespaces are default-allow, which policies apply, or who can reach a target east-west. |
-| Public exposure | `graph.exposure({ resource, cursor? })` | `exposure` | Which evidence-backed public-edge paths reach a resource, including controls, gaps, verdict, and pagination. |
+| Public exposure | `graph.exposure({ resource, cursor? })` | `exposure` | Which evidence-backed public-edge paths reach a resource, including controls, gaps, optional managed `platform` context (for example EKS via `HOSTS`), verdict, and pagination. |
 
 Selected modes:
 
@@ -145,6 +145,12 @@ returns `AskResultFor<"exposure">` and exposes the canonical result directly as 
 If a legacy server returns a successful response without that canonical payload, the SDK throws a
 stable `GraphAnswerError` with code `unsupported_server`; newer selectors may instead be rejected by
 the old query parser as `bad_request`.
+
+Each exposure path includes required nullable `platform` for managed runtime identity. When an
+`AWS_EKS_CLUSTER` hosts the Kubernetes cluster, consumers read ARN/ID, name, account, region,
+`HOSTS` relationship, `observedAt`, and provenance there. EKS is never a traffic hop; Kubernetes
+hops keep `provider: "kubernetes"`. Multi-candidate ambiguity remains multi-candidate via
+`candidates` and `paths`.
 
 Exposure verdicts follow fresh traffic evidence. Stale controls and partial sibling paths remain
 explicit without downgrading an independently confirmed fresh traffic path.

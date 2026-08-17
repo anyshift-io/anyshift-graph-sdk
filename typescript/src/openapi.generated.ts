@@ -546,6 +546,38 @@ export interface components {
                 flap?: number;
             }[];
         };
+        CorrelationsResult: {
+            correlationId: string | null;
+            total: number;
+            roots: number;
+            namespaces: string[];
+            byType: {
+                type: string;
+                count: number;
+            }[];
+            rootCauses: {
+                ts: string;
+                type: string;
+                summary: string | null;
+                targetKind: string | null;
+                target: string | null;
+                namespace: string | null;
+                isRoot: boolean;
+                noiseClass: string | null;
+                cluster: string | null;
+            }[];
+            chain: {
+                ts: string;
+                type: string;
+                summary: string | null;
+                targetKind: string | null;
+                target: string | null;
+                namespace: string | null;
+                isRoot: boolean;
+                noiseClass: string | null;
+                cluster: string | null;
+            }[];
+        };
         IncidentResult: {
             correlationId: string | null;
             total: number;
@@ -1775,6 +1807,22 @@ export interface components {
             /** @constant */
             intent: "hotspots";
             hotspots: components["schemas"]["HotspotsResult"] | null;
+        } | {
+            question: string;
+            summary: string;
+            countOnly?: boolean;
+            elapsedMs?: number;
+            resolved?: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            nodes?: components["schemas"]["GraphNode"][];
+            edges?: components["schemas"]["GraphEdge"][];
+            /** @constant */
+            intent: "correlations";
+            correlations: components["schemas"]["CorrelationsResult"] | null;
         } | {
             question: string;
             summary: string;

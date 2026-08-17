@@ -17,6 +17,10 @@ const cloudEventsTable = queryLanguage?.tables?.find((table) => table?.name === 
 const cloudEventsResult = document?.components?.schemas?.CloudEventsResult;
 const cloudEventCorrelation = document?.components?.schemas?.CloudEventsResult
   ?.properties?.items?.items?.properties?.correlation;
+const correlationsTable = queryLanguage?.tables?.find((table) => table?.name === "correlations");
+const incidentsTable = queryLanguage?.tables?.find((table) => table?.name === "incidents");
+const correlationsVariant = askResult?.oneOf?.find((variant) => variant?.properties?.intent?.const === "correlations");
+const correlationsResult = document?.components?.schemas?.CorrelationsResult;
 const canonicalExposureFields = [
   "direction",
   "exposed",
@@ -32,8 +36,8 @@ const canonicalExposureFields = [
 if (
   document?.openapi !== "3.1.0"
   || askResult?.discriminator?.propertyName !== "intent"
-  || askResult?.oneOf?.length !== 51
-  || queryLanguage?.version !== "1.13"
+  || askResult?.oneOf?.length !== 52
+  || queryLanguage?.version !== "1.14"
   || queryLanguage?.tables?.length !== askResult.oneOf.length
   || exposureVariant?.properties?.exposure?.$ref !== "#/components/schemas/ExposureResult"
   || !exposureVariant?.required?.includes("exposure")
@@ -43,8 +47,16 @@ if (
   || !cloudEventsResult?.required?.includes("statistics")
   || !cloudEventsResult?.properties?.total?.anyOf?.some((entry) => entry?.type === "null")
   || !cloudEventCorrelation?.required?.includes("providerOperationId")
+  || correlationsTable?.intent !== "correlations"
+  || correlationsTable?.deprecated !== undefined
+  || incidentsTable?.intent !== "incident"
+  || incidentsTable?.deprecated?.replacement !== "correlations"
+  || !correlationsVariant?.required?.includes("correlations")
+  || !correlationsVariant?.properties?.correlations?.oneOf?.some((entry) => entry?.$ref === "#/components/schemas/CorrelationsResult")
+  || !correlationsVariant?.properties?.correlations?.oneOf?.some((entry) => entry?.type === "null")
+  || !correlationsResult?.required?.includes("correlationId")
 ) {
-  throw new Error(`${source} does not expose the expected executable 51-intent, query-language 1.13, optional cloud-event statistics, provider-operation, and canonical exposure contract`);
+  throw new Error(`${source} does not expose the expected executable 52-intent, query-language 1.14, correlations contract, optional cloud-event statistics, provider-operation, and canonical exposure contract`);
 }
 
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`);

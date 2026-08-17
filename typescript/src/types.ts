@@ -36,6 +36,8 @@ export type ExposureHop = ExposurePath["hops"][number];
 export type ExposureControl = ExposurePath["controls"][number];
 export type ExposureGap = ExposurePath["gaps"][number];
 export type ExposureEvidence = ExposureHop["evidence"];
+export type CorrelationsResult = Schemas["CorrelationsResult"];
+export type IncidentResult = Schemas["IncidentResult"];
 
 /** Every successful Graph API response, discriminated by its exact intent payload. */
 export type AskResult = Schemas["AskResult"];

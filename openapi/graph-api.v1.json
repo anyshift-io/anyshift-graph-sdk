@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.13",
+    "version": "1.14",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -828,12 +828,62 @@
         ]
       },
       {
+        "name": "correlations",
+        "aliases": [
+          "correlation"
+        ],
+        "intent": "correlations",
+        "summary": "Reconstruct a correlated Anyshift event group around a target or correlation identifier.",
+        "filters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Resource name or fragment."
+          },
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Correlation identifier."
+          },
+          {
+            "name": "type",
+            "type": "string",
+            "description": "Optional event type filter."
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          }
+        ],
+        "pagination": {
+          "limit": false,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Correlation by target",
+            "description": "At least one of target or id is required; since bounds target resolution.",
+            "example": "SELECT * FROM correlations WHERE target = checkout AND since = 2h"
+          },
+          {
+            "name": "Correlation by id",
+            "description": "Load one exact correlation group.",
+            "example": "SELECT * FROM correlations WHERE id = incident-123"
+          }
+        ]
+      },
+      {
         "name": "incidents",
         "aliases": [
           "incident"
         ],
         "intent": "incident",
-        "summary": "Reconstruct a correlated incident around a target or correlation identifier.",
+        "summary": "Deprecated alias for correlations. Reconstruct a correlated Anyshift event group around a target or correlation identifier.",
+        "deprecated": {
+          "since": "v1",
+          "replacement": "correlations"
+        },
         "filters": [
           {
             "name": "target",
@@ -863,12 +913,12 @@
         "forms": [
           {
             "name": "Incident by target",
-            "description": "At least one of target or id is required; since bounds target resolution.",
+            "description": "Deprecated. Prefer correlations. At least one of target or id is required; since bounds target resolution.",
             "example": "SELECT * FROM incidents WHERE target = checkout AND since = 2h"
           },
           {
             "name": "Incident by correlation id",
-            "description": "Load one exact correlation group.",
+            "description": "Deprecated. Prefer correlations. Load one exact correlation group.",
             "example": "SELECT * FROM incidents WHERE id = incident-123"
           }
         ]
@@ -5284,6 +5334,191 @@
           "dimension",
           "filter",
           "ranking"
+        ],
+        "additionalProperties": false
+      },
+      "CorrelationsResult": {
+        "type": "object",
+        "properties": {
+          "correlationId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "roots": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "namespaces": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "byType": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "type",
+                "count"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "rootCauses": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ts": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "summary": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "targetKind": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "target": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "namespace": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "isRoot": {
+                  "type": "boolean"
+                },
+                "noiseClass": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "cluster": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "ts",
+                "type",
+                "summary",
+                "targetKind",
+                "target",
+                "namespace",
+                "isRoot",
+                "noiseClass",
+                "cluster"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "chain": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ts": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "summary": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "targetKind": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "target": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "namespace": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "isRoot": {
+                  "type": "boolean"
+                },
+                "noiseClass": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "cluster": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "ts",
+                "type",
+                "summary",
+                "targetKind",
+                "target",
+                "namespace",
+                "isRoot",
+                "noiseClass",
+                "cluster"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "correlationId",
+          "total",
+          "roots",
+          "namespaces",
+          "byType",
+          "rootCauses",
+          "chain"
         ],
         "additionalProperties": false
       },
@@ -12047,6 +12282,90 @@
                 "oneOf": [
                   {
                     "$ref": "#/components/schemas/HotspotsResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "question",
+              "intent",
+              "summary",
+              "correlations"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "countOnly": {
+                "type": "boolean"
+              },
+              "elapsedMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "resolved": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "term",
+                      "hashedID",
+                      "name",
+                      "type"
+                    ],
+                    "properties": {
+                      "term": {
+                        "type": "string"
+                      },
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphNode"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphEdge"
+                }
+              },
+              "intent": {
+                "const": "correlations"
+              },
+              "correlations": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/CorrelationsResult"
                   },
                   {
                     "type": "null"

@@ -330,6 +330,16 @@ export interface PathParams {
   /** Include APM identity and dependency edges when set to operational. */
   scope?: "infrastructure" | "operational";
 }
+export interface CorrelationsParams {
+  /** A resource/app involved in the correlation group (resolves to its latest group). */
+  target?: string;
+  /** A correlation id, if known. */
+  id?: string;
+  /** Optional event type filter. */
+  type?: string;
+  /** Time window that bounds target resolution (for example `"2h"`). */
+  since?: Since;
+}
 export interface CascadeParams {
   /** A resource/app involved in the incident (resolves to its latest correlation group). */
   target?: string;
@@ -687,6 +697,20 @@ export class GraphAnswer {
     ], p.limit));
   }
 
+  /** Reconstruct a correlated Anyshift event group around a target or correlation id. */
+  correlations(p: CorrelationsParams = {}): Promise<AskResult> {
+    return this.typedQuery(compose("correlations", [
+      ["target", p.target],
+      ["id", p.id],
+      ["type", p.type],
+      ["since", p.since],
+    ]));
+  }
+
+  /**
+   * @deprecated Prefer {@link GraphAnswer.correlations}. Still queries the legacy
+   * `incidents` target and returns the `incident` intent for v1 compatibility.
+   */
   incident(p: { target?: string; id?: string }): Promise<AskResult> {
     return this.typedQuery(compose("incidents", [
       ["id", p.id],

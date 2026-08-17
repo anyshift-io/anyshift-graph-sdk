@@ -27,7 +27,7 @@ type Equal<A, B> =
 type Assert<T extends true> = T;
 
 type ExpectedIntent =
-  | "resolve" | "connections" | "inventory" | "events" | "cloudevents" | "cloudresources" | "deliveryevents" | "provenance" | "ownership" | "graphcoverage" | "impact" | "hotspots" | "incident" | "failures"
+  | "resolve" | "connections" | "inventory" | "events" | "cloudevents" | "cloudresources" | "deliveryevents" | "provenance" | "ownership" | "graphcoverage" | "impact" | "hotspots" | "correlations" | "incident" | "failures"
   | "deployments" | "audit" | "nodes" | "deployimpact" | "commoncause" | "blast"
   | "spof" | "path" | "cascade" | "alertimpact" | "monitor" | "datastore" | "flow"
   | "externaldep" | "alerts" | "alertnoise" | "calls" | "servicetree" | "alertcause"
@@ -125,6 +125,20 @@ const cloudEventStatisticsExact: boolean | undefined = cloudEventsResult.cloudEv
 void cloudEventTotal;
 void cloudEventStatisticsMode;
 void cloudEventStatisticsExact;
+
+declare const correlationsResult: AskResultFor<"correlations">;
+const correlationsIntent: "correlations" = correlationsResult.intent;
+const correlationsId: string | null | undefined = correlationsResult.correlations?.correlationId;
+void correlationsIntent;
+void correlationsId;
+// @ts-expect-error discriminating correlations must exclude the legacy incident payload
+correlationsResult.incident;
+
+declare const incidentResult: AskResultFor<"incident">;
+const incidentIntent: "incident" = incidentResult.intent;
+const incidentId: string | null | undefined = incidentResult.incident?.correlationId;
+void incidentIntent;
+void incidentId;
 
 declare const edge: GraphEdge;
 const edgeSemantic:

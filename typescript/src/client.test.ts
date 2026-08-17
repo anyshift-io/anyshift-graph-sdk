@@ -120,7 +120,7 @@ test("caller-supplied invocation id must be a UUID", () => {
 
 test("telemetry version matches the published package version", async () => {
   const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
-  assert.equal(packageJson.version, "0.5.12");
+  assert.equal(packageJson.version, "0.5.13");
   assert.equal(GRAPH_SDK_VERSION, packageJson.version);
 });
 

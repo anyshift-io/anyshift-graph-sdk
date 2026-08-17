@@ -42,6 +42,15 @@ console.log(recent.summary);
 ```
 
 ```ts
+const group = await graph.correlations({ target: "places", since: "2h" });
+if (group.intent === "correlations") {
+  console.log(group.correlations?.correlationId, group.correlations?.roots);
+}
+// Prefer graph.correlations(). graph.incident() still works against the legacy
+// incidents target and remains available for v1 callers.
+```
+
+```ts
 const changes = await graph.cloudEvents({
   provider: "aws",
   resource: "arn:aws:ecs:eu-west-3:123456789012:service/prod/api",

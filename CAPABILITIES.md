@@ -156,7 +156,9 @@ explicit without downgrading an independently confirmed fresh traffic path.
 | Observability coverage | `graph.coverage()` | `coverage` | Which workloads lack Datadog presence, monitors, or metrics shipping. |
 | Datadog alert impact | `graph.alertImpact({ resource })` | `alert_impact` | Which monitors and SLOs would fire if a resource is impacted. |
 | Monitor mapping | `graph.monitor({ target })` | `monitor` | Which service, workload, and node a monitor watches. |
-| Active alerts | `graph.alerts()` | `alerts` | Which Datadog monitors are currently firing, optionally scoped to a target. |
+| Active alerts | `graph.alerts()` | `alerts` | Which normalized operational alerts are firing, while retaining the legacy Datadog projection during v1. |
+| Response incidents | `graph.incidents()` | `response_incidents` | Which stored provider incidents are open, acknowledged, resolved, or otherwise active for a service. |
+| On-call responsibility | `graph.onCall()` | `oncall` | Who is responsible now, at a point in time, or across a bounded schedule window. |
 | Alert noise | `graph.alertNoise()` | `alert_noise` | Which monitors are flapping or stuck. |
 | Alert cause | `graph.alertCause({ target })` | `alert_cause` | Which recent Kubernetes change likely caused a firing alert. |
 | SLO health | `graph.slo()` | `slo` | Which SLOs are breaching or at risk, or the status of one SLO. |
@@ -164,6 +166,12 @@ explicit without downgrading an independently confirmed fresh traffic path.
 
 Selected modes:
 
+- `alerts({ provider, status, service, providerServiceId, since, from, to, cursor })`: normalized
+  alert items plus temporary legacy Datadog fields.
+- `incidents({ provider, status, service, providerServiceId, responder, urgency, since })`:
+  provider-neutral response incidents. In API v1 the helper targets `response_incidents`.
+- `onCall({ provider, status, service, providerServiceId, person, schedule, at, from, to })`:
+  effective on-call windows from stored graph evidence.
 - `coverage({ kind })`: `service`, `monitor`, or `metrics`.
 - `alertNoise({ kind })`: `flapping` or `stuck`.
 - `alertRules({ subject })`: `coverage`, `inventory`, or `target`.

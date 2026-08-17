@@ -1,5 +1,7 @@
 import type {
   ApmSource,
+  AlertItem,
+  AlertsResult,
   AskResult,
   AskResultFor,
   CloudEventItem,
@@ -17,7 +19,13 @@ import type {
   ExposureVerdict,
   GraphEdge,
   GraphIntent,
+  OnCallResult,
+  OnCallWindowItem,
+  OperationalProvider,
+  ProviderCoverage,
   ResourceSelector,
+  ResponseIncidentItem,
+  ResponseIncidentsResult,
   TopologySource,
 } from "../src/index.js";
 
@@ -27,7 +35,7 @@ type Equal<A, B> =
 type Assert<T extends true> = T;
 
 type ExpectedIntent =
-  | "resolve" | "connections" | "inventory" | "events" | "cloudevents" | "cloudresources" | "deliveryevents" | "provenance" | "ownership" | "graphcoverage" | "impact" | "hotspots" | "correlations" | "incident" | "failures"
+  | "resolve" | "connections" | "inventory" | "events" | "cloudevents" | "cloudresources" | "deliveryevents" | "provenance" | "ownership" | "graphcoverage" | "impact" | "hotspots" | "correlations" | "incident" | "responseincidents" | "oncall" | "failures"
   | "deployments" | "audit" | "nodes" | "deployimpact" | "commoncause" | "blast"
   | "spof" | "path" | "cascade" | "alertimpact" | "monitor" | "datastore" | "flow"
   | "externaldep" | "alerts" | "alertnoise" | "calls" | "servicetree" | "alertcause"
@@ -139,6 +147,33 @@ const incidentIntent: "incident" = incidentResult.intent;
 const incidentId: string | null | undefined = incidentResult.incident?.correlationId;
 void incidentIntent;
 void incidentId;
+
+declare const responseIncidents: AskResultFor<"responseincidents">;
+const responseIncidentsIntent: "responseincidents" = responseIncidents.intent;
+const responseIncidentsPayload: ResponseIncidentsResult | null = responseIncidents.incidents;
+const responseIncident: ResponseIncidentItem | undefined = responseIncidentsPayload?.items[0];
+const responseProvider: OperationalProvider | undefined = responseIncident?.provider;
+const responseCoverage: ProviderCoverage | undefined = responseIncidentsPayload?.providers[0];
+void responseIncidentsIntent;
+void responseIncident;
+void responseProvider;
+void responseCoverage;
+// @ts-expect-error response incidents are distinct from Anyshift correlation payloads
+responseIncidents.correlations;
+
+declare const onCall: AskResultFor<"oncall">;
+const onCallIntent: "oncall" = onCall.intent;
+const onCallPayload: OnCallResult | null = onCall.onCall;
+const onCallWindow: OnCallWindowItem | undefined = onCallPayload?.items[0];
+void onCallIntent;
+void onCallWindow;
+// @ts-expect-error on-call results are distinct from response incidents
+onCall.incidents;
+
+declare const alerts: AskResultFor<"alerts">;
+const alertsPayload: AlertsResult | null = alerts.alerts;
+const alertItem: AlertItem | undefined = alertsPayload?.items[0];
+void alertItem;
 
 declare const edge: GraphEdge;
 const edgeSemantic:

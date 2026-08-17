@@ -50,6 +50,29 @@ if (group.intent === "correlations") {
 // incidents target and remains available for v1 callers.
 ```
 
+Read stored provider-neutral operational-response evidence without exposing provider credentials:
+
+```ts
+const alerts = await graph.alerts({ provider: "pagerduty", status: "firing", limit: 50 });
+const incidents = await graph.incidents({
+  service: { name: "api", type: "K8S_SERVICE", namespace: "production", cluster: "main" },
+  status: "acknowledged",
+  since: "7d",
+});
+const onCall = await graph.onCall({
+  providerServiceId: "PABC123",
+  at: "now",
+});
+
+console.log(alerts.alerts?.items, incidents.incidents?.items, onCall.onCall?.items);
+```
+
+`alerts()`, `incidents()`, and `onCall()` use the provider-neutral API contract. Canonical service
+selectors and `providerServiceId` are mutually exclusive. Operational methods use opaque cursors
+and reject invalid RFC3339 windows and limits outside 1-100 before sending a request. In API v1,
+`incidents()` targets `response_incidents`; `correlations()` remains the Anyshift event-story API,
+and the singular `incident()` remains its deprecated compatibility alias.
+
 ```ts
 const changes = await graph.cloudEvents({
   provider: "aws",

@@ -38,6 +38,17 @@ export type ExposureGap = ExposurePath["gaps"][number];
 export type ExposureEvidence = ExposureHop["evidence"];
 export type CorrelationsResult = Schemas["CorrelationsResult"];
 export type IncidentResult = Schemas["IncidentResult"];
+export type AlertsResult = Schemas["AlertsResult"];
+export type AlertItem = AlertsResult["items"][number];
+export type ResponseIncidentsResult = Schemas["ResponseIncidentsResult"];
+export type ResponseIncidentItem = ResponseIncidentsResult["items"][number];
+export type OnCallResult = Schemas["OnCallResult"];
+export type OnCallWindowItem = OnCallResult["items"][number];
+export type OperationalProvider = ResponseIncidentsResult["providers"][number]["provider"];
+export type ProviderCoverage = ResponseIncidentsResult["providers"][number];
+export type QueryWarning = ResponseIncidentsResult["warnings"][number];
+export type GraphResourceRef = NonNullable<ResponseIncidentItem["service"]>;
+export type IdentityRef = ResponseIncidentItem["responders"][number];
 
 /** Every successful Graph API response, discriminated by its exact intent payload. */
 export type AskResult = Schemas["AskResult"];

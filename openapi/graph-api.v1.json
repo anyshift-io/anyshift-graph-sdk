@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.14",
+    "version": "1.15",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -1881,12 +1881,171 @@
           "firing"
         ],
         "intent": "alerts",
-        "summary": "List currently firing monitors, optionally scoped to a service.",
+        "summary": "List normalized operational alerts while retaining legacy Datadog firing-monitor fields.",
         "filters": [
           {
             "name": "target",
             "type": "string",
-            "description": "Service or workload name."
+            "description": "Legacy Datadog service or workload name."
+          },
+          {
+            "name": "provider",
+            "type": "enum",
+            "description": "Operational evidence provider.",
+            "values": [
+              {
+                "value": "pagerduty",
+                "description": "PagerDuty operational evidence.",
+                "aliases": [
+                  "pd"
+                ]
+              },
+              {
+                "value": "datadog",
+                "description": "Datadog operational evidence.",
+                "aliases": [
+                  "dd"
+                ]
+              },
+              {
+                "value": "grafana",
+                "description": "Grafana operational evidence."
+              },
+              {
+                "value": "victoria",
+                "description": "VictoriaMetrics operational evidence."
+              },
+              {
+                "value": "dynatrace",
+                "description": "Dynatrace operational evidence."
+              },
+              {
+                "value": "newrelic",
+                "description": "New Relic operational evidence.",
+                "aliases": [
+                  "new_relic"
+                ]
+              },
+              {
+                "value": "incidentio",
+                "description": "incident.io operational evidence.",
+                "aliases": [
+                  "incident_io"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "description": "Canonical alert state. Defaults to firing.",
+            "values": [
+              {
+                "value": "firing",
+                "description": "Currently firing alerts.",
+                "aliases": [
+                  "open",
+                  "triggered"
+                ]
+              },
+              {
+                "value": "recovered",
+                "description": "Recovered alerts.",
+                "aliases": [
+                  "resolved"
+                ]
+              },
+              {
+                "value": "suppressed",
+                "description": "Suppressed alerts."
+              },
+              {
+                "value": "unknown",
+                "description": "Alerts whose provider state is not recognized."
+              },
+              {
+                "value": "all",
+                "description": "All stored alert states."
+              }
+            ]
+          },
+          {
+            "name": "severity",
+            "type": "enum",
+            "description": "Canonical alert severity.",
+            "values": [
+              {
+                "value": "critical",
+                "description": "Critical alerts."
+              },
+              {
+                "value": "warning",
+                "description": "Warning alerts."
+              },
+              {
+                "value": "info",
+                "description": "Informational alerts."
+              },
+              {
+                "value": "unknown",
+                "description": "Unknown provider severity."
+              }
+            ]
+          },
+          {
+            "name": "service_id",
+            "type": "string",
+            "description": "Exact stable identity of a canonical graph service."
+          },
+          {
+            "name": "service",
+            "type": "string",
+            "description": "Exact canonical graph service name."
+          },
+          {
+            "name": "service_type",
+            "type": "string",
+            "description": "Exact canonical graph service label."
+          },
+          {
+            "name": "service_namespace",
+            "type": "string",
+            "description": "Exact canonical service namespace."
+          },
+          {
+            "name": "service_cluster",
+            "type": "string",
+            "description": "Exact canonical service cluster."
+          },
+          {
+            "name": "provider_service_id",
+            "type": "string",
+            "description": "Exact provider-native service identifier."
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          },
+          {
+            "name": "from",
+            "type": "string",
+            "description": "Absolute RFC3339 lower time bound."
+          },
+          {
+            "name": "to",
+            "type": "string",
+            "description": "Absolute RFC3339 upper time bound."
+          },
+          {
+            "name": "at",
+            "type": "string",
+            "description": "Absolute RFC3339 point in time, or now."
+          },
+          {
+            "name": "cursor",
+            "type": "string",
+            "description": "Opaque keyset cursor returned by a previous page."
           }
         ],
         "pagination": {
@@ -1896,8 +2055,329 @@
         "forms": [
           {
             "name": "Current alerts",
-            "description": "List firing monitors for the project or one target.",
-            "example": "SELECT * FROM alerts WHERE target = checkout LIMIT 20"
+            "description": "List firing operational alerts; legacy Datadog fields remain additive siblings.",
+            "example": "SELECT * FROM alerts WHERE status = firing LIMIT 20"
+          }
+        ]
+      },
+      {
+        "name": "response_incidents",
+        "aliases": [
+          "response_incident"
+        ],
+        "intent": "responseincidents",
+        "summary": "List provider-neutral response incidents that coordinate alert handling.",
+        "filters": [
+          {
+            "name": "provider",
+            "type": "enum",
+            "description": "Operational evidence provider.",
+            "values": [
+              {
+                "value": "pagerduty",
+                "description": "PagerDuty operational evidence.",
+                "aliases": [
+                  "pd"
+                ]
+              },
+              {
+                "value": "datadog",
+                "description": "Datadog operational evidence.",
+                "aliases": [
+                  "dd"
+                ]
+              },
+              {
+                "value": "grafana",
+                "description": "Grafana operational evidence."
+              },
+              {
+                "value": "victoria",
+                "description": "VictoriaMetrics operational evidence."
+              },
+              {
+                "value": "dynatrace",
+                "description": "Dynatrace operational evidence."
+              },
+              {
+                "value": "newrelic",
+                "description": "New Relic operational evidence.",
+                "aliases": [
+                  "new_relic"
+                ]
+              },
+              {
+                "value": "incidentio",
+                "description": "incident.io operational evidence.",
+                "aliases": [
+                  "incident_io"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "description": "Canonical response-incident state. Defaults to open and acknowledged.",
+            "values": [
+              {
+                "value": "open",
+                "description": "Triggered or otherwise open incidents.",
+                "aliases": [
+                  "triggered"
+                ]
+              },
+              {
+                "value": "acknowledged",
+                "description": "Acknowledged incidents.",
+                "aliases": [
+                  "acked"
+                ]
+              },
+              {
+                "value": "resolved",
+                "description": "Resolved incidents.",
+                "aliases": [
+                  "closed"
+                ]
+              },
+              {
+                "value": "unknown",
+                "description": "Incidents whose provider state is not recognized."
+              },
+              {
+                "value": "all",
+                "description": "All stored incident states."
+              }
+            ]
+          },
+          {
+            "name": "service_id",
+            "type": "string",
+            "description": "Exact stable identity of a canonical graph service."
+          },
+          {
+            "name": "service",
+            "type": "string",
+            "description": "Exact canonical graph service name."
+          },
+          {
+            "name": "service_type",
+            "type": "string",
+            "description": "Exact canonical graph service label."
+          },
+          {
+            "name": "service_namespace",
+            "type": "string",
+            "description": "Exact canonical service namespace."
+          },
+          {
+            "name": "service_cluster",
+            "type": "string",
+            "description": "Exact canonical service cluster."
+          },
+          {
+            "name": "provider_service_id",
+            "type": "string",
+            "description": "Exact provider-native service identifier."
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          },
+          {
+            "name": "from",
+            "type": "string",
+            "description": "Absolute RFC3339 lower time bound."
+          },
+          {
+            "name": "to",
+            "type": "string",
+            "description": "Absolute RFC3339 upper time bound."
+          },
+          {
+            "name": "at",
+            "type": "string",
+            "description": "Absolute RFC3339 point in time, or now."
+          },
+          {
+            "name": "cursor",
+            "type": "string",
+            "description": "Opaque keyset cursor returned by a previous page."
+          },
+          {
+            "name": "responder",
+            "type": "string",
+            "description": "Exact responder source identity or canonical person identity."
+          },
+          {
+            "name": "urgency",
+            "type": "string",
+            "description": "Provider urgency value; preserved as provider-specific evidence."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Active response incidents",
+            "description": "List open or acknowledged incidents from stored graph evidence.",
+            "example": "SELECT * FROM response_incidents WHERE provider = pagerduty LIMIT 50"
+          }
+        ]
+      },
+      {
+        "name": "oncall",
+        "aliases": [
+          "on_call",
+          "oncalls"
+        ],
+        "intent": "oncall",
+        "summary": "List effective on-call responsibility for a point in time or bounded window.",
+        "filters": [
+          {
+            "name": "provider",
+            "type": "enum",
+            "description": "Operational evidence provider.",
+            "values": [
+              {
+                "value": "pagerduty",
+                "description": "PagerDuty operational evidence.",
+                "aliases": [
+                  "pd"
+                ]
+              },
+              {
+                "value": "datadog",
+                "description": "Datadog operational evidence.",
+                "aliases": [
+                  "dd"
+                ]
+              },
+              {
+                "value": "grafana",
+                "description": "Grafana operational evidence."
+              },
+              {
+                "value": "victoria",
+                "description": "VictoriaMetrics operational evidence."
+              },
+              {
+                "value": "dynatrace",
+                "description": "Dynatrace operational evidence."
+              },
+              {
+                "value": "newrelic",
+                "description": "New Relic operational evidence.",
+                "aliases": [
+                  "new_relic"
+                ]
+              },
+              {
+                "value": "incidentio",
+                "description": "incident.io operational evidence.",
+                "aliases": [
+                  "incident_io"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "description": "Canonical on-call window state.",
+            "values": [
+              {
+                "value": "scheduled",
+                "description": "Future on-call windows."
+              },
+              {
+                "value": "active",
+                "description": "Windows effective at the selected point in time."
+              },
+              {
+                "value": "ended",
+                "description": "Past on-call windows."
+              },
+              {
+                "value": "all",
+                "description": "All stored window states."
+              }
+            ]
+          },
+          {
+            "name": "service_id",
+            "type": "string",
+            "description": "Exact stable identity of a canonical graph service."
+          },
+          {
+            "name": "service",
+            "type": "string",
+            "description": "Exact canonical graph service name."
+          },
+          {
+            "name": "service_type",
+            "type": "string",
+            "description": "Exact canonical graph service label."
+          },
+          {
+            "name": "service_namespace",
+            "type": "string",
+            "description": "Exact canonical service namespace."
+          },
+          {
+            "name": "service_cluster",
+            "type": "string",
+            "description": "Exact canonical service cluster."
+          },
+          {
+            "name": "provider_service_id",
+            "type": "string",
+            "description": "Exact provider-native service identifier."
+          },
+          {
+            "name": "from",
+            "type": "string",
+            "description": "Absolute RFC3339 lower time bound."
+          },
+          {
+            "name": "to",
+            "type": "string",
+            "description": "Absolute RFC3339 upper time bound."
+          },
+          {
+            "name": "at",
+            "type": "string",
+            "description": "Absolute RFC3339 point in time, or now."
+          },
+          {
+            "name": "cursor",
+            "type": "string",
+            "description": "Opaque keyset cursor returned by a previous page."
+          },
+          {
+            "name": "person",
+            "type": "string",
+            "description": "Exact source identity or canonical person identity."
+          },
+          {
+            "name": "schedule",
+            "type": "string",
+            "description": "Exact provider schedule identifier."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Current on-call",
+            "description": "List effective on-call windows at the selected point in time.",
+            "example": "SELECT * FROM oncall WHERE at = now LIMIT 50"
           }
         ]
       },
@@ -5707,6 +6187,869 @@
         ],
         "additionalProperties": false
       },
+      "ResponseIncidentsResult": {
+        "type": "object",
+        "properties": {
+          "generatedAt": {
+            "type": "string"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "pagerduty",
+                    "datadog",
+                    "grafana",
+                    "victoria",
+                    "dynatrace",
+                    "newrelic",
+                    "incidentio"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "available",
+                    "stale",
+                    "unavailable",
+                    "not_configured"
+                  ]
+                },
+                "observedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "provider",
+                "status"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "partial": {
+            "type": "boolean"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "pagerduty",
+                    "datadog",
+                    "grafana",
+                    "victoria",
+                    "dynatrace",
+                    "newrelic",
+                    "incidentio"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "page": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "hasMore": {
+                "type": "boolean"
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "limit",
+              "hasMore",
+              "nextCursor"
+            ],
+            "additionalProperties": false
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "pagerduty",
+                    "datadog",
+                    "grafana",
+                    "victoria",
+                    "dynatrace",
+                    "newrelic",
+                    "incidentio"
+                  ]
+                },
+                "providerId": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "service": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "resolution": {
+                          "type": "string",
+                          "enum": [
+                            "resolved",
+                            "unresolved",
+                            "ambiguous"
+                          ]
+                        },
+                        "id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "name": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "type": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "namespace": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "cluster": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "resolution",
+                        "id",
+                        "name",
+                        "type",
+                        "namespace",
+                        "cluster"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "providerStatus": {
+                  "type": "string"
+                },
+                "startedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "resolvedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "sourceUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "observedAt": {
+                  "type": "string"
+                },
+                "providerDetails": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "pagerduty"
+                        },
+                        "urgency": {
+                          "type": "string"
+                        },
+                        "incidentNumber": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "scheduleId": {
+                          "type": "string"
+                        },
+                        "escalationLevel": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "datadog"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "grafana"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "victoria"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "dynatrace"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "newrelic"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "incidentio"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "open",
+                    "acknowledged",
+                    "resolved",
+                    "unknown"
+                  ]
+                },
+                "responders": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "resolution": {
+                        "type": "string",
+                        "enum": [
+                          "resolved",
+                          "unresolved",
+                          "ambiguous"
+                        ]
+                      },
+                      "personId": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "email": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "providerUserId": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "resolution",
+                      "personId",
+                      "name",
+                      "email",
+                      "providerUserId"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "provider",
+                "providerId",
+                "title",
+                "providerStatus",
+                "updatedAt",
+                "observedAt",
+                "providerDetails",
+                "status",
+                "responders"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "generatedAt",
+          "total",
+          "providers",
+          "partial",
+          "warnings",
+          "page",
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "OnCallResult": {
+        "type": "object",
+        "properties": {
+          "generatedAt": {
+            "type": "string"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "pagerduty",
+                    "datadog",
+                    "grafana",
+                    "victoria",
+                    "dynatrace",
+                    "newrelic",
+                    "incidentio"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "available",
+                    "stale",
+                    "unavailable",
+                    "not_configured"
+                  ]
+                },
+                "observedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "provider",
+                "status"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "partial": {
+            "type": "boolean"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "pagerduty",
+                    "datadog",
+                    "grafana",
+                    "victoria",
+                    "dynatrace",
+                    "newrelic",
+                    "incidentio"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "page": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "hasMore": {
+                "type": "boolean"
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "limit",
+              "hasMore",
+              "nextCursor"
+            ],
+            "additionalProperties": false
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "pagerduty",
+                    "datadog",
+                    "grafana",
+                    "victoria",
+                    "dynatrace",
+                    "newrelic",
+                    "incidentio"
+                  ]
+                },
+                "providerId": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "service": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "resolution": {
+                          "type": "string",
+                          "enum": [
+                            "resolved",
+                            "unresolved",
+                            "ambiguous"
+                          ]
+                        },
+                        "id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "name": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "type": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "namespace": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "cluster": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "resolution",
+                        "id",
+                        "name",
+                        "type",
+                        "namespace",
+                        "cluster"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "providerStatus": {
+                  "type": "string"
+                },
+                "startedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "resolvedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "sourceUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "observedAt": {
+                  "type": "string"
+                },
+                "providerDetails": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "pagerduty"
+                        },
+                        "urgency": {
+                          "type": "string"
+                        },
+                        "incidentNumber": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "scheduleId": {
+                          "type": "string"
+                        },
+                        "escalationLevel": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "datadog"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "grafana"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "victoria"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "dynatrace"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "newrelic"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "incidentio"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "scheduled",
+                    "active",
+                    "ended"
+                  ]
+                },
+                "person": {
+                  "type": "object",
+                  "properties": {
+                    "resolution": {
+                      "type": "string",
+                      "enum": [
+                        "resolved",
+                        "unresolved",
+                        "ambiguous"
+                      ]
+                    },
+                    "personId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "email": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "providerUserId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "resolution",
+                    "personId",
+                    "name",
+                    "email",
+                    "providerUserId"
+                  ],
+                  "additionalProperties": false
+                },
+                "schedule": {
+                  "type": "object",
+                  "properties": {
+                    "provider": {
+                      "type": "string",
+                      "enum": [
+                        "pagerduty",
+                        "datadog",
+                        "grafana",
+                        "victoria",
+                        "dynatrace",
+                        "newrelic",
+                        "incidentio"
+                      ]
+                    },
+                    "providerId": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "provider",
+                    "providerId",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "escalationLevel": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "startsAt": {
+                  "type": "string"
+                },
+                "endsAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "provider",
+                "providerId",
+                "title",
+                "providerStatus",
+                "updatedAt",
+                "observedAt",
+                "providerDetails",
+                "status",
+                "person",
+                "schedule",
+                "startsAt",
+                "endsAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "generatedAt",
+          "total",
+          "providers",
+          "partial",
+          "warnings",
+          "page",
+          "items"
+        ],
+        "additionalProperties": false
+      },
       "EventFeedResult": {
         "type": "object",
         "properties": {
@@ -7392,13 +8735,377 @@
               ],
               "additionalProperties": false
             }
+          },
+          "generatedAt": {
+            "type": "string"
+          },
+          "operationalTotal": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "pagerduty",
+                    "datadog",
+                    "grafana",
+                    "victoria",
+                    "dynatrace",
+                    "newrelic",
+                    "incidentio"
+                  ]
+                },
+                "providerId": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "service": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "resolution": {
+                          "type": "string",
+                          "enum": [
+                            "resolved",
+                            "unresolved",
+                            "ambiguous"
+                          ]
+                        },
+                        "id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "name": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "type": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "namespace": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "cluster": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "resolution",
+                        "id",
+                        "name",
+                        "type",
+                        "namespace",
+                        "cluster"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "providerStatus": {
+                  "type": "string"
+                },
+                "startedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "resolvedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "sourceUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "observedAt": {
+                  "type": "string"
+                },
+                "providerDetails": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "pagerduty"
+                        },
+                        "urgency": {
+                          "type": "string"
+                        },
+                        "incidentNumber": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "scheduleId": {
+                          "type": "string"
+                        },
+                        "escalationLevel": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "datadog"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "grafana"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "victoria"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "dynatrace"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "newrelic"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "incidentio"
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "firing",
+                    "recovered",
+                    "suppressed",
+                    "unknown"
+                  ]
+                },
+                "severity": {
+                  "type": "string",
+                  "enum": [
+                    "critical",
+                    "warning",
+                    "info",
+                    "unknown"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "provider",
+                "providerId",
+                "title",
+                "providerStatus",
+                "updatedAt",
+                "observedAt",
+                "providerDetails",
+                "status",
+                "severity"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "pagerduty",
+                    "datadog",
+                    "grafana",
+                    "victoria",
+                    "dynatrace",
+                    "newrelic",
+                    "incidentio"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "available",
+                    "stale",
+                    "unavailable",
+                    "not_configured"
+                  ]
+                },
+                "observedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "provider",
+                "status"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "partial": {
+            "type": "boolean"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "pagerduty",
+                    "datadog",
+                    "grafana",
+                    "victoria",
+                    "dynatrace",
+                    "newrelic",
+                    "incidentio"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "page": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "hasMore": {
+                "type": "boolean"
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "limit",
+              "hasMore",
+              "nextCursor"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
           "filter",
           "total",
           "byState",
-          "firing"
+          "firing",
+          "generatedAt",
+          "operationalTotal",
+          "items",
+          "providers",
+          "partial",
+          "warnings",
+          "page"
         ],
         "additionalProperties": false
       },
@@ -12450,6 +14157,174 @@
                 "oneOf": [
                   {
                     "$ref": "#/components/schemas/IncidentResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "question",
+              "intent",
+              "summary",
+              "incidents"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "countOnly": {
+                "type": "boolean"
+              },
+              "elapsedMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "resolved": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "term",
+                      "hashedID",
+                      "name",
+                      "type"
+                    ],
+                    "properties": {
+                      "term": {
+                        "type": "string"
+                      },
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphNode"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphEdge"
+                }
+              },
+              "intent": {
+                "const": "responseincidents"
+              },
+              "incidents": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/ResponseIncidentsResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "question",
+              "intent",
+              "summary",
+              "onCall"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "countOnly": {
+                "type": "boolean"
+              },
+              "elapsedMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "resolved": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "term",
+                      "hashedID",
+                      "name",
+                      "type"
+                    ],
+                    "properties": {
+                      "term": {
+                        "type": "string"
+                      },
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphNode"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphEdge"
+                }
+              },
+              "intent": {
+                "const": "oncall"
+              },
+              "onCall": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/OnCallResult"
                   },
                   {
                     "type": "null"

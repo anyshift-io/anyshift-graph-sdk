@@ -4,7 +4,7 @@ import {
   BadQueryError,
   type ResourceSelectionCandidate,
 } from "./errors.js";
-import type { AskResult, AskResultFor } from "./types.js";
+import type { AskResult, AskResultFor, OperationalProvider } from "./types.js";
 import { GRAPH_SDK_VERSION } from "./version.js";
 
 // Minimal shape we need from fetch — keeps real `fetch` and test stubs both valid
@@ -374,10 +374,45 @@ export interface ExternalDepParams {
   source?: ApmSource;
   limit?: number;
 }
-export interface AlertsParams {
+export interface OperationalParams {
+  /** Restrict results to one operational provider. */
+  provider?: OperationalProvider;
+  /** Canonical graph service identity. Mutually exclusive with providerServiceId. */
+  service?: ResourceSelector;
+  /** Provider-native service identity escape hatch. Mutually exclusive with service. */
+  providerServiceId?: string;
+  /** Absolute RFC3339 lower bound. */
+  from?: string;
+  /** Absolute RFC3339 upper bound. */
+  to?: string;
+  /** Point in time. Alerts/incidents accept only now; on-call also accepts RFC3339. */
+  at?: string;
+  /** Opaque keyset cursor from the previous page. */
+  cursor?: string;
+  /** Page size, from 1 to 100. */
+  limit?: number;
+}
+export interface AlertsParams extends OperationalParams {
   /** A service/workload to scope to; omit for all firing monitors. */
   target?: string;
-  limit?: number;
+  status?: "firing" | "recovered" | "suppressed" | "unknown" | "all";
+  severity?: "critical" | "warning" | "info" | "unknown";
+  since?: Since;
+}
+export interface IncidentsParams extends OperationalParams {
+  status?: "open" | "acknowledged" | "resolved" | "unknown" | "all";
+  since?: Since;
+  /** Exact responder source identity or canonical person identity. */
+  responder?: string;
+  /** Provider-native urgency value. */
+  urgency?: string;
+}
+export interface OnCallParams extends OperationalParams {
+  status?: "scheduled" | "active" | "ended" | "all";
+  /** Exact source identity or canonical person identity. */
+  person?: string;
+  /** Exact provider schedule identity. */
+  schedule?: string;
 }
 export interface SloParams {
   /** An SLO name to check (substring); omit for the ranked breaching/at-risk SLOs. */
@@ -485,6 +520,115 @@ function selectorConditions(prefix: "from" | "to", selector: ResourceSelector): 
     [`${prefix}_namespace`, selector.namespace ?? ""],
     [`${prefix}_cluster`, selector.cluster ?? ""],
   ];
+}
+
+type OperationalWithSince = OperationalParams & { since?: Since };
+
+function requireNonEmpty(field: string, value: string | undefined): void {
+  if (value !== undefined && (typeof value !== "string" || value.trim() === "")) {
+    throw new TypeError(`${field} must be a non-empty string`);
+  }
+}
+
+function validateOperationalTime(field: "from" | "to" | "at", value: string | undefined): number | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new TypeError(`${field} must be RFC3339 or now`);
+  }
+  if (field === "at" && value.toLowerCase() === "now") return undefined;
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,9})?(Z|([+-])(\d{2}):(\d{2}))$/.exec(value);
+  if (!match) throw new TypeError(`${field} must be RFC3339 or now`);
+  const [, yearText, monthText, dayText, hourText, minuteText, secondText, , , offsetHourText, offsetMinuteText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  const second = Number(secondText);
+  const offsetHour = offsetHourText === undefined ? 0 : Number(offsetHourText);
+  const offsetMinute = offsetMinuteText === undefined ? 0 : Number(offsetMinuteText);
+  const daysInMonth = month >= 1 && month <= 12 ? new Date(Date.UTC(year, month, 0)).getUTCDate() : 0;
+  const parsed = Date.parse(value);
+  if (day < 1 || day > daysInMonth || hour > 23 || minute > 59 || second > 59
+    || offsetHour > 23 || offsetMinute > 59 || !Number.isFinite(parsed)) {
+    throw new TypeError(`${field} must be RFC3339 or now`);
+  }
+  return parsed;
+}
+
+function operationalServiceConditions(p: OperationalParams): Array<[string, string]> {
+  if (p.service !== undefined && p.providerServiceId !== undefined) {
+    throw new TypeError("service and providerServiceId cannot be combined");
+  }
+  requireNonEmpty("providerServiceId", p.providerServiceId);
+  if (p.providerServiceId !== undefined) return [["provider_service_id", p.providerServiceId]];
+  if (p.service === undefined) return [];
+  if (typeof p.service === "string") {
+    requireNonEmpty("service", p.service);
+    return [["service", p.service]];
+  }
+  if (p.service === null || typeof p.service !== "object") {
+    throw new TypeError("service must be a string, stable id, or named selector");
+  }
+  if ("id" in p.service) {
+    const candidate = p.service as ResourceSelector & Record<string, unknown>;
+    if (candidate.name !== undefined || candidate.type !== undefined || candidate.namespace !== undefined
+      || candidate.cluster !== undefined) {
+      throw new TypeError("service id cannot be combined with name or qualifiers");
+    }
+    if (typeof candidate.id !== "string" || candidate.id.trim() === "") {
+      throw new TypeError("service id must be a non-empty string");
+    }
+    return [["service_id", candidate.id]];
+  }
+  const candidate = p.service as { name?: unknown; type?: unknown; namespace?: unknown; cluster?: unknown };
+  if (typeof candidate.name !== "string" || candidate.name.trim() === "") {
+    throw new TypeError("service name must be a non-empty string");
+  }
+  if (typeof candidate.type !== "string" || candidate.type.trim() === "") {
+    throw new TypeError("service type must be a non-empty string");
+  }
+  for (const field of ["namespace", "cluster"] as const) {
+    const value = candidate[field];
+    if (value !== undefined && (typeof value !== "string" || value.trim() === "")) {
+      throw new TypeError(`service ${field} must be a non-empty string when provided`);
+    }
+  }
+  return [
+    ["service", candidate.name],
+    ["service_type", candidate.type],
+    ["service_namespace", candidate.namespace ?? ""],
+    ["service_cluster", candidate.cluster ?? ""],
+  ].filter(([, value]) => value !== "") as Array<[string, string]>;
+}
+
+function validateOperationalParams(
+  p: OperationalWithSince,
+  options: { historicalAt: boolean; supportsSince: boolean },
+): Array<[string, string]> {
+  if (p.limit !== undefined && (!Number.isInteger(p.limit) || p.limit < 1 || p.limit > 100)) {
+    throw new TypeError("limit must be an integer from 1 to 100");
+  }
+  requireNonEmpty("cursor", p.cursor);
+  const from = validateOperationalTime("from", p.from);
+  const to = validateOperationalTime("to", p.to);
+  validateOperationalTime("at", p.at);
+  if (p.at !== undefined && (p.from !== undefined || p.to !== undefined)) {
+    throw new TypeError("at cannot be combined with from or to");
+  }
+  if (!options.historicalAt && p.at !== undefined && p.at.toLowerCase() !== "now") {
+    throw new TypeError("at supports only now; use since, from, or to for stored history");
+  }
+  if (!options.supportsSince && p.since !== undefined) {
+    throw new TypeError("since is not supported for on-call queries");
+  }
+  if (p.since !== undefined && p.from !== undefined) {
+    throw new TypeError("since cannot be combined with from");
+  }
+  if (from !== undefined && to !== undefined && from >= to) {
+    throw new TypeError("from must be earlier than to");
+  }
+  return operationalServiceConditions(p);
 }
 
 function nonEmptyString(value: unknown): value is string {
@@ -956,9 +1100,58 @@ export class GraphAnswer {
     return this.typedQuery(compose("slo", [["target", p.target]], p.limit));
   }
 
-  /** Datadog monitors firing right now (Alert/Warn) → the infra behind them; scope with target. */
+  /** Provider-neutral operational alerts; legacy Datadog fields remain additive during v1. */
   alerts(p: AlertsParams = {}): Promise<AskResult> {
-    return this.typedQuery(compose("alerts", [["target", p.target]], p.limit));
+    const service = validateOperationalParams(p, { historicalAt: false, supportsSince: true });
+    return this.typedQuery(compose("alerts", [
+      ["target", p.target],
+      ["provider", p.provider],
+      ["status", p.status],
+      ["severity", p.severity],
+      ...service,
+      ["since", p.since],
+      ["from", p.from],
+      ["to", p.to],
+      ["at", p.at],
+      ["cursor", p.cursor],
+    ], p.limit));
+  }
+
+  /** Provider-neutral response incidents. In API v1 this targets response_incidents. */
+  incidents(p: IncidentsParams = {}): Promise<AskResult> {
+    const service = validateOperationalParams(p, { historicalAt: false, supportsSince: true });
+    requireNonEmpty("responder", p.responder);
+    requireNonEmpty("urgency", p.urgency);
+    return this.typedQuery(compose("response_incidents", [
+      ["provider", p.provider],
+      ["status", p.status],
+      ...service,
+      ["since", p.since],
+      ["from", p.from],
+      ["to", p.to],
+      ["at", p.at],
+      ["cursor", p.cursor],
+      ["responder", p.responder],
+      ["urgency", p.urgency],
+    ], p.limit));
+  }
+
+  /** Effective on-call responsibility at now, a point in time, or over a bounded window. */
+  onCall(p: OnCallParams = {}): Promise<AskResult> {
+    const service = validateOperationalParams(p, { historicalAt: true, supportsSince: false });
+    requireNonEmpty("person", p.person);
+    requireNonEmpty("schedule", p.schedule);
+    return this.typedQuery(compose("oncall", [
+      ["provider", p.provider],
+      ["status", p.status],
+      ...service,
+      ["from", p.from],
+      ["to", p.to],
+      ["at", p.at],
+      ["cursor", p.cursor],
+      ["person", p.person],
+      ["schedule", p.schedule],
+    ], p.limit));
   }
 
   /** The APM service call graph — one service's callers/callees, or the ranked most-called. */

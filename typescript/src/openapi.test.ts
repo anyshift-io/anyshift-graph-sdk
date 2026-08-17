@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("pinned OpenAPI exposes the executable 52-intent contract", async () => {
+test("pinned OpenAPI exposes the executable operational-response contract", async () => {
   const raw = await readFile(new URL("../../openapi/graph-api.v1.json", import.meta.url), "utf8");
   const document = JSON.parse(raw);
   const schemas = document.components.schemas;
@@ -12,9 +12,8 @@ test("pinned OpenAPI exposes the executable 52-intent contract", async () => {
   assert.equal(schemas.QueryRequest.additionalProperties, false);
   assert.equal(schemas.AskRequest.additionalProperties, false);
   assert.equal(schemas.AskResult.discriminator.propertyName, "intent");
-  assert.equal(variants.length, 52);
-  assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, 52);
-  assert.equal(queryLanguage.version, "1.14");
+  assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, variants.length);
+  assert.equal(queryLanguage.version, "1.15");
   assert.equal(queryLanguage.tables.length, variants.length);
   const inventorySample = schemas.InventoryResult.properties.sample.items;
   assert.deepEqual(inventorySample.properties.resourceId.type, ["string", "null"]);
@@ -113,4 +112,20 @@ test("pinned OpenAPI exposes the executable 52-intent contract", async () => {
   );
   assert.ok(correlationsVariant.properties.correlations.oneOf.some((entry: any) => entry.type === "null"));
   assert.ok(schemas.CorrelationsResult.required.includes("correlationId"));
+
+  const alerts = queryLanguage.tables.find((table: any) => table.name === "alerts");
+  const responseIncidents = queryLanguage.tables.find((table: any) => table.name === "response_incidents");
+  const onCall = queryLanguage.tables.find((table: any) => table.name === "oncall");
+  assert.equal(alerts.intent, "alerts");
+  assert.ok(alerts.filters.some((filter: any) => filter.name === "provider"));
+  assert.ok(alerts.filters.some((filter: any) => filter.name === "service_id"));
+  assert.equal(responseIncidents.intent, "responseincidents");
+  assert.ok(responseIncidents.filters.some((filter: any) => filter.name === "responder"));
+  assert.equal(onCall.intent, "oncall");
+  assert.ok(onCall.filters.some((filter: any) => filter.name === "person"));
+  for (const schema of [schemas.AlertsResult, schemas.ResponseIncidentsResult, schemas.OnCallResult]) {
+    assert.ok(schema.required.includes("items"));
+    assert.ok(schema.required.includes("providers"));
+    assert.ok(schema.required.includes("warnings"));
+  }
 });

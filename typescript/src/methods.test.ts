@@ -640,13 +640,104 @@ test("externalDep composes ranked and target SQL", async () => {
   assert.equal(t.calls[0].body.sql, "SELECT * FROM external_dep WHERE target = 'nexmo.com'");
 });
 
-test("alerts composes all and target SQL", async () => {
+test("alerts preserves legacy target and composes operational filters", async () => {
   const a = capturing();
   await a.gx.alerts();
   assert.equal(a.calls[0].body.sql, "SELECT * FROM alerts");
   const t = capturing();
   await t.gx.alerts({ target: "payment", limit: 20 });
   assert.equal(t.calls[0].body.sql, "SELECT * FROM alerts WHERE target = 'payment' LIMIT 20");
+  const operational = capturing();
+  await operational.gx.alerts({
+    provider: "pagerduty",
+    status: "firing",
+    severity: "critical",
+    service: { id: "k8s://main/production/service/api" },
+    since: "7d",
+    cursor: "next-page",
+    limit: 50,
+  });
+  assert.equal(
+    operational.calls[0].body.sql,
+    "SELECT * FROM alerts WHERE provider = 'pagerduty' AND status = 'firing' AND severity = 'critical' AND service_id = 'k8s://main/production/service/api' AND since = '7d' AND cursor = 'next-page' LIMIT 50",
+  );
+});
+
+test("incidents composes provider-native and canonical service selectors", async () => {
+  const provider = capturing();
+  await provider.gx.incidents({ providerServiceId: "PABC123", limit: 50 });
+  assert.equal(
+    provider.calls[0].body.sql,
+    "SELECT * FROM response_incidents WHERE provider_service_id = 'PABC123' LIMIT 50",
+  );
+
+  const canonical = capturing();
+  await canonical.gx.incidents({
+    provider: "pagerduty",
+    status: "acknowledged",
+    service: { name: "api", type: "K8S_SERVICE", namespace: "production", cluster: "main" },
+    responder: "person://user1",
+    urgency: "high",
+    from: "2026-08-10T10:00:00Z",
+    to: "2026-08-17T10:00:00Z",
+    cursor: "next-page",
+    limit: 25,
+  });
+  assert.equal(
+    canonical.calls[0].body.sql,
+    "SELECT * FROM response_incidents WHERE provider = 'pagerduty' AND status = 'acknowledged' AND service = 'api' AND service_type = 'K8S_SERVICE' AND service_namespace = 'production' AND service_cluster = 'main' AND from = '2026-08-10T10:00:00Z' AND to = '2026-08-17T10:00:00Z' AND cursor = 'next-page' AND responder = 'person://user1' AND urgency = 'high' LIMIT 25",
+  );
+});
+
+test("onCall composes point-in-time responsibility queries", async () => {
+  const { gx, calls } = capturing();
+  await gx.onCall({
+    service: { name: "api", type: "K8S_SERVICE", namespace: "production", cluster: "main" },
+    at: "2026-08-17T10:00:00.000Z",
+    person: "user1@example.com",
+    schedule: "PSCHEDULE",
+    limit: 50,
+  });
+  assert.equal(
+    calls[0].body.sql,
+    "SELECT * FROM oncall WHERE service = 'api' AND service_type = 'K8S_SERVICE' AND service_namespace = 'production' AND service_cluster = 'main' AND at = '2026-08-17T10:00:00.000Z' AND person = 'user1@example.com' AND schedule = 'PSCHEDULE' LIMIT 50",
+  );
+});
+
+test("operational helpers reject ambiguous selectors and invalid windows before fetch", () => {
+  const mixed = capturing();
+  assert.throws(
+    () => mixed.gx.incidents({ service: "api", providerServiceId: "PABC123" } as any),
+    /service and providerServiceId cannot be combined/,
+  );
+  assert.equal(mixed.calls.length, 0);
+
+  const empty = capturing();
+  assert.throws(
+    () => empty.gx.onCall({ service: { name: "", type: "K8S_SERVICE" } } as any),
+    /service name must be a non-empty string/,
+  );
+  assert.equal(empty.calls.length, 0);
+
+  const reversed = capturing();
+  assert.throws(
+    () => reversed.gx.alerts({ from: "2026-08-18T10:00:00Z", to: "2026-08-17T10:00:00Z" }),
+    /from must be earlier than to/,
+  );
+  assert.equal(reversed.calls.length, 0);
+
+  const invalidCalendar = capturing();
+  assert.throws(
+    () => invalidCalendar.gx.onCall({ at: "2026-09-31T10:00:00Z" }),
+    /at must be RFC3339 or now/,
+  );
+  assert.equal(invalidCalendar.calls.length, 0);
+
+  for (const limit of [0, 101, 1.5]) {
+    const bounded = capturing();
+    assert.throws(() => bounded.gx.incidents({ limit }), /limit must be an integer from 1 to 100/);
+    assert.equal(bounded.calls.length, 0);
+  }
 });
 
 test("alertNoise composes ranked, kind-filtered, and scoped SQL", async () => {

@@ -53,7 +53,9 @@ Values may be bare words or single- or double-quoted strings.
 | [`datastore`](#datastore) | Inspect datastore dependencies or rank widely used datastores. | `target`, `source` |
 | [`flow`](#flow) | Inspect stream producers and consumers or rank busy streams. | `target`, `source` |
 | [`external_dep`](#external_dep) | Inspect external dependencies or rank high-fan-in external hosts. | `target`, `source` |
-| [`alerts`](#alerts) | List currently firing monitors, optionally scoped to a service. | `target` |
+| [`alerts`](#alerts) | List normalized operational alerts while retaining legacy Datadog firing-monitor fields. | `target`, `provider`, `status`, `severity`, `service_id`, `service`, `service_type`, `service_namespace`, `service_cluster`, `provider_service_id`, `since`, `from`, `to`, `at`, `cursor` |
+| [`response_incidents`](#response_incidents) | List provider-neutral response incidents that coordinate alert handling. | `provider`, `status`, `service_id`, `service`, `service_type`, `service_namespace`, `service_cluster`, `provider_service_id`, `since`, `from`, `to`, `at`, `cursor`, `responder`, `urgency` |
+| [`oncall`](#oncall) | List effective on-call responsibility for a point in time or bounded window. | `provider`, `status`, `service_id`, `service`, `service_type`, `service_namespace`, `service_cluster`, `provider_service_id`, `from`, `to`, `at`, `cursor`, `person`, `schedule` |
 | [`alert_noise`](#alert_noise) | Rank flapping or stuck monitors. | `target`, `kind`, `since` |
 | [`calls`](#calls) | Inspect APM service callers, callees, and HTTP route evidence or rank call-graph fan-in. | `target`, `source` |
 | [`servicetree`](#servicetree) | Expand a service's downstream services, datastores, and external dependencies. | `target`, `source` |
@@ -1119,7 +1121,7 @@ $ annie graph query "SELECT * FROM external_dep WHERE target = payments.example.
 
 ## alerts
 
-List currently firing monitors, optionally scoped to a service.
+List normalized operational alerts while retaining legacy Datadog firing-monitor fields.
 
 Result intent: `alerts`.
 
@@ -1131,16 +1133,109 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
-| `target` | string | No | Any value | Service or workload name. |
+| `target` | string | No | Any value | Legacy Datadog service or workload name. |
+| `provider` | enum | No | `pagerduty` (`pd`)<br />`datadog` (`dd`)<br />`grafana`<br />`victoria`<br />`dynatrace`<br />`newrelic` (`new_relic`)<br />`incidentio` (`incident_io`) | Operational evidence provider. |
+| `status` | enum | No | `firing` (`open`, `triggered`)<br />`recovered` (`resolved`)<br />`suppressed`<br />`unknown`<br />`all` | Canonical alert state. Defaults to firing. |
+| `severity` | enum | No | `critical`<br />`warning`<br />`info`<br />`unknown` | Canonical alert severity. |
+| `service_id` | string | No | Any value | Exact stable identity of a canonical graph service. |
+| `service` | string | No | Any value | Exact canonical graph service name. |
+| `service_type` | string | No | Any value | Exact canonical graph service label. |
+| `service_namespace` | string | No | Any value | Exact canonical service namespace. |
+| `service_cluster` | string | No | Any value | Exact canonical service cluster. |
+| `provider_service_id` | string | No | Any value | Exact provider-native service identifier. |
+| `since` | duration | No | Any value | Relative lookback such as 30m, 2h, 1d, or today. |
+| `from` | string | No | Any value | Absolute RFC3339 lower time bound. |
+| `to` | string | No | Any value | Absolute RFC3339 upper time bound. |
+| `at` | string | No | Any value | Absolute RFC3339 point in time, or now. |
+| `cursor` | string | No | Any value | Opaque keyset cursor returned by a previous page. |
 
 ### Forms
 
 #### Current alerts
 
-List firing monitors for the project or one target.
+List firing operational alerts; legacy Datadog fields remain additive siblings.
 
 ```console
-$ annie graph query "SELECT * FROM alerts WHERE target = checkout LIMIT 20"
+$ annie graph query "SELECT * FROM alerts WHERE status = firing LIMIT 20"
+```
+
+## response_incidents
+
+List provider-neutral response incidents that coordinate alert handling.
+
+Result intent: `responseincidents`.
+
+Table aliases: `response_incident`.
+
+Modifiers: `LIMIT`; `OFFSET` is not applied.
+
+### Filters
+
+| Filter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `provider` | enum | No | `pagerduty` (`pd`)<br />`datadog` (`dd`)<br />`grafana`<br />`victoria`<br />`dynatrace`<br />`newrelic` (`new_relic`)<br />`incidentio` (`incident_io`) | Operational evidence provider. |
+| `status` | enum | No | `open` (`triggered`)<br />`acknowledged` (`acked`)<br />`resolved` (`closed`)<br />`unknown`<br />`all` | Canonical response-incident state. Defaults to open and acknowledged. |
+| `service_id` | string | No | Any value | Exact stable identity of a canonical graph service. |
+| `service` | string | No | Any value | Exact canonical graph service name. |
+| `service_type` | string | No | Any value | Exact canonical graph service label. |
+| `service_namespace` | string | No | Any value | Exact canonical service namespace. |
+| `service_cluster` | string | No | Any value | Exact canonical service cluster. |
+| `provider_service_id` | string | No | Any value | Exact provider-native service identifier. |
+| `since` | duration | No | Any value | Relative lookback such as 30m, 2h, 1d, or today. |
+| `from` | string | No | Any value | Absolute RFC3339 lower time bound. |
+| `to` | string | No | Any value | Absolute RFC3339 upper time bound. |
+| `at` | string | No | Any value | Absolute RFC3339 point in time, or now. |
+| `cursor` | string | No | Any value | Opaque keyset cursor returned by a previous page. |
+| `responder` | string | No | Any value | Exact responder source identity or canonical person identity. |
+| `urgency` | string | No | Any value | Provider urgency value; preserved as provider-specific evidence. |
+
+### Forms
+
+#### Active response incidents
+
+List open or acknowledged incidents from stored graph evidence.
+
+```console
+$ annie graph query "SELECT * FROM response_incidents WHERE provider = pagerduty LIMIT 50"
+```
+
+## oncall
+
+List effective on-call responsibility for a point in time or bounded window.
+
+Result intent: `oncall`.
+
+Table aliases: `on_call`, `oncalls`.
+
+Modifiers: `LIMIT`; `OFFSET` is not applied.
+
+### Filters
+
+| Filter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `provider` | enum | No | `pagerduty` (`pd`)<br />`datadog` (`dd`)<br />`grafana`<br />`victoria`<br />`dynatrace`<br />`newrelic` (`new_relic`)<br />`incidentio` (`incident_io`) | Operational evidence provider. |
+| `status` | enum | No | `scheduled`<br />`active`<br />`ended`<br />`all` | Canonical on-call window state. |
+| `service_id` | string | No | Any value | Exact stable identity of a canonical graph service. |
+| `service` | string | No | Any value | Exact canonical graph service name. |
+| `service_type` | string | No | Any value | Exact canonical graph service label. |
+| `service_namespace` | string | No | Any value | Exact canonical service namespace. |
+| `service_cluster` | string | No | Any value | Exact canonical service cluster. |
+| `provider_service_id` | string | No | Any value | Exact provider-native service identifier. |
+| `from` | string | No | Any value | Absolute RFC3339 lower time bound. |
+| `to` | string | No | Any value | Absolute RFC3339 upper time bound. |
+| `at` | string | No | Any value | Absolute RFC3339 point in time, or now. |
+| `cursor` | string | No | Any value | Opaque keyset cursor returned by a previous page. |
+| `person` | string | No | Any value | Exact source identity or canonical person identity. |
+| `schedule` | string | No | Any value | Exact provider schedule identifier. |
+
+### Forms
+
+#### Current on-call
+
+List effective on-call windows at the selected point in time.
+
+```console
+$ annie graph query "SELECT * FROM oncall WHERE at = now LIMIT 50"
 ```
 
 ## alert_noise

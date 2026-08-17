@@ -610,6 +610,177 @@ export interface components {
                 cluster: string | null;
             }[];
         };
+        ResponseIncidentsResult: {
+            generatedAt: string;
+            total: number;
+            providers: {
+                /** @enum {string} */
+                provider: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+                /** @enum {string} */
+                status: "available" | "stale" | "unavailable" | "not_configured";
+                observedAt?: string;
+            }[];
+            partial: boolean;
+            warnings: {
+                code: string;
+                message: string;
+                /** @enum {string} */
+                provider?: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+            }[];
+            page: {
+                limit: number;
+                hasMore: boolean;
+                nextCursor: string | null;
+            };
+            items: {
+                id: string;
+                /** @enum {string} */
+                provider: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+                providerId: string;
+                title: string;
+                service?: {
+                    /** @enum {string} */
+                    resolution: "resolved" | "unresolved" | "ambiguous";
+                    id: string | null;
+                    name: string | null;
+                    type: string | null;
+                    namespace: string | null;
+                    cluster: string | null;
+                } | null;
+                providerStatus: string;
+                startedAt?: string | null;
+                updatedAt: string;
+                resolvedAt?: string | null;
+                sourceUrl?: string | null;
+                observedAt: string;
+                providerDetails: {
+                    /** @constant */
+                    provider: "pagerduty";
+                    urgency?: string;
+                    incidentNumber?: number;
+                    scheduleId?: string;
+                    escalationLevel?: number;
+                } | {
+                    /** @constant */
+                    provider: "datadog";
+                } | {
+                    /** @constant */
+                    provider: "grafana";
+                } | {
+                    /** @constant */
+                    provider: "victoria";
+                } | {
+                    /** @constant */
+                    provider: "dynatrace";
+                } | {
+                    /** @constant */
+                    provider: "newrelic";
+                } | {
+                    /** @constant */
+                    provider: "incidentio";
+                };
+                /** @enum {string} */
+                status: "open" | "acknowledged" | "resolved" | "unknown";
+                responders: {
+                    /** @enum {string} */
+                    resolution: "resolved" | "unresolved" | "ambiguous";
+                    personId: string | null;
+                    name: string | null;
+                    email: string | null;
+                    providerUserId: string | null;
+                }[];
+            }[];
+        };
+        OnCallResult: {
+            generatedAt: string;
+            total: number;
+            providers: {
+                /** @enum {string} */
+                provider: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+                /** @enum {string} */
+                status: "available" | "stale" | "unavailable" | "not_configured";
+                observedAt?: string;
+            }[];
+            partial: boolean;
+            warnings: {
+                code: string;
+                message: string;
+                /** @enum {string} */
+                provider?: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+            }[];
+            page: {
+                limit: number;
+                hasMore: boolean;
+                nextCursor: string | null;
+            };
+            items: {
+                id: string;
+                /** @enum {string} */
+                provider: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+                providerId: string;
+                title: string;
+                service?: {
+                    /** @enum {string} */
+                    resolution: "resolved" | "unresolved" | "ambiguous";
+                    id: string | null;
+                    name: string | null;
+                    type: string | null;
+                    namespace: string | null;
+                    cluster: string | null;
+                } | null;
+                providerStatus: string;
+                startedAt?: string | null;
+                updatedAt: string;
+                resolvedAt?: string | null;
+                sourceUrl?: string | null;
+                observedAt: string;
+                providerDetails: {
+                    /** @constant */
+                    provider: "pagerduty";
+                    urgency?: string;
+                    incidentNumber?: number;
+                    scheduleId?: string;
+                    escalationLevel?: number;
+                } | {
+                    /** @constant */
+                    provider: "datadog";
+                } | {
+                    /** @constant */
+                    provider: "grafana";
+                } | {
+                    /** @constant */
+                    provider: "victoria";
+                } | {
+                    /** @constant */
+                    provider: "dynatrace";
+                } | {
+                    /** @constant */
+                    provider: "newrelic";
+                } | {
+                    /** @constant */
+                    provider: "incidentio";
+                };
+                /** @enum {string} */
+                status: "scheduled" | "active" | "ended";
+                person: {
+                    /** @enum {string} */
+                    resolution: "resolved" | "unresolved" | "ambiguous";
+                    personId: string | null;
+                    name: string | null;
+                    email: string | null;
+                    providerUserId: string | null;
+                };
+                schedule: {
+                    /** @enum {string} */
+                    provider: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+                    providerId: string;
+                    name: string | null;
+                };
+                escalationLevel?: number;
+                startsAt: string;
+                endsAt: string;
+            }[];
+        };
         EventFeedResult: {
             filter: {
                 target: string;
@@ -922,6 +1093,79 @@ export interface components {
                 workload: string | null;
                 namespace: string | null;
             }[];
+            generatedAt: string;
+            operationalTotal: number;
+            items: {
+                id: string;
+                /** @enum {string} */
+                provider: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+                providerId: string;
+                title: string;
+                service?: {
+                    /** @enum {string} */
+                    resolution: "resolved" | "unresolved" | "ambiguous";
+                    id: string | null;
+                    name: string | null;
+                    type: string | null;
+                    namespace: string | null;
+                    cluster: string | null;
+                } | null;
+                providerStatus: string;
+                startedAt?: string | null;
+                updatedAt: string;
+                resolvedAt?: string | null;
+                sourceUrl?: string | null;
+                observedAt: string;
+                providerDetails: {
+                    /** @constant */
+                    provider: "pagerduty";
+                    urgency?: string;
+                    incidentNumber?: number;
+                    scheduleId?: string;
+                    escalationLevel?: number;
+                } | {
+                    /** @constant */
+                    provider: "datadog";
+                } | {
+                    /** @constant */
+                    provider: "grafana";
+                } | {
+                    /** @constant */
+                    provider: "victoria";
+                } | {
+                    /** @constant */
+                    provider: "dynatrace";
+                } | {
+                    /** @constant */
+                    provider: "newrelic";
+                } | {
+                    /** @constant */
+                    provider: "incidentio";
+                };
+                /** @enum {string} */
+                status: "firing" | "recovered" | "suppressed" | "unknown";
+                /** @enum {string} */
+                severity: "critical" | "warning" | "info" | "unknown";
+            }[];
+            providers: {
+                /** @enum {string} */
+                provider: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+                /** @enum {string} */
+                status: "available" | "stale" | "unavailable" | "not_configured";
+                observedAt?: string;
+            }[];
+            partial: boolean;
+            warnings: {
+                code: string;
+                message: string;
+                /** @enum {string} */
+                provider?: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+            }[];
+            page: {
+                limit: number;
+                hasMore: boolean;
+                nextCursor: string | null;
+            };
         };
         AlertNoiseResult: {
             /** @enum {string} */
@@ -1839,6 +2083,38 @@ export interface components {
             /** @constant */
             intent: "incident";
             incident: components["schemas"]["IncidentResult"] | null;
+        } | {
+            question: string;
+            summary: string;
+            countOnly?: boolean;
+            elapsedMs?: number;
+            resolved?: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            nodes?: components["schemas"]["GraphNode"][];
+            edges?: components["schemas"]["GraphEdge"][];
+            /** @constant */
+            intent: "responseincidents";
+            incidents: components["schemas"]["ResponseIncidentsResult"] | null;
+        } | {
+            question: string;
+            summary: string;
+            countOnly?: boolean;
+            elapsedMs?: number;
+            resolved?: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            nodes?: components["schemas"]["GraphNode"][];
+            edges?: components["schemas"]["GraphEdge"][];
+            /** @constant */
+            intent: "oncall";
+            onCall: components["schemas"]["OnCallResult"] | null;
         } | {
             question: string;
             summary: string;

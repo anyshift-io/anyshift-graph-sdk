@@ -21,6 +21,14 @@ const correlationsTable = queryLanguage?.tables?.find((table) => table?.name ===
 const incidentsTable = queryLanguage?.tables?.find((table) => table?.name === "incidents");
 const correlationsVariant = askResult?.oneOf?.find((variant) => variant?.properties?.intent?.const === "correlations");
 const correlationsResult = document?.components?.schemas?.CorrelationsResult;
+const alertsTable = queryLanguage?.tables?.find((table) => table?.name === "alerts");
+const responseIncidentsTable = queryLanguage?.tables?.find((table) => table?.name === "response_incidents");
+const onCallTable = queryLanguage?.tables?.find((table) => table?.name === "oncall");
+const responseIncidentsVariant = askResult?.oneOf?.find((variant) => variant?.properties?.intent?.const === "responseincidents");
+const onCallVariant = askResult?.oneOf?.find((variant) => variant?.properties?.intent?.const === "oncall");
+const alertsResult = document?.components?.schemas?.AlertsResult;
+const responseIncidentsResult = document?.components?.schemas?.ResponseIncidentsResult;
+const onCallResult = document?.components?.schemas?.OnCallResult;
 const canonicalExposureFields = [
   "direction",
   "exposed",
@@ -36,8 +44,7 @@ const canonicalExposureFields = [
 if (
   document?.openapi !== "3.1.0"
   || askResult?.discriminator?.propertyName !== "intent"
-  || askResult?.oneOf?.length !== 52
-  || queryLanguage?.version !== "1.14"
+  || queryLanguage?.version !== "1.15"
   || queryLanguage?.tables?.length !== askResult.oneOf.length
   || exposureVariant?.properties?.exposure?.$ref !== "#/components/schemas/ExposureResult"
   || !exposureVariant?.required?.includes("exposure")
@@ -55,8 +62,23 @@ if (
   || !correlationsVariant?.properties?.correlations?.oneOf?.some((entry) => entry?.$ref === "#/components/schemas/CorrelationsResult")
   || !correlationsVariant?.properties?.correlations?.oneOf?.some((entry) => entry?.type === "null")
   || !correlationsResult?.required?.includes("correlationId")
+  || alertsTable?.intent !== "alerts"
+  || !alertsTable?.filters?.some((filter) => filter?.name === "provider")
+  || !alertsTable?.filters?.some((filter) => filter?.name === "service_id")
+  || responseIncidentsTable?.intent !== "responseincidents"
+  || !responseIncidentsTable?.filters?.some((filter) => filter?.name === "responder")
+  || onCallTable?.intent !== "oncall"
+  || !onCallTable?.filters?.some((filter) => filter?.name === "person")
+  || !responseIncidentsVariant?.required?.includes("incidents")
+  || !onCallVariant?.required?.includes("onCall")
+  || !alertsResult?.required?.includes("items")
+  || !alertsResult?.required?.includes("providers")
+  || !responseIncidentsResult?.required?.includes("items")
+  || !responseIncidentsResult?.required?.includes("providers")
+  || !onCallResult?.required?.includes("items")
+  || !onCallResult?.required?.includes("providers")
 ) {
-  throw new Error(`${source} does not expose the expected executable 52-intent, query-language 1.14, correlations contract, optional cloud-event statistics, provider-operation, and canonical exposure contract`);
+  throw new Error(`${source} does not expose the expected executable query-language 1.15 correlations, operational-response, cloud-event, and canonical exposure contract`);
 }
 
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`);

@@ -154,6 +154,38 @@ export interface components {
                 cluster: string | null;
             }[];
         };
+        ResourceDetails: {
+            selector: string;
+            /** @enum {string} */
+            status: "found" | "not_found";
+            resource: {
+                hashedID: string;
+                anyshiftID: string | null;
+                name: string;
+                labels: string[];
+                properties: {
+                    [key: string]: unknown;
+                };
+            } | null;
+            relationshipsOut: {
+                type: string;
+                targetHashedID: string;
+                targetAnyshiftID: string | null;
+                targetLabels: string[];
+            }[];
+            relationshipsIn: {
+                type: string;
+                targetHashedID: string;
+                targetAnyshiftID: string | null;
+                targetLabels: string[];
+            }[];
+            page: {
+                limit: number;
+                outgoingTruncated: boolean;
+                incomingTruncated: boolean;
+            };
+            partial: boolean;
+        };
         InventoryResult: {
             type: string;
             total: number;
@@ -688,6 +720,11 @@ export interface components {
                     name: string | null;
                     email: string | null;
                     providerUserId: string | null;
+                    candidates: {
+                        personId: string | null;
+                        name: string | null;
+                        email: string | null;
+                    }[];
                 }[];
             }[];
         };
@@ -769,13 +806,18 @@ export interface components {
                     name: string | null;
                     email: string | null;
                     providerUserId: string | null;
+                    candidates: {
+                        personId: string | null;
+                        name: string | null;
+                        email: string | null;
+                    }[];
                 };
                 schedule: {
                     /** @enum {string} */
                     provider: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
                     providerId: string;
                     name: string | null;
-                };
+                } | null;
                 escalationLevel?: number;
                 startsAt: string;
                 endsAt: string;
@@ -1367,7 +1409,11 @@ export interface components {
                 }[];
                 controls: {
                     /** @enum {string} */
-                    kind: "dns" | "tls" | "waf" | "rate_limit" | "access";
+                    kind: "dns" | "tls" | "waf" | "rate_limit" | "access" | "network";
+                    /** @enum {string} */
+                    hop: "edge" | "origin" | "workload";
+                    /** @enum {string} */
+                    family?: "dns" | "edge_tls" | "origin_tls" | "waf" | "rate_limit" | "access" | "network";
                     resource: {
                         id: string;
                         name: string;
@@ -1383,6 +1429,11 @@ export interface components {
                         source: string;
                         observedAt: string | null;
                         confidence: ("high" | "medium" | "low") | null;
+                    };
+                    summary?: {
+                        count: number;
+                        names: string[];
+                        defaultAllow?: boolean;
                     };
                 }[];
                 gaps: {
@@ -1905,6 +1956,22 @@ export interface components {
             /** @constant */
             intent: "resolve";
             resolve: components["schemas"]["ResolveResult"] | null;
+        } | {
+            question: string;
+            summary: string;
+            countOnly?: boolean;
+            elapsedMs?: number;
+            resolved?: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            nodes?: components["schemas"]["GraphNode"][];
+            edges?: components["schemas"]["GraphEdge"][];
+            /** @constant */
+            intent: "resource";
+            resourceDetails: components["schemas"]["ResourceDetails"] | null;
         } | {
             question: string;
             summary: string;

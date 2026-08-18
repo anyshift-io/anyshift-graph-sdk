@@ -13,7 +13,7 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
   assert.equal(schemas.AskRequest.additionalProperties, false);
   assert.equal(schemas.AskResult.discriminator.propertyName, "intent");
   assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, variants.length);
-  assert.equal(queryLanguage.version, "1.15");
+  assert.equal(queryLanguage.version, "1.16");
   assert.equal(queryLanguage.tables.length, variants.length);
   const inventorySample = schemas.InventoryResult.properties.sample.items;
   assert.deepEqual(inventorySample.properties.resourceId.type, ["string", "null"]);
@@ -137,5 +137,13 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
     assert.ok(schema.required.includes("items"));
     assert.ok(schema.required.includes("providers"));
     assert.ok(schema.required.includes("warnings"));
+  }
+  const responderIdentity = schemas.ResponseIncidentsResult.properties.items.items
+    .properties.responders.items;
+  const onCallIdentity = schemas.OnCallResult.properties.items.items.properties.person;
+  for (const identity of [responderIdentity, onCallIdentity]) {
+    assert.ok(identity.required.includes("candidates"));
+    assert.equal(identity.properties.candidates.maxItems, 10);
+    assert.deepEqual(identity.properties.candidates.items.required, ["personId", "name", "email"]);
   }
 });

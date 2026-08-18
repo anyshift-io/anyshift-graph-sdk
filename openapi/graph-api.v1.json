@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.15",
+    "version": "1.16",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -37,6 +37,34 @@
             "name": "Resolve resources",
             "description": "Return ranked candidates for a resource name or fragment.",
             "example": "SELECT * FROM resolve WHERE term = checkout LIMIT 10"
+          }
+        ]
+      },
+      {
+        "name": "resource_details",
+        "aliases": [
+          "resource_detail",
+          "details"
+        ],
+        "intent": "resource",
+        "summary": "Read one current graph resource by exact stable ID with safe properties and bounded relationships.",
+        "filters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Exact hashedID or Anyshift ID.",
+            "required": true
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Exact resource details",
+            "description": "Return one resource by stable graph identity; names and fuzzy selectors are not accepted.",
+            "example": "SELECT * FROM resource_details WHERE id = 'pagerduty/escalation-policy/PQ3UO6W' LIMIT 100"
           }
         ]
       },
@@ -3773,6 +3801,163 @@
         ],
         "additionalProperties": false
       },
+      "ResourceDetails": {
+        "type": "object",
+        "properties": {
+          "selector": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "found",
+              "not_found"
+            ]
+          },
+          "resource": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "hashedID": {
+                    "type": "string"
+                  },
+                  "anyshiftID": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "labels": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "properties": {
+                    "type": "object",
+                    "additionalProperties": {}
+                  }
+                },
+                "required": [
+                  "hashedID",
+                  "anyshiftID",
+                  "name",
+                  "labels",
+                  "properties"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "relationshipsOut": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "targetHashedID": {
+                  "type": "string"
+                },
+                "targetAnyshiftID": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "targetLabels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "type",
+                "targetHashedID",
+                "targetAnyshiftID",
+                "targetLabels"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "relationshipsIn": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "targetHashedID": {
+                  "type": "string"
+                },
+                "targetAnyshiftID": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "targetLabels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "type",
+                "targetHashedID",
+                "targetAnyshiftID",
+                "targetLabels"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "page": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "outgoingTruncated": {
+                "type": "boolean"
+              },
+              "incomingTruncated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "limit",
+              "outgoingTruncated",
+              "incomingTruncated"
+            ],
+            "additionalProperties": false
+          },
+          "partial": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "selector",
+          "status",
+          "resource",
+          "relationshipsOut",
+          "relationshipsIn",
+          "page",
+          "partial"
+        ],
+        "additionalProperties": false
+      },
       "InventoryResult": {
         "type": "object",
         "properties": {
@@ -6558,6 +6743,39 @@
                           "string",
                           "null"
                         ]
+                      },
+                      "candidates": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "personId": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "name": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "email": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "personId",
+                            "name",
+                            "email"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "maxItems": 10
                       }
                     },
                     "required": [
@@ -6565,7 +6783,8 @@
                       "personId",
                       "name",
                       "email",
-                      "providerUserId"
+                      "providerUserId",
+                      "candidates"
                     ],
                     "additionalProperties": false
                   }
@@ -6966,6 +7185,39 @@
                         "string",
                         "null"
                       ]
+                    },
+                    "candidates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "personId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "name": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "email": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "personId",
+                          "name",
+                          "email"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 10
                     }
                   },
                   "required": [
@@ -6973,41 +7225,49 @@
                     "personId",
                     "name",
                     "email",
-                    "providerUserId"
+                    "providerUserId",
+                    "candidates"
                   ],
                   "additionalProperties": false
                 },
                 "schedule": {
-                  "type": "object",
-                  "properties": {
-                    "provider": {
-                      "type": "string",
-                      "enum": [
-                        "pagerduty",
-                        "datadog",
-                        "grafana",
-                        "victoria",
-                        "dynatrace",
-                        "newrelic",
-                        "incidentio"
-                      ]
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "enum": [
+                            "pagerduty",
+                            "datadog",
+                            "grafana",
+                            "victoria",
+                            "dynatrace",
+                            "newrelic",
+                            "incidentio"
+                          ]
+                        },
+                        "providerId": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "provider",
+                        "providerId",
+                        "name"
+                      ],
+                      "additionalProperties": false
                     },
-                    "providerId": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
+                    {
+                      "type": "null"
                     }
-                  },
-                  "required": [
-                    "provider",
-                    "providerId",
-                    "name"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "escalationLevel": {
                   "type": "integer",
@@ -10181,7 +10441,28 @@
                           "tls",
                           "waf",
                           "rate_limit",
-                          "access"
+                          "access",
+                          "network"
+                        ]
+                      },
+                      "hop": {
+                        "type": "string",
+                        "enum": [
+                          "edge",
+                          "origin",
+                          "workload"
+                        ]
+                      },
+                      "family": {
+                        "type": "string",
+                        "enum": [
+                          "dns",
+                          "edge_tls",
+                          "origin_tls",
+                          "waf",
+                          "rate_limit",
+                          "access",
+                          "network"
                         ]
                       },
                       "resource": {
@@ -10271,10 +10552,34 @@
                           "confidence"
                         ],
                         "additionalProperties": false
+                      },
+                      "summary": {
+                        "type": "object",
+                        "properties": {
+                          "count": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "names": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "defaultAllow": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "count",
+                          "names"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [
                       "kind",
+                      "hop",
                       "resource",
                       "relationship",
                       "evidence"
@@ -13224,6 +13529,90 @@
                 "oneOf": [
                   {
                     "$ref": "#/components/schemas/ResolveResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "question",
+              "intent",
+              "summary",
+              "resourceDetails"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "countOnly": {
+                "type": "boolean"
+              },
+              "elapsedMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "resolved": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "term",
+                      "hashedID",
+                      "name",
+                      "type"
+                    ],
+                    "properties": {
+                      "term": {
+                        "type": "string"
+                      },
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphNode"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphEdge"
+                }
+              },
+              "intent": {
+                "const": "resource"
+              },
+              "resourceDetails": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/ResourceDetails"
                   },
                   {
                     "type": "null"

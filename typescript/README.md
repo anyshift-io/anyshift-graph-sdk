@@ -67,6 +67,10 @@ const onCall = await graph.onCall({
 console.log(alerts.alerts?.items, incidents.incidents?.items, onCall.onCall?.items);
 ```
 
+PagerDuty people expose `resolution` as `resolved`, `unresolved`, or `ambiguous`. An ambiguous
+identity never selects a winner and includes at most ten canonical `candidates`; resolved and
+unresolved identities return an empty candidate list.
+
 `alerts()`, `incidents()`, and `onCall()` use the provider-neutral API contract. Canonical service
 selectors and `providerServiceId` are mutually exclusive. Operational methods use opaque cursors
 and reject invalid RFC3339 windows and limits outside 1-100 before sending a request. In API v1,

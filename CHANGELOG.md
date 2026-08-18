@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.15 - 2026-08-18
+
+### Added
+
+- Added bounded canonical `IdentityCandidate` data for ambiguous PagerDuty responders and on-call
+  people; the API never chooses a candidate implicitly.
+- Pinned Graph API query-language 1.16 and its exact stable-ID `resource_details` operation.
+
+### Compatibility
+
+- `IdentityRef.candidates` is additive for SDK callers but required by the synchronized runtime
+  contract. Resolved and unresolved identities return an empty list; ambiguous identities expose
+  at most ten candidates.
+
 ## 0.5.14 - 2026-08-17
 
 ### Added

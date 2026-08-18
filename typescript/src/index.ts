@@ -107,6 +107,7 @@ export type {
   QueryWarning,
   GraphResourceRef,
   IdentityRef,
+  IdentityCandidate,
   AlertsResult,
   AlertItem,
   ResponseIncidentsResult,

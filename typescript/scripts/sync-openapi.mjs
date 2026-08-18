@@ -29,6 +29,9 @@ const onCallVariant = askResult?.oneOf?.find((variant) => variant?.properties?.i
 const alertsResult = document?.components?.schemas?.AlertsResult;
 const responseIncidentsResult = document?.components?.schemas?.ResponseIncidentsResult;
 const onCallResult = document?.components?.schemas?.OnCallResult;
+const incidentResponderIdentity = responseIncidentsResult?.properties?.items?.items
+  ?.properties?.responders?.items;
+const onCallIdentity = onCallResult?.properties?.items?.items?.properties?.person;
 const canonicalExposureFields = [
   "direction",
   "exposed",
@@ -57,7 +60,7 @@ const exposurePlatformFields = [
 if (
   document?.openapi !== "3.1.0"
   || askResult?.discriminator?.propertyName !== "intent"
-  || queryLanguage?.version !== "1.15"
+  || queryLanguage?.version !== "1.16"
   || queryLanguage?.tables?.length !== askResult.oneOf.length
   || exposureVariant?.properties?.exposure?.$ref !== "#/components/schemas/ExposureResult"
   || !exposureVariant?.required?.includes("exposure")
@@ -95,8 +98,12 @@ if (
   || !responseIncidentsResult?.required?.includes("providers")
   || !onCallResult?.required?.includes("items")
   || !onCallResult?.required?.includes("providers")
+  || !incidentResponderIdentity?.required?.includes("candidates")
+  || incidentResponderIdentity?.properties?.candidates?.maxItems !== 10
+  || !onCallIdentity?.required?.includes("candidates")
+  || onCallIdentity?.properties?.candidates?.maxItems !== 10
 ) {
-  throw new Error(`${source} does not expose the expected executable query-language 1.15 correlations, operational-response, cloud-event, canonical exposure, and exposure platform contract`);
+  throw new Error(`${source} does not expose the expected executable query-language 1.16 correlations, operational-response identity candidates, cloud-event, canonical exposure, and exposure platform contract`);
 }
 
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`);

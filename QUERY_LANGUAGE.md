@@ -19,6 +19,7 @@ Values may be bare words or single- or double-quoted strings.
 | Target | Purpose | Filters |
 | --- | --- | --- |
 | [`resolve`](#resolve) | Resolve a resource name or fragment to ranked current graph resources. | `term` |
+| [`resource_details`](#resource_details) | Read one current graph resource by exact stable ID with safe properties and bounded relationships. | `id` |
 | [`events`](#events) | Read the infrastructure change-event timeline. | `type`, `target`, `namespace`, `noise`, `since` |
 | [`cloud_events`](#cloud_events) | Read evidence-backed AWS, Azure, and GCP change events without parsing summaries. | `provider`, `scope`, `region`, `category`, `type`, `resource`, `actor`, `correlation`, `operation`, `stats`, `noise`, `diff`, `since`, `cursor` |
 | [`cloud_resources`](#cloud_resources) | Inspect current or recently deleted AWS, Azure, and GCP resources with freshness and provenance. | `provider`, `scope`, `region`, `type`, `resource`, `lifecycle`, `provenance`, `freshness`, `max_age`, `cursor` |
@@ -97,6 +98,32 @@ Return ranked candidates for a resource name or fragment.
 
 ```console
 $ annie graph query "SELECT * FROM resolve WHERE term = checkout LIMIT 10"
+```
+
+## resource_details
+
+Read one current graph resource by exact stable ID with safe properties and bounded relationships.
+
+Result intent: `resource`.
+
+Table aliases: `resource_detail`, `details`.
+
+Modifiers: `LIMIT`; `OFFSET` is not applied.
+
+### Filters
+
+| Filter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `id` | string | Yes | Any value | Exact hashedID or Anyshift ID. |
+
+### Forms
+
+#### Exact resource details
+
+Return one resource by stable graph identity; names and fuzzy selectors are not accepted.
+
+```console
+$ annie graph query "SELECT * FROM resource_details WHERE id = 'pagerduty/escalation-policy/PQ3UO6W' LIMIT 100"
 ```
 
 ## events

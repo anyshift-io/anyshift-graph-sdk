@@ -51,6 +51,7 @@ export type ProviderCoverage = ResponseIncidentsResult["providers"][number];
 export type QueryWarning = ResponseIncidentsResult["warnings"][number];
 export type GraphResourceRef = NonNullable<ResponseIncidentItem["service"]>;
 export type IdentityRef = ResponseIncidentItem["responders"][number];
+export type IdentityCandidate = IdentityRef["candidates"][number];
 
 /** Every successful Graph API response, discriminated by its exact intent payload. */
 export type AskResult = Schemas["AskResult"];

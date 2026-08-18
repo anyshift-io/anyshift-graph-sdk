@@ -36,7 +36,7 @@ type Equal<A, B> =
 type Assert<T extends true> = T;
 
 type ExpectedIntent =
-  | "resolve" | "connections" | "inventory" | "events" | "cloudevents" | "cloudresources" | "deliveryevents" | "provenance" | "ownership" | "graphcoverage" | "impact" | "hotspots" | "correlations" | "incident" | "responseincidents" | "oncall" | "failures"
+  | "resolve" | "resource" | "connections" | "inventory" | "events" | "cloudevents" | "cloudresources" | "deliveryevents" | "provenance" | "ownership" | "graphcoverage" | "impact" | "hotspots" | "correlations" | "incident" | "responseincidents" | "oncall" | "failures"
   | "deployments" | "audit" | "nodes" | "deployimpact" | "commoncause" | "blast"
   | "spof" | "path" | "cascade" | "alertimpact" | "monitor" | "datastore" | "flow"
   | "externaldep" | "alerts" | "alertnoise" | "calls" | "servicetree" | "alertcause"

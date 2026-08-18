@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.5.14 - 2026-08-17
+
+### Added
+
+- Pinned the Graph API exposure `platform` contract for managed runtime identity (EKS via
+  `HOSTS`) and regenerated TypeScript response types.
+- Exported `ExposurePlatform` for consumers that render or persist optional EKS context on each
+  exposure path.
+
+### Compatibility
+
+- Existing exposure helpers keep the same request surface. Servers that omit required nullable
+  `paths[].platform` fail contract validation. EKS remains platform context only; it is never a
+  traffic hop.
+
 ## 0.5.13 - 2026-08-17
 
 ### Added

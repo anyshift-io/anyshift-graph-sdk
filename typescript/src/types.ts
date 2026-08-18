@@ -36,6 +36,8 @@ export type ExposureHop = ExposurePath["hops"][number];
 export type ExposureControl = ExposurePath["controls"][number];
 export type ExposureGap = ExposurePath["gaps"][number];
 export type ExposureEvidence = ExposureHop["evidence"];
+/** Managed runtime identity for an exposure path (EKS via HOSTS). Null when unknown. */
+export type ExposurePlatform = NonNullable<ExposurePath["platform"]>;
 export type CorrelationsResult = Schemas["CorrelationsResult"];
 export type IncidentResult = Schemas["IncidentResult"];
 export type AlertsResult = Schemas["AlertsResult"];

@@ -41,6 +41,19 @@ const canonicalExposureFields = [
   "paths",
   "page",
 ];
+const exposurePath = exposureResult?.properties?.paths?.items;
+const exposurePlatform = exposurePath?.properties?.platform;
+const exposurePlatformObject = exposurePlatform?.anyOf?.find((entry) => entry?.type === "object");
+const exposurePlatformFields = [
+  "type",
+  "id",
+  "name",
+  "accountId",
+  "region",
+  "relationship",
+  "observedAt",
+  "provenance",
+];
 if (
   document?.openapi !== "3.1.0"
   || askResult?.discriminator?.propertyName !== "intent"
@@ -49,6 +62,11 @@ if (
   || exposureVariant?.properties?.exposure?.$ref !== "#/components/schemas/ExposureResult"
   || !exposureVariant?.required?.includes("exposure")
   || canonicalExposureFields.some((field) => !exposureResult?.required?.includes(field))
+  || !exposurePath?.required?.includes("platform")
+  || !exposurePlatform?.anyOf?.some((entry) => entry?.type === "null")
+  || exposurePlatformFields.some((field) => !exposurePlatformObject?.required?.includes(field))
+  || exposurePlatformObject?.properties?.relationship?.const !== "HOSTS"
+  || !exposurePlatformObject?.properties?.provenance?.required?.includes("source")
   || !cloudEventsTable?.filters?.some((filter) => filter?.name === "operation")
   || !cloudEventsTable?.filters?.some((filter) => filter?.name === "stats")
   || !cloudEventsResult?.required?.includes("statistics")
@@ -78,7 +96,7 @@ if (
   || !onCallResult?.required?.includes("items")
   || !onCallResult?.required?.includes("providers")
 ) {
-  throw new Error(`${source} does not expose the expected executable query-language 1.15 correlations, operational-response, cloud-event, and canonical exposure contract`);
+  throw new Error(`${source} does not expose the expected executable query-language 1.15 correlations, operational-response, cloud-event, canonical exposure, and exposure platform contract`);
 }
 
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`);

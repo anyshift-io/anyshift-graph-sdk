@@ -12,6 +12,7 @@ import type {
   ExposureHop,
   ExposureIngressRef,
   ExposurePath,
+  ExposurePlatform,
   ExposurePerspective,
   ExposureResource,
   ExposureResult,
@@ -97,6 +98,7 @@ declare const exposureHop: ExposureHop;
 declare const exposureControl: ExposureControl;
 declare const exposureGap: ExposureGap;
 const exposureEvidence: ExposureEvidence = exposureHop.evidence;
+const exposurePlatform: ExposurePlatform | null = exposurePath?.platform ?? null;
 type PublicSdk057ExposureResult = {
   direction: "ingress" | "workload";
   exposed: boolean;
@@ -114,6 +116,7 @@ void exposurePath;
 void exposureControl;
 void exposureGap;
 void exposureEvidence;
+void exposurePlatform;
 void publicSdk057CompatibleExposure;
 
 declare const cloudResource: CloudResourceItem;

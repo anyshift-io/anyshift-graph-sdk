@@ -674,7 +674,7 @@ test("incidents composes provider-native and canonical service selectors", async
   const canonical = capturing();
   await canonical.gx.incidents({
     provider: "pagerduty",
-    status: "acknowledged",
+    status: "active",
     service: { name: "api", type: "K8S_SERVICE", namespace: "production", cluster: "main" },
     responder: "person://user1",
     urgency: "high",
@@ -685,7 +685,7 @@ test("incidents composes provider-native and canonical service selectors", async
   });
   assert.equal(
     canonical.calls[0].body.sql,
-    "SELECT * FROM response_incidents WHERE provider = 'pagerduty' AND status = 'acknowledged' AND service = 'api' AND service_type = 'K8S_SERVICE' AND service_namespace = 'production' AND service_cluster = 'main' AND from = '2026-08-10T10:00:00Z' AND to = '2026-08-17T10:00:00Z' AND cursor = 'next-page' AND responder = 'person://user1' AND urgency = 'high' LIMIT 25",
+    "SELECT * FROM response_incidents WHERE provider = 'pagerduty' AND status = 'active' AND service = 'api' AND service_type = 'K8S_SERVICE' AND service_namespace = 'production' AND service_cluster = 'main' AND from = '2026-08-10T10:00:00Z' AND to = '2026-08-17T10:00:00Z' AND cursor = 'next-page' AND responder = 'person://user1' AND urgency = 'high' LIMIT 25",
   );
 });
 

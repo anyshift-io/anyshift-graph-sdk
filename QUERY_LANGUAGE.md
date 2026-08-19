@@ -1201,7 +1201,7 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
 | `provider` | enum | No | `pagerduty` (`pd`)<br />`datadog` (`dd`)<br />`grafana`<br />`victoria`<br />`dynatrace`<br />`newrelic` (`new_relic`)<br />`incidentio` (`incident_io`) | Operational evidence provider. |
-| `status` | enum | No | `open` (`triggered`)<br />`acknowledged` (`acked`)<br />`resolved` (`closed`)<br />`unknown`<br />`all` | Canonical response-incident state. Defaults to open and acknowledged. |
+| `status` | enum | No | `active`<br />`open` (`triggered`)<br />`acknowledged` (`acked`)<br />`resolved` (`closed`)<br />`unknown`<br />`all` | Canonical response-incident state. Defaults to open and acknowledged. |
 | `service_id` | string | No | Any value | Exact stable identity of a canonical graph service. |
 | `service` | string | No | Any value | Exact canonical graph service name. |
 | `service_type` | string | No | Any value | Exact canonical graph service label. |

@@ -56,7 +56,7 @@ Read stored provider-neutral operational-response evidence without exposing prov
 const alerts = await graph.alerts({ provider: "pagerduty", status: "firing", limit: 50 });
 const incidents = await graph.incidents({
   service: { name: "api", type: "K8S_SERVICE", namespace: "production", cluster: "main" },
-  status: "acknowledged",
+  status: "active",
   since: "7d",
 });
 const onCall = await graph.onCall({
@@ -76,6 +76,8 @@ selectors and `providerServiceId` are mutually exclusive. Operational methods us
 and reject invalid RFC3339 windows and limits outside 1-100 before sending a request. In API v1,
 `incidents()` targets `response_incidents`; `correlations()` remains the Anyshift event-story API,
 and the singular `incident()` remains its deprecated compatibility alias.
+The `active` incident status is an umbrella for provider-native open and acknowledged incidents;
+use `open` or `acknowledged` when that narrower state matters.
 
 ```ts
 const changes = await graph.cloudEvents({

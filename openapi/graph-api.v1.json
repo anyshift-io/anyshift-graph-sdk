@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.16",
+    "version": "1.17",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -2148,6 +2148,10 @@
             "type": "enum",
             "description": "Canonical response-incident state. Defaults to open and acknowledged.",
             "values": [
+              {
+                "value": "active",
+                "description": "Open or acknowledged incidents."
+              },
               {
                 "value": "open",
                 "description": "Triggered or otherwise open incidents.",

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.16 - 2026-08-19
+
+### Added
+
+- Added `active` to `graph.incidents()` as the provider-neutral umbrella for open and
+  acknowledged response incidents.
+- Pinned Graph API query-language 1.17 and regenerated the deterministic query reference.
+
+### Compatibility
+
+- Existing `open` and `acknowledged` filters remain available for callers that need a narrower
+  provider-native state.
+
 ## 0.5.15 - 2026-08-18
 
 ### Added

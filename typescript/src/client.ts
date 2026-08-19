@@ -400,7 +400,7 @@ export interface AlertsParams extends OperationalParams {
   since?: Since;
 }
 export interface IncidentsParams extends OperationalParams {
-  status?: "open" | "acknowledged" | "resolved" | "unknown" | "all";
+  status?: "active" | "open" | "acknowledged" | "resolved" | "unknown" | "all";
   since?: Since;
   /** Exact responder source identity or canonical person identity. */
   responder?: string;

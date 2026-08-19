@@ -13,7 +13,7 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
   assert.equal(schemas.AskRequest.additionalProperties, false);
   assert.equal(schemas.AskResult.discriminator.propertyName, "intent");
   assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, variants.length);
-  assert.equal(queryLanguage.version, "1.16");
+  assert.equal(queryLanguage.version, "1.17");
   assert.equal(queryLanguage.tables.length, variants.length);
   const inventorySample = schemas.InventoryResult.properties.sample.items;
   assert.deepEqual(inventorySample.properties.resourceId.type, ["string", "null"]);
@@ -131,6 +131,10 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
   assert.ok(alerts.filters.some((filter: any) => filter.name === "service_id"));
   assert.equal(responseIncidents.intent, "responseincidents");
   assert.ok(responseIncidents.filters.some((filter: any) => filter.name === "responder"));
+  assert.deepEqual(
+    responseIncidents.filters.find((filter: any) => filter.name === "status").values.map((entry: any) => entry.value),
+    ["active", "open", "acknowledged", "resolved", "unknown", "all"],
+  );
   assert.equal(onCall.intent, "oncall");
   assert.ok(onCall.filters.some((filter: any) => filter.name === "person"));
   for (const schema of [schemas.AlertsResult, schemas.ResponseIncidentsResult, schemas.OnCallResult]) {

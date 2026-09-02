@@ -597,7 +597,7 @@ export interface components {
                 namespace: string;
                 includeNoise: boolean;
             };
-            scan?: {
+            scan: {
                 /** @constant */
                 bounded: true;
                 limit: number;

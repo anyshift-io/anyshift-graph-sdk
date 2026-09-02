@@ -6325,6 +6325,7 @@
         "required": [
           "dimension",
           "filter",
+          "scan",
           "ranking"
         ],
         "additionalProperties": false

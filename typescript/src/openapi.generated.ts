@@ -1635,7 +1635,26 @@ export interface components {
         AlertCauseResult: {
             target: string;
             workload: string | null;
+            workloadId: string | null;
+            workloadType: string | null;
             namespace: string | null;
+            cluster: string | null;
+            alert: string;
+            interval: {
+                from: string;
+                to: string;
+            };
+            /** @enum {string} */
+            status: "suspected" | "unknown" | "incomplete";
+            suspect: {
+                ts: string;
+                type: string;
+                summary: string | null;
+                target: string | null;
+                /** @enum {string} */
+                reason: "direct_resource_change" | "owned_runtime_change";
+            } | null;
+            reason: string;
             firingMonitors: string[];
             firingCount: number;
             changes: {
@@ -1643,6 +1662,8 @@ export interface components {
                 type: string;
                 summary: string | null;
                 target: string | null;
+                /** @enum {string} */
+                reason: "direct_resource_change" | "owned_runtime_change";
             }[];
         };
         AccessResult: {

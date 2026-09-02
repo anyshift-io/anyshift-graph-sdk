@@ -13,7 +13,7 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
   assert.equal(schemas.AskRequest.additionalProperties, false);
   assert.equal(schemas.AskResult.discriminator.propertyName, "intent");
   assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, variants.length);
-  assert.equal(queryLanguage.version, "1.19");
+  assert.equal(queryLanguage.version, "1.20");
   assert.equal(queryLanguage.tables.length, variants.length);
   const inventorySample = schemas.InventoryResult.properties.sample.items;
   assert.deepEqual(inventorySample.properties.resourceId.type, ["string", "null"]);
@@ -30,6 +30,7 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
   const events = queryLanguage.tables.find((table: any) => table.name === "events");
   const iac = queryLanguage.tables.find((table: any) => table.name === "iac");
   const iacDrift = queryLanguage.tables.find((table: any) => table.name === "iac_drift");
+  const alertCause = queryLanguage.tables.find((table: any) => table.name === "alert_cause");
   assert.ok(path.filters.some((filter: any) => filter.name === "from_type"));
   assert.ok(path.filters.some((filter: any) => filter.name === "scope"));
   assert.ok(topology.filters.find((filter: any) => filter.name === "source").values.some((entry: any) => entry.value === "tempo"));
@@ -71,6 +72,12 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
   assert.ok(topology.filters.find((filter: any) => filter.name === "source").values.some((entry: any) => entry.value === "dynatrace"));
   assert.ok(iac.filters.some((filter: any) => filter.name === "freshness"));
   assert.ok(iacDrift.filters.some((filter: any) => filter.name === "status"));
+  for (const filter of ["target_id", "target_type", "namespace", "cluster", "alert", "from", "to"]) {
+    assert.ok(alertCause.filters.some((entry: any) => entry.name === filter));
+  }
+  for (const field of ["workloadId", "workloadType", "cluster", "alert", "interval", "status", "suspect", "reason"]) {
+    assert.ok(schemas.AlertCauseResult.required.includes(field));
+  }
   assert.deepEqual(
     exposureTable.filters.map((filter: any) => filter.name),
     ["resource", "resource_id", "resource_type", "resource_namespace", "resource_cluster", "cursor"],

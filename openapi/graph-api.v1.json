@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.19",
+    "version": "1.20",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -2724,18 +2724,49 @@
           "rootcause"
         ],
         "intent": "alertcause",
-        "summary": "Join a firing service or workload to recent Kubernetes changes.",
+        "summary": "Find topology-bound change candidates inside an explicit alert interval.",
         "filters": [
           {
             "name": "target",
             "type": "string",
-            "description": "Service or workload name.",
+            "description": "Workload name; use namespace or cluster when names repeat."
+          },
+          {
+            "name": "target_id",
+            "type": "string",
+            "description": "Exact stable workload graph id."
+          },
+          {
+            "name": "target_type",
+            "type": "string",
+            "description": "Exact workload resource label used with target."
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "Exact workload namespace used with target."
+          },
+          {
+            "name": "cluster",
+            "type": "string",
+            "description": "Exact workload cluster used with target."
+          },
+          {
+            "name": "alert",
+            "type": "string",
+            "description": "Alert or monitor name reported in the evidence."
+          },
+          {
+            "name": "from",
+            "type": "string",
+            "description": "Inclusive RFC3339 alert start time.",
             "required": true
           },
           {
-            "name": "since",
-            "type": "duration",
-            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+            "name": "to",
+            "type": "string",
+            "description": "Exclusive RFC3339 alert end time.",
+            "required": true
           }
         ],
         "pagination": {
@@ -2745,8 +2776,8 @@
         "forms": [
           {
             "name": "Alert cause",
-            "description": "Find recent infrastructure changes behind a firing target.",
-            "example": "SELECT * FROM alert_cause WHERE target = checkout AND since = 2h LIMIT 20"
+            "description": "Find topology-bound candidate changes inside one exact alert interval.",
+            "example": "SELECT * FROM alert_cause WHERE target = checkout AND namespace = payments AND cluster = staging AND from = '2026-08-30T10:00:00Z' AND to = '2026-08-30T11:00:00Z' LIMIT 20"
           }
         ]
       },
@@ -11835,11 +11866,104 @@
               "null"
             ]
           },
+          "workloadId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "workloadType": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "namespace": {
             "type": [
               "string",
               "null"
             ]
+          },
+          "cluster": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "alert": {
+            "type": "string"
+          },
+          "interval": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "from",
+              "to"
+            ],
+            "additionalProperties": false
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "suspected",
+              "unknown",
+              "incomplete"
+            ]
+          },
+          "suspect": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "ts": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "summary": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "target": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "direct_resource_change",
+                      "owned_runtime_change"
+                    ]
+                  }
+                },
+                "required": [
+                  "ts",
+                  "type",
+                  "summary",
+                  "target",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason": {
+            "type": "string"
           },
           "firingMonitors": {
             "type": "array",
@@ -11873,13 +11997,21 @@
                     "string",
                     "null"
                   ]
+                },
+                "reason": {
+                  "type": "string",
+                  "enum": [
+                    "direct_resource_change",
+                    "owned_runtime_change"
+                  ]
                 }
               },
               "required": [
                 "ts",
                 "type",
                 "summary",
-                "target"
+                "target",
+                "reason"
               ],
               "additionalProperties": false
             }
@@ -11888,7 +12020,15 @@
         "required": [
           "target",
           "workload",
+          "workloadId",
+          "workloadType",
           "namespace",
+          "cluster",
+          "alert",
+          "interval",
+          "status",
+          "suspect",
+          "reason",
           "firingMonitors",
           "firingCount",
           "changes"

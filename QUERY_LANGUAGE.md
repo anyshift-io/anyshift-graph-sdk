@@ -61,7 +61,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`alert_noise`](#alert_noise) | Rank flapping or stuck monitors. | `target`, `kind`, `since` |
 | [`calls`](#calls) | Inspect APM service callers, callees, and HTTP route evidence or rank call-graph fan-in. | `target`, `source` |
 | [`servicetree`](#servicetree) | Expand a service's downstream services, datastores, and external dependencies. | `target`, `source` |
-| [`alert_cause`](#alert_cause) | Join a firing service or workload to recent Kubernetes changes. | `target`, `since` |
+| [`alert_cause`](#alert_cause) | Find topology-bound change candidates inside an explicit alert interval. | `target`, `target_id`, `target_type`, `namespace`, `cluster`, `alert`, `from`, `to` |
 | [`slo`](#slo) | Inspect one SLO or rank breaching and at-risk SLOs. | `target` |
 | [`alertrules`](#alertrules) | Inspect Grafana and VictoriaMetrics alert-rule coverage and inventory. | `subject`, `namespace`, `target` |
 | [`iac`](#iac) | Inspect Terraform code-to-state-to-cloud provenance and linkage coverage. | `resource`, `status`, `freshness` |
@@ -1402,7 +1402,7 @@ $ annie graph query "SELECT * FROM servicetree WHERE target = checkout LIMIT 50"
 
 ## alert_cause
 
-Join a firing service or workload to recent Kubernetes changes.
+Find topology-bound change candidates inside an explicit alert interval.
 
 Result intent: `alertcause`.
 
@@ -1414,17 +1414,23 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
-| `target` | string | Yes | Any value | Service or workload name. |
-| `since` | duration | No | Any value | Relative lookback such as 30m, 2h, 1d, or today. |
+| `target` | string | No | Any value | Workload name; use namespace or cluster when names repeat. |
+| `target_id` | string | No | Any value | Exact stable workload graph id. |
+| `target_type` | string | No | Any value | Exact workload resource label used with target. |
+| `namespace` | string | No | Any value | Exact workload namespace used with target. |
+| `cluster` | string | No | Any value | Exact workload cluster used with target. |
+| `alert` | string | No | Any value | Alert or monitor name reported in the evidence. |
+| `from` | string | Yes | Any value | Inclusive RFC3339 alert start time. |
+| `to` | string | Yes | Any value | Exclusive RFC3339 alert end time. |
 
 ### Forms
 
 #### Alert cause
 
-Find recent infrastructure changes behind a firing target.
+Find topology-bound candidate changes inside one exact alert interval.
 
 ```console
-$ annie graph query "SELECT * FROM alert_cause WHERE target = checkout AND since = 2h LIMIT 20"
+$ annie graph query "SELECT * FROM alert_cause WHERE target = checkout AND namespace = payments AND cluster = staging AND from = '2026-08-30T10:00:00Z' AND to = '2026-08-30T11:00:00Z' LIMIT 20"
 ```
 
 ## slo

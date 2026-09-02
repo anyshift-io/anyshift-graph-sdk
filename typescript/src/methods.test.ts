@@ -247,6 +247,22 @@ test("events rejects invalid windows and selectors before fetching", () => {
   assert.throws(() => gx.events({ targetId: "stable", namespace: "payments" }), /targetId cannot/);
 });
 
+test("events compares RFC3339 bounds at nanosecond precision", async () => {
+  const { gx, calls } = capturing();
+  await gx.events({
+    from: "2026-08-30T10:00:00.000000001Z",
+    until: "2026-08-30T10:00:00.000000002Z",
+  });
+  assert.equal(calls.length, 1);
+  assert.throws(
+    () => gx.events({
+      from: "2026-08-30T10:00:00.000000002Z",
+      until: "2026-08-30T10:00:00.000000001Z",
+    }),
+    /from must be earlier/,
+  );
+});
+
 test("hotspots composes type + by", async () => {
   const { gx, calls } = capturing();
   await gx.hotspots({ type: "oom", by: "resource", limit: 10 });

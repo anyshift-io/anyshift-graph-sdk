@@ -570,6 +570,22 @@ function validateOperationalTime(field: "from" | "to" | "until" | "at", value: s
   return parsed;
 }
 
+function compareRfc3339(left: string, right: string): number {
+  const parts = (value: string) => {
+    const fraction = /\.(\d{1,9})(?=Z|[+-]\d{2}:\d{2}$)/.exec(value)?.[1] ?? "";
+    const wholeSecond = value.replace(/\.\d{1,9}(?=Z|[+-]\d{2}:\d{2}$)/, "");
+    return {
+      epochSecond: Math.floor(Date.parse(wholeSecond) / 1_000),
+      nanosecond: Number(fraction.padEnd(9, "0")),
+    };
+  };
+  const a = parts(left);
+  const b = parts(right);
+  if (a.epochSecond !== b.epochSecond) return a.epochSecond < b.epochSecond ? -1 : 1;
+  if (a.nanosecond === b.nanosecond) return 0;
+  return a.nanosecond < b.nanosecond ? -1 : 1;
+}
+
 function validateEventWindow(p: EventsParams): void {
   for (const [field, value] of [
     ["target", p.target], ["targetId", p.targetId], ["targetType", p.targetType],
@@ -579,7 +595,9 @@ function validateEventWindow(p: EventsParams): void {
   const until = validateOperationalTime("until", p.until);
   if ((from === undefined) !== (until === undefined)) throw new TypeError("from and until must be provided together");
   if (p.since !== undefined && p.from !== undefined) throw new TypeError("since cannot be combined with from and until");
-  if (from !== undefined && until !== undefined && from >= until) throw new TypeError("from must be earlier than until");
+  if (from !== undefined && until !== undefined && compareRfc3339(p.from!, p.until!) >= 0) {
+    throw new TypeError("from must be earlier than until");
+  }
   if (p.target !== undefined && p.targetId !== undefined) throw new TypeError("target and targetId cannot be combined");
   if (p.targetId !== undefined && (p.targetType !== undefined || p.namespace !== undefined || p.cluster !== undefined)) {
     throw new TypeError("targetId cannot be combined with targetType, namespace, or cluster");
@@ -661,7 +679,7 @@ function validateOperationalParams(
   if (p.since !== undefined && p.from !== undefined) {
     throw new TypeError("since cannot be combined with from");
   }
-  if (from !== undefined && to !== undefined && from >= to) {
+  if (from !== undefined && to !== undefined && compareRfc3339(p.from!, p.to!) >= 0) {
     throw new TypeError("from must be earlier than to");
   }
   return operationalServiceConditions(p);

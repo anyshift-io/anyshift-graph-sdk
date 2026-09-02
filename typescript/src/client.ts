@@ -1349,8 +1349,10 @@ export class GraphAnswer {
         (typeof env === "string" ? env : "") ||
         text ||
         `HTTP ${res.status}`;
-      const code = (env && typeof env === "object" && env.code) ||
-        (res.status === 401 ? "unauthorized" : res.status === 400 ? "bad_request" : res.status === 504 ? "timeout" : "internal");
+      const code = res.status === 504
+        ? "timeout"
+        : (env && typeof env === "object" && env.code) ||
+          (res.status === 401 ? "unauthorized" : res.status === 400 ? "bad_request" : "internal");
       const requestId = res.headers?.get("x-request-id") ?? undefined;
       if (res.status === 401) throw new AuthError(message, res.status);
       if (res.status === 400) {

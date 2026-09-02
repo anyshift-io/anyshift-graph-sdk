@@ -198,6 +198,18 @@ test("timeouts expose server layer and request id, with a gateway fallback", asy
     (error: unknown) => error instanceof GraphAnswerError &&
       error.code === "timeout" && error.timeoutSource === "gateway" && error.requestId === "req-gateway",
   );
+
+  const gatewayEnvelope = new GraphAnswer({
+    baseUrl: "http://x",
+    fetch: async () => resp(504, {
+      error: { code: "gateway_timeout", message: "upstream timed out" },
+    }, "req-gateway-envelope"),
+  });
+  await assert.rejects(
+    () => gatewayEnvelope.query("SELECT * FROM hotspots"),
+    (error: unknown) => error instanceof GraphAnswerError &&
+      error.code === "timeout" && error.timeoutSource === "gateway" && error.requestId === "req-gateway-envelope",
+  );
 });
 
 test("400 ambiguity envelopes preserve bounded resource candidates", async () => {

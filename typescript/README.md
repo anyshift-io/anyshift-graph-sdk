@@ -69,7 +69,9 @@ const cause = await graph.alertCause({
   from: "2026-08-30T10:00:00Z",
   to: "2026-08-30T11:00:00Z",
 });
-console.log(cause.alertCause?.status, cause.alertCause?.suspect, cause.alertCause?.reason);
+if (cause.intent === "alertcause") {
+  console.log(cause.alertCause?.status, cause.alertCause?.suspect, cause.alertCause?.reason);
+}
 ```
 
 The result is explicit correlation evidence, not proof of causation. Use `targetId` instead of the

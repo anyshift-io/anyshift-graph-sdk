@@ -1256,7 +1256,7 @@ export class GraphAnswer {
     }
     const from = validateOperationalTime("from", p.from);
     const to = validateOperationalTime("to", p.to);
-    if (from === undefined || to === undefined || from >= to) {
+    if (from === undefined || to === undefined || compareRfc3339(p.from, p.to) >= 0) {
       throw new TypeError("alertCause from must be earlier than to");
     }
     return this.typedQuery(compose("alert_cause", [

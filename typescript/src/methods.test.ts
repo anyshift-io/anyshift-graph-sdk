@@ -855,6 +855,14 @@ test("alertCause rejects missing identity and invalid windows", () => {
     () => gx.alertCause({ target: "checkout", from: "2026-08-30T12:00:00Z", to: "2026-08-30T11:00:00Z" }),
     /from must be earlier than to/,
   );
+  assert.throws(
+    () => gx.alertCause({
+      target: "checkout",
+      from: "2026-08-30T10:00:00.000000002Z",
+      to: "2026-08-30T10:00:00.000000001Z",
+    }),
+    /from must be earlier than to/,
+  );
 });
 
 test("no filters yields a bare SELECT", async () => {

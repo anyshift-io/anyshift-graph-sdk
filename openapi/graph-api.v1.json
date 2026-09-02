@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.17",
+    "version": "1.19",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -87,9 +87,24 @@
             "description": "Resource name or fragment."
           },
           {
+            "name": "target_id",
+            "type": "string",
+            "description": "Exact stable graph resource id; cannot be combined with target or name qualifiers."
+          },
+          {
+            "name": "target_type",
+            "type": "string",
+            "description": "Exact resource label used with target."
+          },
+          {
             "name": "namespace",
             "type": "string",
             "description": "Kubernetes namespace."
+          },
+          {
+            "name": "cluster",
+            "type": "string",
+            "description": "Exact cluster name used with target."
           },
           {
             "name": "noise",
@@ -115,9 +130,39 @@
             ]
           },
           {
+            "name": "stats",
+            "type": "enum",
+            "description": "Whether to calculate exact full-window statistics.",
+            "values": [
+              {
+                "value": "exact",
+                "description": "Return an exact total and event-type counts."
+              },
+              {
+                "value": "none",
+                "description": "Return only the bounded page without calculating full-window statistics."
+              }
+            ]
+          },
+          {
             "name": "since",
             "type": "duration",
             "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          },
+          {
+            "name": "from",
+            "type": "string",
+            "description": "Inclusive absolute RFC3339 lower bound; requires until and excludes since."
+          },
+          {
+            "name": "until",
+            "type": "string",
+            "description": "Exclusive absolute RFC3339 upper bound; requires from and excludes since."
+          },
+          {
+            "name": "cursor",
+            "type": "string",
+            "description": "Opaque seek cursor returned by the previous bounded page."
           }
         ],
         "pagination": {
@@ -129,6 +174,11 @@
             "name": "Recent resource events",
             "description": "Read recent events for a resource inside a time window.",
             "example": "SELECT * FROM events WHERE target = checkout AND since = 2h LIMIT 20"
+          },
+          {
+            "name": "Historical incident window",
+            "description": "Read only an exact half-open incident interval without scanning back from now.",
+            "example": "SELECT * FROM events WHERE target = checkout AND from = '2026-08-30T10:00:00Z' AND until = '2026-08-30T11:00:00Z' AND stats = none LIMIT 20"
           }
         ]
       },
@@ -139,7 +189,7 @@
           "cloud_event"
         ],
         "intent": "cloudevents",
-        "summary": "Read evidence-backed AWS, Azure, and GCP change events without parsing summaries.",
+        "summary": "Read evidence-backed AWS, Azure, GCP, and Cloudflare change events without parsing summaries.",
         "filters": [
           {
             "name": "provider",
@@ -157,13 +207,17 @@
               {
                 "value": "gcp",
                 "description": "Google Cloud Platform."
+              },
+              {
+                "value": "cloudflare",
+                "description": "Cloudflare."
               }
             ]
           },
           {
             "name": "scope",
             "type": "string",
-            "description": "Provider scope: AWS account, Azure subscription, or GCP project."
+            "description": "Provider scope: AWS account, Azure subscription, GCP project, or Cloudflare account."
           },
           {
             "name": "region",
@@ -2241,7 +2295,7 @@
           {
             "name": "responder",
             "type": "string",
-            "description": "Exact responder source identity or canonical person identity."
+            "description": "Exact display name, canonical person ID or email, or provider user ID."
           },
           {
             "name": "urgency",
@@ -2410,6 +2464,104 @@
             "name": "Current on-call",
             "description": "List effective on-call windows at the selected point in time.",
             "example": "SELECT * FROM oncall WHERE at = now LIMIT 50"
+          }
+        ]
+      },
+      {
+        "name": "incident_context",
+        "aliases": [
+          "incidentcontext"
+        ],
+        "intent": "incidentcontext",
+        "summary": "Group stored incident, alert, service, on-call, responder, and reviewed history hops without live provider calls.",
+        "filters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Exact provider incident ID or Anyshift incident ID."
+          },
+          {
+            "name": "target",
+            "type": "string",
+            "description": "Exact canonical resource name, Anyshift ID, hashed ID, or provider service identity."
+          },
+          {
+            "name": "provider",
+            "type": "enum",
+            "description": "Operational evidence provider.",
+            "values": [
+              {
+                "value": "pagerduty",
+                "description": "PagerDuty operational evidence.",
+                "aliases": [
+                  "pd"
+                ]
+              },
+              {
+                "value": "datadog",
+                "description": "Datadog operational evidence.",
+                "aliases": [
+                  "dd"
+                ]
+              },
+              {
+                "value": "grafana",
+                "description": "Grafana operational evidence."
+              },
+              {
+                "value": "victoria",
+                "description": "VictoriaMetrics operational evidence."
+              },
+              {
+                "value": "dynatrace",
+                "description": "Dynatrace operational evidence."
+              },
+              {
+                "value": "newrelic",
+                "description": "New Relic operational evidence.",
+                "aliases": [
+                  "new_relic"
+                ]
+              },
+              {
+                "value": "incidentio",
+                "description": "incident.io operational evidence.",
+                "aliases": [
+                  "incident_io"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "since",
+            "type": "duration",
+            "description": "Relative lookback such as 30m, 2h, 1d, or today."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "selector": {
+          "exactlyOneOf": [
+            "id",
+            "target"
+          ],
+          "nonEmpty": [
+            "id",
+            "target"
+          ]
+        },
+        "forms": [
+          {
+            "name": "Incident context by provider id",
+            "description": "Exactly one of id or target is required. History uses stored similar incidents and reviewed resolution evidence.",
+            "example": "SELECT * FROM incident_context WHERE id = Q2Q5QBE019PJM5 LIMIT 10"
+          },
+          {
+            "name": "Incident context by mapped service",
+            "description": "Resolve the latest stored incident that AFFECTS a PagerDuty service with RESOLVES_TO the named resource.",
+            "example": "SELECT * FROM incident_context WHERE target = checkout AND since = 30d LIMIT 10"
           }
         ]
       },
@@ -4166,8 +4318,15 @@
             "additionalProperties": false
           },
           "total": {
-            "type": "integer",
-            "minimum": 0
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "byType": {
             "type": "array",
@@ -4188,6 +4347,96 @@
               ],
               "additionalProperties": false
             }
+          },
+          "statistics": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "exact",
+                  "none"
+                ]
+              },
+              "exact": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "mode",
+              "exact"
+            ],
+            "additionalProperties": false
+          },
+          "window": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "const": "all"
+                  }
+                },
+                "required": [
+                  "mode"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "const": "absolute"
+                  },
+                  "from": {
+                    "type": "string"
+                  },
+                  "until": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mode",
+                  "from",
+                  "until"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "const": "graph_relative"
+                  },
+                  "sinceHours": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "cutoff": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "anchor": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "mode",
+                  "sinceHours",
+                  "cutoff",
+                  "anchor"
+                ],
+                "additionalProperties": false
+              }
+            ]
           },
           "recent": {
             "type": "array",
@@ -4238,6 +4487,12 @@
                     "string",
                     "null"
                   ]
+                },
+                "nextJson": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
               "required": [
@@ -4249,7 +4504,8 @@
                 "namespace",
                 "isRoot",
                 "noiseClass",
-                "cluster"
+                "cluster",
+                "nextJson"
               ],
               "additionalProperties": false
             }
@@ -4278,13 +4534,20 @@
                     "type": "null"
                   }
                 ]
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
               }
             },
             "required": [
               "limit",
               "offset",
               "hasMore",
-              "nextOffset"
+              "nextOffset",
+              "nextCursor"
             ],
             "additionalProperties": false
           }
@@ -4293,6 +4556,8 @@
           "filter",
           "total",
           "byType",
+          "statistics",
+          "window",
           "recent",
           "page"
         ],
@@ -4496,7 +4761,8 @@
                   "enum": [
                     "aws",
                     "azure",
-                    "gcp"
+                    "gcp",
+                    "cloudflare"
                   ]
                 },
                 "scope": {
@@ -6098,6 +6364,12 @@
                     "string",
                     "null"
                   ]
+                },
+                "nextJson": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
               "required": [
@@ -6109,7 +6381,8 @@
                 "namespace",
                 "isRoot",
                 "noiseClass",
-                "cluster"
+                "cluster",
+                "nextJson"
               ],
               "additionalProperties": false
             }
@@ -6163,6 +6436,12 @@
                     "string",
                     "null"
                   ]
+                },
+                "nextJson": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
               "required": [
@@ -6174,7 +6453,8 @@
                 "namespace",
                 "isRoot",
                 "noiseClass",
-                "cluster"
+                "cluster",
+                "nextJson"
               ],
               "additionalProperties": false
             }
@@ -6283,6 +6563,12 @@
                     "string",
                     "null"
                   ]
+                },
+                "nextJson": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
               "required": [
@@ -6294,7 +6580,8 @@
                 "namespace",
                 "isRoot",
                 "noiseClass",
-                "cluster"
+                "cluster",
+                "nextJson"
               ],
               "additionalProperties": false
             }
@@ -6348,6 +6635,12 @@
                     "string",
                     "null"
                   ]
+                },
+                "nextJson": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
               "required": [
@@ -6359,7 +6652,8 @@
                 "namespace",
                 "isRoot",
                 "noiseClass",
-                "cluster"
+                "cluster",
+                "nextJson"
               ],
               "additionalProperties": false
             }
@@ -6527,6 +6821,12 @@
                           ]
                         },
                         "name": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "providerServiceId": {
                           "type": [
                             "string",
                             "null"
@@ -6977,6 +7277,12 @@
                             "null"
                           ]
                         },
+                        "providerServiceId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
                         "type": {
                           "type": [
                             "string",
@@ -7413,6 +7719,12 @@
                     "string",
                     "null"
                   ]
+                },
+                "nextJson": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
               "required": [
@@ -7424,7 +7736,8 @@
                 "namespace",
                 "isRoot",
                 "noiseClass",
-                "cluster"
+                "cluster",
+                "nextJson"
               ],
               "additionalProperties": false
             }
@@ -7778,6 +8091,12 @@
                     "string",
                     "null"
                   ]
+                },
+                "nextJson": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
               "required": [
@@ -7789,7 +8108,8 @@
                 "namespace",
                 "isRoot",
                 "noiseClass",
-                "cluster"
+                "cluster",
+                "nextJson"
               ],
               "additionalProperties": false
             }
@@ -9058,6 +9378,12 @@
                             "null"
                           ]
                         },
+                        "providerServiceId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
                         "type": {
                           "type": [
                             "string",
@@ -9675,6 +10001,1718 @@
           "scope",
           "ranking",
           "target"
+        ],
+        "additionalProperties": false
+      },
+      "IncidentContextResult": {
+        "type": "object",
+        "properties": {
+          "generatedAt": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "target": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "target"
+            ],
+            "additionalProperties": false
+          },
+          "hops": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "section": {
+                      "type": "string",
+                      "const": "incident"
+                    },
+                    "rels": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "pagerduty",
+                              "datadog",
+                              "grafana",
+                              "victoria",
+                              "dynatrace",
+                              "newrelic",
+                              "incidentio"
+                            ]
+                          },
+                          "providerId": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "service": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "resolution": {
+                                    "type": "string",
+                                    "enum": [
+                                      "resolved",
+                                      "unresolved",
+                                      "ambiguous"
+                                    ]
+                                  },
+                                  "id": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "name": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "providerServiceId": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "type": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "namespace": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "cluster": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "resolution",
+                                  "id",
+                                  "name",
+                                  "type",
+                                  "namespace",
+                                  "cluster"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "providerStatus": {
+                            "type": "string"
+                          },
+                          "startedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          },
+                          "resolvedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "sourceUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "observedAt": {
+                            "type": "string"
+                          },
+                          "providerDetails": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "pagerduty"
+                                  },
+                                  "urgency": {
+                                    "type": "string"
+                                  },
+                                  "incidentNumber": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "scheduleId": {
+                                    "type": "string"
+                                  },
+                                  "escalationLevel": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "datadog"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "grafana"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "victoria"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "dynatrace"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "newrelic"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "incidentio"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              }
+                            ]
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "open",
+                              "acknowledged",
+                              "resolved",
+                              "unknown"
+                            ]
+                          },
+                          "responders": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "resolution": {
+                                  "type": "string",
+                                  "enum": [
+                                    "resolved",
+                                    "unresolved",
+                                    "ambiguous"
+                                  ]
+                                },
+                                "personId": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "name": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "email": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "providerUserId": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "candidates": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "personId": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      },
+                                      "name": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      },
+                                      "email": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "personId",
+                                      "name",
+                                      "email"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "maxItems": 10
+                                }
+                              },
+                              "required": [
+                                "resolution",
+                                "personId",
+                                "name",
+                                "email",
+                                "providerUserId",
+                                "candidates"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "provider",
+                          "providerId",
+                          "title",
+                          "providerStatus",
+                          "updatedAt",
+                          "observedAt",
+                          "providerDetails",
+                          "status",
+                          "responders"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "section",
+                    "rels",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "section": {
+                      "type": "string",
+                      "const": "alerts"
+                    },
+                    "rels": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "pagerduty",
+                              "datadog",
+                              "grafana",
+                              "victoria",
+                              "dynatrace",
+                              "newrelic",
+                              "incidentio"
+                            ]
+                          },
+                          "providerId": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "service": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "resolution": {
+                                    "type": "string",
+                                    "enum": [
+                                      "resolved",
+                                      "unresolved",
+                                      "ambiguous"
+                                    ]
+                                  },
+                                  "id": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "name": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "providerServiceId": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "type": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "namespace": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "cluster": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "resolution",
+                                  "id",
+                                  "name",
+                                  "type",
+                                  "namespace",
+                                  "cluster"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "providerStatus": {
+                            "type": "string"
+                          },
+                          "startedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          },
+                          "resolvedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "sourceUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "observedAt": {
+                            "type": "string"
+                          },
+                          "providerDetails": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "pagerduty"
+                                  },
+                                  "urgency": {
+                                    "type": "string"
+                                  },
+                                  "incidentNumber": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "scheduleId": {
+                                    "type": "string"
+                                  },
+                                  "escalationLevel": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "datadog"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "grafana"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "victoria"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "dynatrace"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "newrelic"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "incidentio"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              }
+                            ]
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "firing",
+                              "recovered",
+                              "suppressed",
+                              "unknown"
+                            ]
+                          },
+                          "severity": {
+                            "type": "string",
+                            "enum": [
+                              "critical",
+                              "warning",
+                              "info",
+                              "unknown"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "provider",
+                          "providerId",
+                          "title",
+                          "providerStatus",
+                          "updatedAt",
+                          "observedAt",
+                          "providerDetails",
+                          "status",
+                          "severity"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "section",
+                    "rels",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "section": {
+                      "type": "string",
+                      "const": "service"
+                    },
+                    "rels": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "providerService": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "enum": [
+                                      "pagerduty",
+                                      "datadog",
+                                      "grafana",
+                                      "victoria",
+                                      "dynatrace",
+                                      "newrelic",
+                                      "incidentio"
+                                    ]
+                                  },
+                                  "providerId": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "provider",
+                                  "providerId",
+                                  "name"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "canonical": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "resolution": {
+                                    "type": "string",
+                                    "enum": [
+                                      "resolved",
+                                      "unresolved",
+                                      "ambiguous"
+                                    ]
+                                  },
+                                  "id": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "name": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "providerServiceId": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "type": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "namespace": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "cluster": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "resolution",
+                                  "id",
+                                  "name",
+                                  "type",
+                                  "namespace",
+                                  "cluster"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "resolve": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "source": {
+                                    "type": "string"
+                                  },
+                                  "matchType": {
+                                    "type": "string"
+                                  },
+                                  "confidence": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "source",
+                                  "matchType",
+                                  "confidence"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "providerService",
+                          "canonical",
+                          "resolve"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "section",
+                    "rels",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "section": {
+                      "type": "string",
+                      "const": "onCall"
+                    },
+                    "rels": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "pagerduty",
+                              "datadog",
+                              "grafana",
+                              "victoria",
+                              "dynatrace",
+                              "newrelic",
+                              "incidentio"
+                            ]
+                          },
+                          "providerId": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "service": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "resolution": {
+                                    "type": "string",
+                                    "enum": [
+                                      "resolved",
+                                      "unresolved",
+                                      "ambiguous"
+                                    ]
+                                  },
+                                  "id": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "name": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "providerServiceId": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "type": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "namespace": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "cluster": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "resolution",
+                                  "id",
+                                  "name",
+                                  "type",
+                                  "namespace",
+                                  "cluster"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "providerStatus": {
+                            "type": "string"
+                          },
+                          "startedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          },
+                          "resolvedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "sourceUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "observedAt": {
+                            "type": "string"
+                          },
+                          "providerDetails": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "pagerduty"
+                                  },
+                                  "urgency": {
+                                    "type": "string"
+                                  },
+                                  "incidentNumber": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "scheduleId": {
+                                    "type": "string"
+                                  },
+                                  "escalationLevel": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "datadog"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "grafana"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "victoria"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "dynatrace"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "newrelic"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "const": "incidentio"
+                                  }
+                                },
+                                "required": [
+                                  "provider"
+                                ],
+                                "additionalProperties": false
+                              }
+                            ]
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "scheduled",
+                              "active",
+                              "ended"
+                            ]
+                          },
+                          "person": {
+                            "type": "object",
+                            "properties": {
+                              "resolution": {
+                                "type": "string",
+                                "enum": [
+                                  "resolved",
+                                  "unresolved",
+                                  "ambiguous"
+                                ]
+                              },
+                              "personId": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "name": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "email": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "providerUserId": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "candidates": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "personId": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    },
+                                    "name": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    },
+                                    "email": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "personId",
+                                    "name",
+                                    "email"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "maxItems": 10
+                              }
+                            },
+                            "required": [
+                              "resolution",
+                              "personId",
+                              "name",
+                              "email",
+                              "providerUserId",
+                              "candidates"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "schedule": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "provider": {
+                                    "type": "string",
+                                    "enum": [
+                                      "pagerduty",
+                                      "datadog",
+                                      "grafana",
+                                      "victoria",
+                                      "dynatrace",
+                                      "newrelic",
+                                      "incidentio"
+                                    ]
+                                  },
+                                  "providerId": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "provider",
+                                  "providerId",
+                                  "name"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "escalationLevel": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "startsAt": {
+                            "type": "string"
+                          },
+                          "endsAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "provider",
+                          "providerId",
+                          "title",
+                          "providerStatus",
+                          "updatedAt",
+                          "observedAt",
+                          "providerDetails",
+                          "status",
+                          "person",
+                          "schedule",
+                          "startsAt",
+                          "endsAt"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "section",
+                    "rels",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "section": {
+                      "type": "string",
+                      "const": "responders"
+                    },
+                    "rels": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "resolution": {
+                            "type": "string",
+                            "enum": [
+                              "resolved",
+                              "unresolved",
+                              "ambiguous"
+                            ]
+                          },
+                          "personId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "name": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "email": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "providerUserId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "candidates": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "personId": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "name": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "email": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "personId",
+                                "name",
+                                "email"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "maxItems": 10
+                          }
+                        },
+                        "required": [
+                          "resolution",
+                          "personId",
+                          "name",
+                          "email",
+                          "providerUserId",
+                          "candidates"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "section",
+                    "rels",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "section": {
+                      "type": "string",
+                      "const": "history"
+                    },
+                    "rels": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "providerId": {
+                            "type": "string"
+                          },
+                          "incidentNumber": {
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "resolvedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "incidentType": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "similarityReasons": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "resolution": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "classification": {
+                                    "type": "string",
+                                    "enum": [
+                                      "confirmed_fix",
+                                      "explicit_reference",
+                                      "unknown"
+                                    ]
+                                  },
+                                  "pullRequest": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": [
+                                              "string",
+                                              "null"
+                                            ]
+                                          },
+                                          "number": {
+                                            "anyOf": [
+                                              {
+                                                "type": "integer",
+                                                "minimum": 0
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "title": {
+                                            "type": [
+                                              "string",
+                                              "null"
+                                            ]
+                                          },
+                                          "htmlURL": {
+                                            "type": [
+                                              "string",
+                                              "null"
+                                            ]
+                                          },
+                                          "merged": {
+                                            "type": "boolean"
+                                          },
+                                          "mergedAt": {
+                                            "type": [
+                                              "string",
+                                              "null"
+                                            ]
+                                          },
+                                          "mergeCommitSha": {
+                                            "type": [
+                                              "string",
+                                              "null"
+                                            ]
+                                          },
+                                          "incidentReferences": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "string"
+                                            }
+                                          }
+                                        },
+                                        "required": [
+                                          "id",
+                                          "number",
+                                          "title",
+                                          "htmlURL",
+                                          "merged",
+                                          "mergedAt",
+                                          "mergeCommitSha",
+                                          "incidentReferences"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "authors": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "personId": {
+                                          "type": [
+                                            "string",
+                                            "null"
+                                          ]
+                                        },
+                                        "name": {
+                                          "type": [
+                                            "string",
+                                            "null"
+                                          ]
+                                        },
+                                        "email": {
+                                          "type": [
+                                            "string",
+                                            "null"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "personId",
+                                        "name",
+                                        "email"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "noteReferences": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": [
+                                            "string",
+                                            "null"
+                                          ]
+                                        },
+                                        "source": {
+                                          "type": [
+                                            "string",
+                                            "null"
+                                          ]
+                                        },
+                                        "sourceId": {
+                                          "type": [
+                                            "string",
+                                            "null"
+                                          ]
+                                        },
+                                        "referenceType": {
+                                          "type": [
+                                            "string",
+                                            "null"
+                                          ]
+                                        },
+                                        "repository": {
+                                          "type": [
+                                            "string",
+                                            "null"
+                                          ]
+                                        },
+                                        "number": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "commitSha": {
+                                          "type": [
+                                            "string",
+                                            "null"
+                                          ]
+                                        },
+                                        "url": {
+                                          "type": [
+                                            "string",
+                                            "null"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "source",
+                                        "sourceId",
+                                        "referenceType",
+                                        "repository",
+                                        "number",
+                                        "commitSha",
+                                        "url"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "classification",
+                                  "pullRequest",
+                                  "authors",
+                                  "noteReferences"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "providerId",
+                          "incidentNumber",
+                          "title",
+                          "createdAt",
+                          "resolvedAt",
+                          "incidentType",
+                          "similarityReasons",
+                          "resolution"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "section",
+                    "rels",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "pagerduty",
+                    "datadog",
+                    "grafana",
+                    "victoria",
+                    "dynatrace",
+                    "newrelic",
+                    "incidentio"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "available",
+                    "stale",
+                    "unavailable",
+                    "not_configured"
+                  ]
+                },
+                "observedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "provider",
+                "status"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "partial": {
+            "type": "boolean"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "pagerduty",
+                    "datadog",
+                    "grafana",
+                    "victoria",
+                    "dynatrace",
+                    "newrelic",
+                    "incidentio"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "generatedAt",
+          "selector",
+          "hops",
+          "providers",
+          "partial",
+          "warnings"
         ],
         "additionalProperties": false
       },
@@ -10557,6 +12595,26 @@
                         ],
                         "additionalProperties": false
                       },
+                      "attribution": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "applies",
+                              "possibly_applies"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "matchType": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
                       "summary": {
                         "type": "object",
                         "properties": {
@@ -10579,6 +12637,15 @@
                           "names"
                         ],
                         "additionalProperties": false
+                      },
+                      "action": {
+                        "type": "string"
+                      },
+                      "phase": {
+                        "type": "string"
+                      },
+                      "enabled": {
+                        "type": "boolean"
                       }
                     },
                     "required": [
@@ -10722,6 +12789,429 @@
                       "type": "null"
                     }
                   ]
+                },
+                "originReachability": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "verdict": {
+                          "type": "string",
+                          "enum": [
+                            "restricted_to_cloudflare",
+                            "directly_reachable",
+                            "unknown",
+                            "not_applicable"
+                          ]
+                        },
+                        "reasons": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "advertisedFamilies": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "ipv4",
+                              "ipv6"
+                            ]
+                          }
+                        },
+                        "coveringRules": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "family": {
+                                "type": "string",
+                                "enum": [
+                                  "ipv4",
+                                  "ipv6"
+                                ]
+                              },
+                              "cidr": {
+                                "type": "string"
+                              },
+                              "groupId": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "permissionIndex": {
+                                "type": "string"
+                              },
+                              "fromPort": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "toPort": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "protocol": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "coveredByCloudflare": {
+                                "type": "boolean"
+                              },
+                              "worldOpen": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "family",
+                              "cidr",
+                              "groupId",
+                              "permissionIndex",
+                              "fromPort",
+                              "toPort",
+                              "protocol",
+                              "coveredByCloudflare",
+                              "worldOpen"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "uncoveredRules": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "family": {
+                                "type": "string",
+                                "enum": [
+                                  "ipv4",
+                                  "ipv6"
+                                ]
+                              },
+                              "cidr": {
+                                "type": "string"
+                              },
+                              "groupId": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "permissionIndex": {
+                                "type": "string"
+                              },
+                              "fromPort": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "toPort": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "protocol": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "coveredByCloudflare": {
+                                "type": "boolean"
+                              },
+                              "worldOpen": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "family",
+                              "cidr",
+                              "groupId",
+                              "permissionIndex",
+                              "fromPort",
+                              "toPort",
+                              "protocol",
+                              "coveredByCloudflare",
+                              "worldOpen"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "missingEvidence": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "cfRanges": {
+                          "type": "object",
+                          "properties": {
+                            "version": {
+                              "type": "string"
+                            },
+                            "publishedAt": {
+                              "type": "string"
+                            },
+                            "source": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "version",
+                            "publishedAt",
+                            "source"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "verdict",
+                        "reasons",
+                        "advertisedFamilies",
+                        "coveringRules",
+                        "uncoveredRules",
+                        "missingEvidence",
+                        "cfRanges"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "recentChanges": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "ts": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "eventSource": {
+                        "type": "string",
+                        "enum": [
+                          "audit",
+                          "snapshot_diff",
+                          "unknown"
+                        ]
+                      },
+                      "summary": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "resourceId": {
+                        "type": "string"
+                      },
+                      "resourceType": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "actor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "binding": {
+                        "type": "string",
+                        "const": "hostname"
+                      }
+                    },
+                    "required": [
+                      "ts",
+                      "type",
+                      "eventSource",
+                      "summary",
+                      "resourceId",
+                      "resourceType",
+                      "actor",
+                      "binding"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "wafImpactSignal": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "observed",
+                        "unavailable"
+                      ]
+                    },
+                    "gapReason": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "permission_denied",
+                            "not_configured",
+                            "backend_unconfigured",
+                            "lookup_failed"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "gapMessage": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "summary": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "window": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "start": {
+                              "type": "string"
+                            },
+                            "end": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "start",
+                            "end"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "current": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "matched": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "blocked": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "challenged": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "matched",
+                            "blocked",
+                            "challenged"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "baseline": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "matched": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "blocked": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "challenged": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "matched",
+                            "blocked",
+                            "challenged"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "spike": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "label": {
+                              "type": "string"
+                            },
+                            "message": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "label",
+                            "message"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status"
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
@@ -10729,7 +13219,8 @@
                 "hops",
                 "controls",
                 "gaps",
-                "platform"
+                "platform",
+                "originReachability"
               ],
               "additionalProperties": false
             }
@@ -16381,6 +18872,90 @@
                 "oneOf": [
                   {
                     "$ref": "#/components/schemas/CallsResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "question",
+              "intent",
+              "summary",
+              "incidentContext"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "countOnly": {
+                "type": "boolean"
+              },
+              "elapsedMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "resolved": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "term",
+                      "hashedID",
+                      "name",
+                      "type"
+                    ],
+                    "properties": {
+                      "term": {
+                        "type": "string"
+                      },
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphNode"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphEdge"
+                }
+              },
+              "intent": {
+                "const": "incidentcontext"
+              },
+              "incidentContext": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/IncidentContextResult"
                   },
                   {
                     "type": "null"

@@ -9,5 +9,8 @@ if (!token || !project) {
 
 const graph = new GraphAnswer({ token, project });
 
-const result = await graph.events({ since: "1h", limit: 10 });
+const [from, until] = process.argv.slice(2);
+const result = from && until
+  ? await graph.events({ from, until, stats: "none", limit: 10 })
+  : await graph.events({ since: "1h", limit: 10 });
 console.log(result.summary);

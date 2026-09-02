@@ -41,6 +41,23 @@ const recent = await graph.events({ since: "1h", limit: 10 });
 console.log(recent.summary);
 ```
 
+For historical incident review, use an exact half-open RFC3339 window. `stats: "none"` skips the
+full-window count, and `cursor` continues from `events.page.nextCursor` without rescanning newer
+history:
+
+```ts
+const historical = await graph.events({
+  target: "checkout",
+  targetType: "K8S_DEPLOYMENT",
+  namespace: "payments",
+  cluster: "staging",
+  from: "2026-08-30T10:00:00Z",
+  until: "2026-08-30T11:00:00Z",
+  stats: "none",
+  limit: 50,
+});
+```
+
 ```ts
 const group = await graph.correlations({ target: "places", since: "2h" });
 if (group.intent === "correlations") {

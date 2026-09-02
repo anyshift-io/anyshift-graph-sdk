@@ -226,11 +226,31 @@ export interface components {
                 namespace: string;
                 includeNoise: boolean;
             };
-            total: number;
+            total: number | null;
             byType: {
                 type: string;
                 count: number;
             }[];
+            statistics: {
+                /** @enum {string} */
+                mode: "exact" | "none";
+                exact: boolean;
+            };
+            window: {
+                /** @constant */
+                mode: "all";
+            } | {
+                /** @constant */
+                mode: "absolute";
+                from: string;
+                until: string;
+            } | {
+                /** @constant */
+                mode: "graph_relative";
+                sinceHours: number;
+                cutoff: string | null;
+                anchor: string | null;
+            };
             recent: {
                 ts: string;
                 type: string;
@@ -241,12 +261,14 @@ export interface components {
                 isRoot: boolean;
                 noiseClass: string | null;
                 cluster: string | null;
+                nextJson: string | null;
             }[];
             page: {
                 limit: number;
                 offset: number;
                 hasMore: boolean;
                 nextOffset: number | null;
+                nextCursor: string | null;
             };
         };
         CloudEventsResult: {
@@ -293,7 +315,7 @@ export interface components {
                 category: "security" | "identity" | "lifecycle" | "configuration" | "capacity" | "backup" | "other";
                 summary: string | null;
                 /** @enum {string} */
-                provider: "aws" | "azure" | "gcp";
+                provider: "aws" | "azure" | "gcp" | "cloudflare";
                 scope: string;
                 region: string | null;
                 target: {
@@ -597,6 +619,7 @@ export interface components {
                 isRoot: boolean;
                 noiseClass: string | null;
                 cluster: string | null;
+                nextJson: string | null;
             }[];
             chain: {
                 ts: string;
@@ -608,6 +631,7 @@ export interface components {
                 isRoot: boolean;
                 noiseClass: string | null;
                 cluster: string | null;
+                nextJson: string | null;
             }[];
         };
         IncidentResult: {
@@ -629,6 +653,7 @@ export interface components {
                 isRoot: boolean;
                 noiseClass: string | null;
                 cluster: string | null;
+                nextJson: string | null;
             }[];
             chain: {
                 ts: string;
@@ -640,6 +665,7 @@ export interface components {
                 isRoot: boolean;
                 noiseClass: string | null;
                 cluster: string | null;
+                nextJson: string | null;
             }[];
         };
         ResponseIncidentsResult: {
@@ -675,6 +701,7 @@ export interface components {
                     resolution: "resolved" | "unresolved" | "ambiguous";
                     id: string | null;
                     name: string | null;
+                    providerServiceId?: string | null;
                     type: string | null;
                     namespace: string | null;
                     cluster: string | null;
@@ -761,6 +788,7 @@ export interface components {
                     resolution: "resolved" | "unresolved" | "ambiguous";
                     id: string | null;
                     name: string | null;
+                    providerServiceId?: string | null;
                     type: string | null;
                     namespace: string | null;
                     cluster: string | null;
@@ -843,6 +871,7 @@ export interface components {
                 isRoot: boolean;
                 noiseClass: string | null;
                 cluster: string | null;
+                nextJson: string | null;
             }[];
             page: {
                 limit: number;
@@ -909,6 +938,7 @@ export interface components {
                 isRoot: boolean;
                 noiseClass: string | null;
                 cluster: string | null;
+                nextJson: string | null;
             }[];
         };
         CommonCauseResult: {
@@ -1148,6 +1178,7 @@ export interface components {
                     resolution: "resolved" | "unresolved" | "ambiguous";
                     id: string | null;
                     name: string | null;
+                    providerServiceId?: string | null;
                     type: string | null;
                     namespace: string | null;
                     cluster: string | null;
@@ -1269,6 +1300,317 @@ export interface components {
                     }[];
                 }[];
             } | null;
+        };
+        IncidentContextResult: {
+            generatedAt: string;
+            selector: {
+                id: string | null;
+                target: string | null;
+            };
+            hops: ({
+                /** @constant */
+                section: "incident";
+                rels: string[];
+                items: {
+                    id: string;
+                    /** @enum {string} */
+                    provider: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+                    providerId: string;
+                    title: string;
+                    service?: {
+                        /** @enum {string} */
+                        resolution: "resolved" | "unresolved" | "ambiguous";
+                        id: string | null;
+                        name: string | null;
+                        providerServiceId?: string | null;
+                        type: string | null;
+                        namespace: string | null;
+                        cluster: string | null;
+                    } | null;
+                    providerStatus: string;
+                    startedAt?: string | null;
+                    updatedAt: string;
+                    resolvedAt?: string | null;
+                    sourceUrl?: string | null;
+                    observedAt: string;
+                    providerDetails: {
+                        /** @constant */
+                        provider: "pagerduty";
+                        urgency?: string;
+                        incidentNumber?: number;
+                        scheduleId?: string;
+                        escalationLevel?: number;
+                    } | {
+                        /** @constant */
+                        provider: "datadog";
+                    } | {
+                        /** @constant */
+                        provider: "grafana";
+                    } | {
+                        /** @constant */
+                        provider: "victoria";
+                    } | {
+                        /** @constant */
+                        provider: "dynatrace";
+                    } | {
+                        /** @constant */
+                        provider: "newrelic";
+                    } | {
+                        /** @constant */
+                        provider: "incidentio";
+                    };
+                    /** @enum {string} */
+                    status: "open" | "acknowledged" | "resolved" | "unknown";
+                    responders: {
+                        /** @enum {string} */
+                        resolution: "resolved" | "unresolved" | "ambiguous";
+                        personId: string | null;
+                        name: string | null;
+                        email: string | null;
+                        providerUserId: string | null;
+                        candidates: {
+                            personId: string | null;
+                            name: string | null;
+                            email: string | null;
+                        }[];
+                    }[];
+                }[];
+            } | {
+                /** @constant */
+                section: "alerts";
+                rels: string[];
+                items: {
+                    id: string;
+                    /** @enum {string} */
+                    provider: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+                    providerId: string;
+                    title: string;
+                    service?: {
+                        /** @enum {string} */
+                        resolution: "resolved" | "unresolved" | "ambiguous";
+                        id: string | null;
+                        name: string | null;
+                        providerServiceId?: string | null;
+                        type: string | null;
+                        namespace: string | null;
+                        cluster: string | null;
+                    } | null;
+                    providerStatus: string;
+                    startedAt?: string | null;
+                    updatedAt: string;
+                    resolvedAt?: string | null;
+                    sourceUrl?: string | null;
+                    observedAt: string;
+                    providerDetails: {
+                        /** @constant */
+                        provider: "pagerduty";
+                        urgency?: string;
+                        incidentNumber?: number;
+                        scheduleId?: string;
+                        escalationLevel?: number;
+                    } | {
+                        /** @constant */
+                        provider: "datadog";
+                    } | {
+                        /** @constant */
+                        provider: "grafana";
+                    } | {
+                        /** @constant */
+                        provider: "victoria";
+                    } | {
+                        /** @constant */
+                        provider: "dynatrace";
+                    } | {
+                        /** @constant */
+                        provider: "newrelic";
+                    } | {
+                        /** @constant */
+                        provider: "incidentio";
+                    };
+                    /** @enum {string} */
+                    status: "firing" | "recovered" | "suppressed" | "unknown";
+                    /** @enum {string} */
+                    severity: "critical" | "warning" | "info" | "unknown";
+                }[];
+            } | {
+                /** @constant */
+                section: "service";
+                rels: string[];
+                items: {
+                    providerService: {
+                        /** @enum {string} */
+                        provider: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+                        providerId: string;
+                        name: string | null;
+                    } | null;
+                    canonical: {
+                        /** @enum {string} */
+                        resolution: "resolved" | "unresolved" | "ambiguous";
+                        id: string | null;
+                        name: string | null;
+                        providerServiceId?: string | null;
+                        type: string | null;
+                        namespace: string | null;
+                        cluster: string | null;
+                    } | null;
+                    resolve: {
+                        source: string;
+                        matchType: string;
+                        confidence: string;
+                    } | null;
+                }[];
+            } | {
+                /** @constant */
+                section: "onCall";
+                rels: string[];
+                items: {
+                    id: string;
+                    /** @enum {string} */
+                    provider: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+                    providerId: string;
+                    title: string;
+                    service?: {
+                        /** @enum {string} */
+                        resolution: "resolved" | "unresolved" | "ambiguous";
+                        id: string | null;
+                        name: string | null;
+                        providerServiceId?: string | null;
+                        type: string | null;
+                        namespace: string | null;
+                        cluster: string | null;
+                    } | null;
+                    providerStatus: string;
+                    startedAt?: string | null;
+                    updatedAt: string;
+                    resolvedAt?: string | null;
+                    sourceUrl?: string | null;
+                    observedAt: string;
+                    providerDetails: {
+                        /** @constant */
+                        provider: "pagerduty";
+                        urgency?: string;
+                        incidentNumber?: number;
+                        scheduleId?: string;
+                        escalationLevel?: number;
+                    } | {
+                        /** @constant */
+                        provider: "datadog";
+                    } | {
+                        /** @constant */
+                        provider: "grafana";
+                    } | {
+                        /** @constant */
+                        provider: "victoria";
+                    } | {
+                        /** @constant */
+                        provider: "dynatrace";
+                    } | {
+                        /** @constant */
+                        provider: "newrelic";
+                    } | {
+                        /** @constant */
+                        provider: "incidentio";
+                    };
+                    /** @enum {string} */
+                    status: "scheduled" | "active" | "ended";
+                    person: {
+                        /** @enum {string} */
+                        resolution: "resolved" | "unresolved" | "ambiguous";
+                        personId: string | null;
+                        name: string | null;
+                        email: string | null;
+                        providerUserId: string | null;
+                        candidates: {
+                            personId: string | null;
+                            name: string | null;
+                            email: string | null;
+                        }[];
+                    };
+                    schedule: {
+                        /** @enum {string} */
+                        provider: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+                        providerId: string;
+                        name: string | null;
+                    } | null;
+                    escalationLevel?: number;
+                    startsAt: string;
+                    endsAt: string;
+                }[];
+            } | {
+                /** @constant */
+                section: "responders";
+                rels: string[];
+                items: {
+                    /** @enum {string} */
+                    resolution: "resolved" | "unresolved" | "ambiguous";
+                    personId: string | null;
+                    name: string | null;
+                    email: string | null;
+                    providerUserId: string | null;
+                    candidates: {
+                        personId: string | null;
+                        name: string | null;
+                        email: string | null;
+                    }[];
+                }[];
+            } | {
+                /** @constant */
+                section: "history";
+                rels: string[];
+                items: {
+                    id: string;
+                    providerId: string;
+                    incidentNumber: number | null;
+                    title: string;
+                    createdAt: string;
+                    resolvedAt: string | null;
+                    incidentType: string | null;
+                    similarityReasons: string[];
+                    resolution: {
+                        /** @enum {string} */
+                        classification: "confirmed_fix" | "explicit_reference" | "unknown";
+                        pullRequest: {
+                            id: string | null;
+                            number: number | null;
+                            title: string | null;
+                            htmlURL: string | null;
+                            merged: boolean;
+                            mergedAt: string | null;
+                            mergeCommitSha: string | null;
+                            incidentReferences: string[];
+                        } | null;
+                        authors: {
+                            personId: string | null;
+                            name: string | null;
+                            email: string | null;
+                        }[];
+                        noteReferences: {
+                            id: string | null;
+                            source: string | null;
+                            sourceId: string | null;
+                            referenceType: string | null;
+                            repository: string | null;
+                            number: number | null;
+                            commitSha: string | null;
+                            url: string | null;
+                        }[];
+                    } | null;
+                }[];
+            })[];
+            providers: {
+                /** @enum {string} */
+                provider: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+                /** @enum {string} */
+                status: "available" | "stale" | "unavailable" | "not_configured";
+                observedAt?: string;
+            }[];
+            partial: boolean;
+            warnings: {
+                code: string;
+                message: string;
+                /** @enum {string} */
+                provider?: "pagerduty" | "datadog" | "grafana" | "victoria" | "dynatrace" | "newrelic" | "incidentio";
+            }[];
         };
         ServiceTreeResult: {
             /** @enum {string} */
@@ -1430,11 +1772,16 @@ export interface components {
                         observedAt: string | null;
                         confidence: ("high" | "medium" | "low") | null;
                     };
+                    attribution?: ("applies" | "possibly_applies") | null;
+                    matchType?: string | null;
                     summary?: {
                         count: number;
                         names: string[];
                         defaultAllow?: boolean;
                     };
+                    action?: string;
+                    phase?: string;
+                    enabled?: boolean;
                 }[];
                 gaps: {
                     afterResourceId: string | null;
@@ -1460,6 +1807,79 @@ export interface components {
                         source: string;
                     };
                 } | null;
+                originReachability: {
+                    /** @enum {string} */
+                    verdict: "restricted_to_cloudflare" | "directly_reachable" | "unknown" | "not_applicable";
+                    reasons: string[];
+                    advertisedFamilies: ("ipv4" | "ipv6")[];
+                    coveringRules: {
+                        /** @enum {string} */
+                        family: "ipv4" | "ipv6";
+                        cidr: string;
+                        groupId: string | null;
+                        permissionIndex: string;
+                        fromPort: number | null;
+                        toPort: number | null;
+                        protocol: string | null;
+                        coveredByCloudflare: boolean;
+                        worldOpen: boolean;
+                    }[];
+                    uncoveredRules: {
+                        /** @enum {string} */
+                        family: "ipv4" | "ipv6";
+                        cidr: string;
+                        groupId: string | null;
+                        permissionIndex: string;
+                        fromPort: number | null;
+                        toPort: number | null;
+                        protocol: string | null;
+                        coveredByCloudflare: boolean;
+                        worldOpen: boolean;
+                    }[];
+                    missingEvidence: string[];
+                    cfRanges: {
+                        version: string;
+                        publishedAt: string;
+                        source: string;
+                    };
+                } | null;
+                recentChanges?: {
+                    ts: string;
+                    type: string;
+                    /** @enum {string} */
+                    eventSource: "audit" | "snapshot_diff" | "unknown";
+                    summary: string | null;
+                    resourceId: string;
+                    resourceType: string | null;
+                    actor: string | null;
+                    /** @constant */
+                    binding: "hostname";
+                }[];
+                wafImpactSignal?: {
+                    /** @enum {string} */
+                    status: "observed" | "unavailable";
+                    gapReason?: ("permission_denied" | "not_configured" | "backend_unconfigured" | "lookup_failed") | null;
+                    gapMessage?: string | null;
+                    summary?: string | null;
+                    window?: {
+                        start: string;
+                        end: string;
+                    } | null;
+                    current?: {
+                        matched: number;
+                        blocked: number;
+                        challenged: number;
+                    } | null;
+                    baseline?: {
+                        matched: number;
+                        blocked: number;
+                        challenged: number;
+                    } | null;
+                    spike?: {
+                        label: string;
+                        message: string;
+                    } | null;
+                };
             }[];
             page: {
                 limit: number;
@@ -2499,6 +2919,22 @@ export interface components {
             /** @constant */
             intent: "calls";
             calls: components["schemas"]["CallsResult"] | null;
+        } | {
+            question: string;
+            summary: string;
+            countOnly?: boolean;
+            elapsedMs?: number;
+            resolved?: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            nodes?: components["schemas"]["GraphNode"][];
+            edges?: components["schemas"]["GraphEdge"][];
+            /** @constant */
+            intent: "incidentcontext";
+            incidentContext: components["schemas"]["IncidentContextResult"] | null;
         } | {
             question: string;
             summary: string;

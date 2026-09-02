@@ -209,6 +209,35 @@ test("events noise=all is emitted", async () => {
   assert.equal(calls[0].body.sql, "SELECT * FROM events WHERE type = 'unhealthy' AND noise = 'all'");
 });
 
+test("events composes absolute windows, exact selectors, page stats, and cursors", async () => {
+  const { gx, calls } = capturing();
+  await gx.events({
+    target: "checkout", targetType: "K8S_DEPLOYMENT", namespace: "payments", cluster: "staging",
+    from: "2026-08-30T10:00:00Z", until: "2026-08-30T11:00:00Z",
+    stats: "none", cursor: "next-page", limit: 20,
+  });
+  assert.equal(
+    calls[0].body.sql,
+    "SELECT * FROM events WHERE target = 'checkout' AND target_type = 'K8S_DEPLOYMENT' AND namespace = 'payments' " +
+    "AND cluster = 'staging' AND stats = 'none' AND from = '2026-08-30T10:00:00Z' " +
+    "AND until = '2026-08-30T11:00:00Z' AND cursor = 'next-page' LIMIT 20",
+  );
+});
+
+test("events rejects invalid windows and selectors before fetching", () => {
+  const { gx } = capturing();
+  assert.throws(() => gx.events({ from: "2026-08-30T10:00:00Z" }), /from and until/);
+  assert.throws(
+    () => gx.events({ since: "1h", from: "2026-08-30T10:00:00Z", until: "2026-08-30T11:00:00Z" }),
+    /since cannot be combined/,
+  );
+  assert.throws(
+    () => gx.events({ from: "2026-08-30T11:00:00Z", until: "2026-08-30T10:00:00Z" }),
+    /from must be earlier/,
+  );
+  assert.throws(() => gx.events({ targetId: "stable", namespace: "payments" }), /targetId cannot/);
+});
+
 test("hotspots composes type + by", async () => {
   const { gx, calls } = capturing();
   await gx.hotspots({ type: "oom", by: "resource", limit: 10 });

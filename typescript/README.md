@@ -34,6 +34,15 @@ const matches = await graph.resolve({ term: "checkout", limit: 10 });
 if (matches.intent === "resolve") {
   console.log(matches.resolve?.candidates);
 }
+
+const stagingCheckout = await graph.resolve({
+  term: {
+    name: "checkout",
+    type: "K8S_DEPLOYMENT",
+    namespace: "apps",
+    cluster: "staging",
+  },
+});
 ```
 
 ```ts
@@ -191,6 +200,15 @@ human cluster name from its provider-native ID and stable Anyshift graph identit
 ```ts
 const blast = await graph.blast({ resource: "checkout" });
 console.log(blast.summary);
+
+const qualifiedBlast = await graph.blast({
+  resource: {
+    name: "checkout",
+    type: "K8S_DEPLOYMENT",
+    namespace: "apps",
+    cluster: "staging",
+  },
+});
 ```
 
 ```ts

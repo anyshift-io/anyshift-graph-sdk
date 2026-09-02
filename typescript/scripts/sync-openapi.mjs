@@ -65,7 +65,7 @@ const exposurePlatformFields = [
 if (
   document?.openapi !== "3.1.0"
   || askResult?.discriminator?.propertyName !== "intent"
-  || queryLanguage?.version !== "1.21"
+  || queryLanguage?.version !== "1.22"
   || queryLanguage?.tables?.length !== askResult.oneOf.length
   || exposureVariant?.properties?.exposure?.$ref !== "#/components/schemas/ExposureResult"
   || !exposureVariant?.required?.includes("exposure")
@@ -117,7 +117,7 @@ if (
   || hotspotsResult?.properties?.scan?.properties?.limit?.type !== "integer"
   || JSON.stringify(timeoutSource?.enum) !== JSON.stringify(["statement", "request"])
 ) {
-  throw new Error(`${source} does not expose the expected executable query-language 1.21 bounded-hotspot, bounded alert-cause, event-window, active incident, correlations, operational-response identity candidates, cloud-event, canonical exposure, and exposure platform contract`);
+  throw new Error(`${source} does not expose the expected executable query-language 1.22 qualified-selector, bounded-hotspot, bounded alert-cause, event-window, active incident, correlations, operational-response identity candidates, cloud-event, canonical exposure, and exposure platform contract`);
 }
 
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`);

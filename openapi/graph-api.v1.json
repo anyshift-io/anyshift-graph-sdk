@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.21",
+    "version": "1.22",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -24,10 +24,52 @@
           {
             "name": "term",
             "type": "string",
-            "description": "Resource name or fragment to resolve.",
-            "required": true
+            "description": "Resource name or fragment; exactly one of term and resource_id is required."
+          },
+          {
+            "name": "resource_id",
+            "type": "string",
+            "description": "Exact stable graph or provider id; cannot be combined with term or name qualifiers."
+          },
+          {
+            "name": "resource_type",
+            "type": "string",
+            "description": "Non-empty term-only exact type qualifier."
+          },
+          {
+            "name": "resource_namespace",
+            "type": "string",
+            "description": "Non-empty term-only exact namespace qualifier."
+          },
+          {
+            "name": "resource_cluster",
+            "type": "string",
+            "description": "Non-empty term-only exact cluster qualifier."
           }
         ],
+        "selector": {
+          "exactlyOneOf": [
+            "term",
+            "resource_id"
+          ],
+          "nonEmpty": [
+            "term",
+            "resource_id",
+            "resource_type",
+            "resource_namespace",
+            "resource_cluster"
+          ],
+          "qualifiers": {
+            "fields": [
+              "resource_type",
+              "resource_namespace",
+              "resource_cluster"
+            ],
+            "require": "term",
+            "forbidWith": "resource_id",
+            "routeExact": true
+          }
+        },
         "pagination": {
           "limit": true,
           "offset": false
@@ -37,6 +79,11 @@
             "name": "Resolve resources",
             "description": "Return ranked candidates for a resource name or fragment.",
             "example": "SELECT * FROM resolve WHERE term = checkout LIMIT 10"
+          },
+          {
+            "name": "Resolve one qualified resource",
+            "description": "Resolve an exact same-named resource without a separate client-side lookup.",
+            "example": "SELECT * FROM resolve WHERE term = checkout AND resource_type = K8S_DEPLOYMENT AND resource_cluster = staging LIMIT 10"
           }
         ]
       },
@@ -1223,10 +1270,52 @@
           {
             "name": "resource",
             "type": "string",
-            "description": "Starting resource name or identifier.",
-            "required": true
+            "description": "Starting resource name; exactly one of resource and resource_id is required."
+          },
+          {
+            "name": "resource_id",
+            "type": "string",
+            "description": "Exact stable graph or provider id; cannot be combined with resource or name qualifiers."
+          },
+          {
+            "name": "resource_type",
+            "type": "string",
+            "description": "Non-empty resource-only exact type qualifier."
+          },
+          {
+            "name": "resource_namespace",
+            "type": "string",
+            "description": "Non-empty resource-only exact namespace qualifier."
+          },
+          {
+            "name": "resource_cluster",
+            "type": "string",
+            "description": "Non-empty resource-only exact cluster qualifier."
           }
         ],
+        "selector": {
+          "exactlyOneOf": [
+            "resource",
+            "resource_id"
+          ],
+          "nonEmpty": [
+            "resource",
+            "resource_id",
+            "resource_type",
+            "resource_namespace",
+            "resource_cluster"
+          ],
+          "qualifiers": {
+            "fields": [
+              "resource_type",
+              "resource_namespace",
+              "resource_cluster"
+            ],
+            "require": "resource",
+            "forbidWith": "resource_id",
+            "routeExact": true
+          }
+        },
         "pagination": {
           "limit": true,
           "offset": false
@@ -1236,6 +1325,11 @@
             "name": "Resource blast radius",
             "description": "Walk impact outward from one resource.",
             "example": "SELECT * FROM blast_radius WHERE resource = shared-runtime-sa LIMIT 100"
+          },
+          {
+            "name": "Qualified resource blast radius",
+            "description": "Select one same-named resource by stable id or exact name qualifiers.",
+            "example": "SELECT * FROM blast_radius WHERE resource = checkout AND resource_type = K8S_DEPLOYMENT AND resource_cluster = staging LIMIT 100"
           }
         ]
       },

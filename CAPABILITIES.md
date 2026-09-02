@@ -45,14 +45,14 @@ Common parameters:
 
 | Capability | TypeScript helper | Graph query target | Use it to answer |
 | --- | --- | --- | --- |
-| Resource resolution | `graph.resolve({ term })` | `resolve` | Which current resources best match a name or fragment before opening a drill-down. |
+| Resource resolution | `graph.resolve({ term })` | `resolve` | Which current resources match a name, qualified name, or stable graph ID before opening a drill-down. |
 | Direct connections | `graph.connections({ resource })` | `connections` | What is directly connected to a resource. |
 | Inventory | `graph.inventory({ type })` | `resources` | Which resources of a type exist in the graph. |
 | Cloud inventory | `graph.cloudResources()` | `cloud_resources` | Which current or retained AWS, Azure, and GCP resources exist, with lifecycle, freshness, identity, and IaC provenance evidence. |
 | Release provenance | `graph.provenance({ resource })` | `provenance` | Which explicit release, commit, and actor evidence is linked to a resource. |
 | Observed code ownership | `graph.ownership({ resource })` | `ownership` | Which users or teams have stored `OWNS_CODE` edges, including explicit person identity links. |
 | Evidence-safe operational impact | `graph.impact({ resource, depth })` | `operational_impact` | Which resources are potentially reachable over reviewed directional operational edges, with every supporting path step. |
-| Blast radius | `graph.blast({ resource })` | `blast_radius` | Which workloads and services are affected if a resource changes or fails. |
+| Blast radius | `graph.blast({ resource })` | `blast_radius` | Which workloads and services are affected if a named, qualified, or stable-ID resource changes or fails. |
 | Dependency path | `graph.path({ from, to, scope })` | `path` | How two resources are connected, including Tempo APM identity and dependency edges in `operational` scope. |
 | Downstream footprint | `graph.serviceTree()` | `servicetree` | A service's transitive downstream services and infrastructure leaves. |
 | Common cause | `graph.commonCause()` | `common_cause` | Which shared node, workload, datastore, or external dependency may explain recent failures. |

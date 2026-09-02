@@ -37,8 +37,8 @@ export interface GraphAnswerOptions {
 }
 
 export interface ResolveParams {
-  /** Resource name or fragment to rank against the current graph. */
-  term: string;
+  /** Resource name/fragment, stable id, or qualified exact name to resolve. */
+  term: ResourceLookupSelector;
   /** Maximum candidates to return. */
   limit?: number;
 }
@@ -204,7 +204,7 @@ export interface CommonCauseParams {
 }
 export interface BlastParams {
   /** The resource whose transitive impact to compute (configmap, node, SA, workload, …). */
-  resource: string;
+  resource: ResourceLookupSelector;
   /** Top-N workloads / services to return. */
   limit?: number;
 }
@@ -342,6 +342,10 @@ export type ResourceSelector =
   | string
   | { id: string; name?: never; type?: never; namespace?: never; cluster?: never }
   | { id?: never; name: string; type: string; namespace?: string; cluster?: string };
+export type ResourceLookupSelector =
+  | string
+  | { id: string; name?: never; type?: never; namespace?: never; cluster?: never }
+  | { id?: never; name: string; type?: string; namespace?: string; cluster?: string };
 export interface PathParams {
   /** The first resource (start of the path). */
   from: ResourceSelector;
@@ -548,6 +552,20 @@ function selectorConditions(prefix: "from" | "to", selector: ResourceSelector): 
     [`${prefix}_type`, selector.type],
     [`${prefix}_namespace`, selector.namespace ?? ""],
     [`${prefix}_cluster`, selector.cluster ?? ""],
+  ];
+}
+
+function resourceSelectorConditions(
+  nameField: "term" | "resource",
+  selector: ResourceLookupSelector,
+): Array<[string, string]> {
+  if (typeof selector === "string") return [[nameField, selector]];
+  if (selector.id !== undefined) return [["resource_id", selector.id]];
+  return [
+    [nameField, selector.name],
+    ["resource_type", selector.type ?? ""],
+    ["resource_namespace", selector.namespace ?? ""],
+    ["resource_cluster", selector.cluster ?? ""],
   ];
 }
 
@@ -808,7 +826,7 @@ export class GraphAnswer {
   }
 
   resolve(p: ResolveParams): Promise<AskResult> {
-    return this.typedQuery(compose("resolve", [["term", p.term]], p.limit));
+    return this.typedQuery(compose("resolve", resourceSelectorConditions("term", p.term), p.limit));
   }
 
   connections(p: { resource: string }): Promise<AskResult> {
@@ -989,9 +1007,7 @@ export class GraphAnswer {
 
   /** Transitive blast radius — the workloads & services affected if `resource` changes/dies. */
   blast(p: BlastParams): Promise<AskResult> {
-    return this.typedQuery(compose("blast_radius", [
-      ["resource", p.resource],
-    ], p.limit));
+    return this.typedQuery(compose("blast_radius", resourceSelectorConditions("resource", p.resource), p.limit));
   }
 
   /** Single points of failure — most-depended-on resources of a kind, ranked by fan-in. */

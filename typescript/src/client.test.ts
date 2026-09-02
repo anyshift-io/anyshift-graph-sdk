@@ -6,9 +6,10 @@ import { AuthError, BadQueryError, GraphAnswerError } from "./errors.js";
 import { GRAPH_SDK_VERSION } from "./version.js";
 
 // Minimal fake response matching FetchLike's return contract.
-const resp = (status: number, body: unknown) => ({
+const resp = (status: number, body: unknown, requestId?: string) => ({
   ok: status >= 200 && status < 300,
   status,
+  headers: { get: (name: string) => name.toLowerCase() === "x-request-id" ? requestId ?? null : null },
   text: async () => JSON.stringify(body),
 });
 
@@ -170,6 +171,32 @@ test("401 -> AuthError, 400 -> BadQueryError, 500 -> GraphAnswerError", async ()
   await assert.rejects(
     () => make(500, { error: { code: "internal", message: "boom" } }).query("x"),
     (e: any) => e instanceof GraphAnswerError && e.code === "internal" && e.status === 500
+  );
+});
+
+test("timeouts expose server layer and request id, with a gateway fallback", async () => {
+  for (const [serverSource, wantSource] of [["statement", "statement"], ["request", "request"], [undefined, "gateway"]] as const) {
+    const gx = new GraphAnswer({
+      baseUrl: "http://x",
+      fetch: async () => resp(504, {
+        error: { code: "timeout", message: "timed out", ...(serverSource ? { timeoutSource: serverSource } : {}) },
+      }, "req-2133"),
+    });
+    await assert.rejects(
+      () => gx.query("SELECT * FROM hotspots"),
+      (error: unknown) => error instanceof GraphAnswerError &&
+        error.code === "timeout" && error.timeoutSource === wantSource && error.requestId === "req-2133",
+    );
+  }
+
+  const gateway = new GraphAnswer({
+    baseUrl: "http://x",
+    fetch: async () => resp(504, "gateway timeout", "req-gateway"),
+  });
+  await assert.rejects(
+    () => gateway.query("SELECT * FROM hotspots"),
+    (error: unknown) => error instanceof GraphAnswerError &&
+      error.code === "timeout" && error.timeoutSource === "gateway" && error.requestId === "req-gateway",
   );
 });
 

@@ -2,11 +2,15 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { GraphAnswerError, AuthError, BadQueryError } from "./errors.js";
 
-test("GraphAnswerError carries code/message/status", () => {
-  const e = new GraphAnswerError("internal", "boom", 500);
-  assert.equal(e.code, "internal");
+test("GraphAnswerError carries code/message/status and timeout diagnostics", () => {
+  const e = new GraphAnswerError("timeout", "boom", 504, {
+    timeoutSource: "statement", requestId: "req-2133",
+  });
+  assert.equal(e.code, "timeout");
   assert.equal(e.message, "boom");
-  assert.equal(e.status, 500);
+  assert.equal(e.status, 504);
+  assert.equal(e.timeoutSource, "statement");
+  assert.equal(e.requestId, "req-2133");
   assert.ok(e instanceof Error);
 });
 

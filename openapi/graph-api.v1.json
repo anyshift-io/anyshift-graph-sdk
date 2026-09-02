@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.20",
+    "version": "1.21",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -3647,6 +3647,14 @@
               "message": {
                 "type": "string"
               },
+              "timeoutSource": {
+                "type": "string",
+                "enum": [
+                  "statement",
+                  "request"
+                ],
+                "description": "Present for Graph API-owned timeouts; absent on an upstream gateway timeout."
+              },
               "selectionCode": {
                 "type": "string",
                 "enum": [
@@ -6257,6 +6265,24 @@
               "eventType",
               "namespace",
               "includeNoise"
+            ],
+            "additionalProperties": false
+          },
+          "scan": {
+            "type": "object",
+            "properties": {
+              "bounded": {
+                "type": "boolean",
+                "const": true
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "bounded",
+              "limit"
             ],
             "additionalProperties": false
           },

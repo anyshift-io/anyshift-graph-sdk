@@ -469,10 +469,19 @@ export interface ImageParams {
   limit?: number;
 }
 export interface AlertCauseParams {
-  /** The firing/alerting service or workload to explain. */
-  target: string;
-  /** How far back to look for the K8s change that caused it (default 6h). */
-  since?: Since;
+  /** Workload name. Mutually exclusive with targetId. */
+  target?: string;
+  /** Exact stable workload graph id. Mutually exclusive with target. */
+  targetId?: string;
+  targetType?: string;
+  namespace?: string;
+  cluster?: string;
+  /** Alert or monitor name to report and optionally scope current monitor evidence. */
+  alert?: string;
+  /** Inclusive RFC3339 alert start. */
+  from: string;
+  /** Exclusive RFC3339 alert end. */
+  to: string;
   limit?: number;
 }
 export interface AlertRulesParams {
@@ -1231,9 +1240,30 @@ export class GraphAnswer {
     return this.typedQuery(compose("servicetree", [["target", p.target], ["source", p.source]], p.limit));
   }
 
-  /** Why a Datadog alert is firing — the firing workload + its recent K8s changes (the suspect). */
+  /** Topology-bound change candidates inside one explicit alert interval. */
   alertCause(p: AlertCauseParams): Promise<AskResult> {
-    return this.typedQuery(compose("alert_cause", [["target", p.target], ["since", p.since]], p.limit));
+    requireNonEmpty("target", p.target);
+    requireNonEmpty("targetId", p.targetId);
+    requireNonEmpty("targetType", p.targetType);
+    requireNonEmpty("namespace", p.namespace);
+    requireNonEmpty("cluster", p.cluster);
+    requireNonEmpty("alert", p.alert);
+    if (Boolean(p.target) === Boolean(p.targetId)) {
+      throw new TypeError("alertCause requires exactly one of target or targetId");
+    }
+    if (p.targetId && (p.targetType || p.namespace || p.cluster)) {
+      throw new TypeError("alertCause targetId cannot be combined with targetType, namespace, or cluster");
+    }
+    const from = validateOperationalTime("from", p.from);
+    const to = validateOperationalTime("to", p.to);
+    if (from === undefined || to === undefined || compareRfc3339(p.from, p.to) >= 0) {
+      throw new TypeError("alertCause from must be earlier than to");
+    }
+    return this.typedQuery(compose("alert_cause", [
+      ["target", p.target], ["target_id", p.targetId], ["target_type", p.targetType],
+      ["namespace", p.namespace], ["cluster", p.cluster], ["alert", p.alert],
+      ["from", p.from], ["to", p.to],
+    ], p.limit));
   }
 
   /** Grafana/Victoria alert-rule coverage — gaps (default), the rule inventory, or one workload's rules. */

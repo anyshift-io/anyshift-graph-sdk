@@ -6,13 +6,18 @@
 
 - Added absolute `from`/`until` event windows, stable and qualified target selectors,
   page-only statistics, and opaque seek cursors to `graph.events()`.
-- Pinned Graph API query-language 1.19 and regenerated the OpenAPI response types and
+- Added explicit alert intervals and stable or qualified workload selectors to
+  `graph.alertCause()`. Results distinguish suspected, unknown, and incomplete evidence and do
+  not claim that a temporal correlation proves causation.
+- Pinned Graph API query-language 1.20 and regenerated the OpenAPI response types and
   deterministic query reference.
 
 ### Compatibility
 
 - Existing relative `since` and offset-based event calls remain unchanged. Absolute windows are
   half-open, require both bounds, and use cursor pagination instead of offsets.
+- Alert cause now requires a half-open `from`/`to` interval plus exactly one workload name or
+  stable id. Callers using the former unbounded `since` form must supply the actual alert window.
 
 ## 0.5.16 - 2026-08-19
 

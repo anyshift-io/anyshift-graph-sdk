@@ -32,6 +32,8 @@ const onCallResult = document?.components?.schemas?.OnCallResult;
 const incidentResponderIdentity = responseIncidentsResult?.properties?.items?.items
   ?.properties?.responders?.items;
 const onCallIdentity = onCallResult?.properties?.items?.items?.properties?.person;
+const alertCauseTable = queryLanguage?.tables?.find((table) => table?.name === "alert_cause");
+const alertCauseResult = document?.components?.schemas?.AlertCauseResult;
 const canonicalExposureFields = [
   "direction",
   "exposed",
@@ -60,7 +62,7 @@ const exposurePlatformFields = [
 if (
   document?.openapi !== "3.1.0"
   || askResult?.discriminator?.propertyName !== "intent"
-  || queryLanguage?.version !== "1.19"
+  || queryLanguage?.version !== "1.20"
   || queryLanguage?.tables?.length !== askResult.oneOf.length
   || exposureVariant?.properties?.exposure?.$ref !== "#/components/schemas/ExposureResult"
   || !exposureVariant?.required?.includes("exposure")
@@ -104,8 +106,12 @@ if (
   || incidentResponderIdentity?.properties?.candidates?.maxItems !== 10
   || !onCallIdentity?.required?.includes("candidates")
   || onCallIdentity?.properties?.candidates?.maxItems !== 10
+  || ["target_id", "target_type", "namespace", "cluster", "alert", "from", "to"]
+    .some((name) => !alertCauseTable?.filters?.some((filter) => filter?.name === name))
+  || ["workloadId", "workloadType", "cluster", "alert", "interval", "status", "suspect", "reason"]
+    .some((name) => !alertCauseResult?.required?.includes(name))
 ) {
-  throw new Error(`${source} does not expose the expected executable query-language 1.19 event-window, active incident, correlations, operational-response identity candidates, cloud-event, canonical exposure, and exposure platform contract`);
+  throw new Error(`${source} does not expose the expected executable query-language 1.20 bounded alert-cause, event-window, active incident, correlations, operational-response identity candidates, cloud-event, canonical exposure, and exposure platform contract`);
 }
 
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`);

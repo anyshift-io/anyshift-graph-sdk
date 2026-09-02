@@ -833,10 +833,36 @@ test("serviceTree composes ranked and target SQL", async () => {
   assert.equal(t.calls[0].body.sql, "SELECT * FROM servicetree WHERE target = 'payment' LIMIT 5");
 });
 
-test("alertCause composes target + since SQL", async () => {
+test("alertCause composes a qualified workload and explicit alert interval", async () => {
   const { gx, calls } = capturing();
-  await gx.alertCause({ target: "payout-servix", since: "6h" });
-  assert.equal(calls[0].body.sql, "SELECT * FROM alert_cause WHERE target = 'payout-servix' AND since = '6h'");
+  await gx.alertCause({
+    target: "payout-servix", namespace: "payments", cluster: "staging", alert: "error rate",
+    from: "2026-08-30T10:00:00Z", to: "2026-08-30T11:00:00Z",
+  });
+  assert.equal(
+    calls[0].body.sql,
+    "SELECT * FROM alert_cause WHERE target = 'payout-servix' AND namespace = 'payments' AND cluster = 'staging' AND alert = 'error rate' AND from = '2026-08-30T10:00:00Z' AND to = '2026-08-30T11:00:00Z'",
+  );
+});
+
+test("alertCause rejects missing identity and invalid windows", () => {
+  const { gx } = capturing();
+  assert.throws(
+    () => gx.alertCause({ from: "2026-08-30T10:00:00Z", to: "2026-08-30T11:00:00Z" }),
+    /exactly one of target or targetId/,
+  );
+  assert.throws(
+    () => gx.alertCause({ target: "checkout", from: "2026-08-30T12:00:00Z", to: "2026-08-30T11:00:00Z" }),
+    /from must be earlier than to/,
+  );
+  assert.throws(
+    () => gx.alertCause({
+      target: "checkout",
+      from: "2026-08-30T10:00:00.000000002Z",
+      to: "2026-08-30T10:00:00.000000001Z",
+    }),
+    /from must be earlier than to/,
+  );
 });
 
 test("no filters yields a bare SELECT", async () => {

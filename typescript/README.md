@@ -58,6 +58,25 @@ const historical = await graph.events({
 });
 ```
 
+Correlate changes only inside a known alert interval and bind them to one workload identity:
+
+```ts
+const cause = await graph.alertCause({
+  target: "checkout",
+  namespace: "payments",
+  cluster: "staging",
+  alert: "checkout error rate",
+  from: "2026-08-30T10:00:00Z",
+  to: "2026-08-30T11:00:00Z",
+});
+if (cause.intent === "alertcause") {
+  console.log(cause.alertCause?.status, cause.alertCause?.suspect, cause.alertCause?.reason);
+}
+```
+
+The result is explicit correlation evidence, not proof of causation. Use `targetId` instead of the
+qualified name when a stable graph id is available.
+
 ```ts
 const group = await graph.correlations({ target: "places", since: "2h" });
 if (group.intent === "correlations") {

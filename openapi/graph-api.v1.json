@@ -2729,12 +2729,12 @@
           {
             "name": "target",
             "type": "string",
-            "description": "Workload name; use namespace or cluster when names repeat."
+            "description": "Workload name; exactly one of target or target_id is required. Use namespace or cluster when names repeat."
           },
           {
             "name": "target_id",
             "type": "string",
-            "description": "Exact stable workload graph id."
+            "description": "Exact stable workload graph id; exactly one of target or target_id is required."
           },
           {
             "name": "target_type",

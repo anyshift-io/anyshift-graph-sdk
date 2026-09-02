@@ -1414,8 +1414,8 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
-| `target` | string | No | Any value | Workload name; use namespace or cluster when names repeat. |
-| `target_id` | string | No | Any value | Exact stable workload graph id. |
+| `target` | string | No | Any value | Workload name; exactly one of target or target_id is required. Use namespace or cluster when names repeat. |
+| `target_id` | string | No | Any value | Exact stable workload graph id; exactly one of target or target_id is required. |
 | `target_type` | string | No | Any value | Exact workload resource label used with target. |
 | `namespace` | string | No | Any value | Exact workload namespace used with target. |
 | `cluster` | string | No | Any value | Exact workload cluster used with target. |
@@ -1875,4 +1875,3 @@ $ annie graph query "SELECT * FROM topology WHERE service = checkout AND level =
 - [Graph SDK](https://docs.anyshift.io/pages/product/integration/sdk)
 - [Graph SDK capabilities](./CAPABILITIES.md)
 - [OpenAPI contract](./openapi/graph-api.v1.json)
-

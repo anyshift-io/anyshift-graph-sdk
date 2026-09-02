@@ -31,6 +31,12 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
   const iac = queryLanguage.tables.find((table: any) => table.name === "iac");
   const iacDrift = queryLanguage.tables.find((table: any) => table.name === "iac_drift");
   const alertCause = queryLanguage.tables.find((table: any) => table.name === "alert_cause");
+  for (const selector of ["target", "target_id"]) {
+    assert.match(
+      alertCause.filters.find((filter: any) => filter.name === selector).description,
+      /exactly one of target or target_id is required/,
+    );
+  }
   assert.ok(path.filters.some((filter: any) => filter.name === "from_type"));
   assert.ok(path.filters.some((filter: any) => filter.name === "scope"));
   assert.ok(topology.filters.find((filter: any) => filter.name === "source").values.some((entry: any) => entry.value === "tempo"));

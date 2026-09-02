@@ -82,6 +82,11 @@ export interface components {
                 code: "unauthorized" | "bad_request" | "project_required" | "forbidden" | "not_found" | "payload_too_large" | "timeout" | "project_graph_unconfigured" | "project_events_graph_unconfigured" | "internal";
                 message: string;
                 /**
+                 * @description Present for Graph API-owned timeouts; absent on an upstream gateway timeout.
+                 * @enum {string}
+                 */
+                timeoutSource?: "statement" | "request";
+                /**
                  * @description Present when a resource term has multiple equally authoritative candidates.
                  * @enum {string}
                  */
@@ -591,6 +596,11 @@ export interface components {
                 eventType: string;
                 namespace: string;
                 includeNoise: boolean;
+            };
+            scan: {
+                /** @constant */
+                bounded: true;
+                limit: number;
             };
             ranking: {
                 key: string;

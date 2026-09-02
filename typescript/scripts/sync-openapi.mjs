@@ -34,6 +34,9 @@ const incidentResponderIdentity = responseIncidentsResult?.properties?.items?.it
 const onCallIdentity = onCallResult?.properties?.items?.items?.properties?.person;
 const alertCauseTable = queryLanguage?.tables?.find((table) => table?.name === "alert_cause");
 const alertCauseResult = document?.components?.schemas?.AlertCauseResult;
+const hotspotsResult = document?.components?.schemas?.HotspotsResult;
+const timeoutSource = document?.components?.schemas?.ErrorEnvelope
+  ?.properties?.error?.properties?.timeoutSource;
 const canonicalExposureFields = [
   "direction",
   "exposed",
@@ -62,7 +65,7 @@ const exposurePlatformFields = [
 if (
   document?.openapi !== "3.1.0"
   || askResult?.discriminator?.propertyName !== "intent"
-  || queryLanguage?.version !== "1.20"
+  || queryLanguage?.version !== "1.21"
   || queryLanguage?.tables?.length !== askResult.oneOf.length
   || exposureVariant?.properties?.exposure?.$ref !== "#/components/schemas/ExposureResult"
   || !exposureVariant?.required?.includes("exposure")
@@ -110,8 +113,11 @@ if (
     .some((name) => !alertCauseTable?.filters?.some((filter) => filter?.name === name))
   || ["workloadId", "workloadType", "cluster", "alert", "interval", "status", "suspect", "reason"]
     .some((name) => !alertCauseResult?.required?.includes(name))
+  || hotspotsResult?.properties?.scan?.properties?.bounded?.const !== true
+  || hotspotsResult?.properties?.scan?.properties?.limit?.type !== "integer"
+  || JSON.stringify(timeoutSource?.enum) !== JSON.stringify(["statement", "request"])
 ) {
-  throw new Error(`${source} does not expose the expected executable query-language 1.20 bounded alert-cause, event-window, active incident, correlations, operational-response identity candidates, cloud-event, canonical exposure, and exposure platform contract`);
+  throw new Error(`${source} does not expose the expected executable query-language 1.21 bounded-hotspot, bounded alert-cause, event-window, active incident, correlations, operational-response identity candidates, cloud-event, canonical exposure, and exposure platform contract`);
 }
 
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`);

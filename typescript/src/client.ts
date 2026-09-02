@@ -3,6 +3,7 @@ import {
   AuthError,
   BadQueryError,
   type ResourceSelectionCandidate,
+  type TimeoutSource,
 } from "./errors.js";
 import type { AskResult, AskResultFor, OperationalProvider } from "./types.js";
 import { GRAPH_SDK_VERSION } from "./version.js";
@@ -12,7 +13,12 @@ import { GRAPH_SDK_VERSION } from "./version.js";
 export type FetchLike = (
   url: string,
   init: { method: string; headers: Record<string, string>; body: string }
-) => Promise<{ ok: boolean; status: number; text(): Promise<string> }>;
+) => Promise<{
+  ok: boolean;
+  status: number;
+  headers?: { get(name: string): string | null };
+  text(): Promise<string>;
+}>;
 
 export interface GraphAnswerOptions {
   /** Graph API base URL. Default: https://graph.anyshift.io */
@@ -1320,7 +1326,7 @@ export class GraphAnswer {
     if (step) headers["x-anyshift-graph-step"] = step;
     if (this.token) headers["authorization"] = `Bearer ${this.token}`;
 
-    let res: { ok: boolean; status: number; text(): Promise<string> };
+    let res: Awaited<ReturnType<FetchLike>>;
     try {
       res = await this.fetchImpl(this.baseUrl + path, { method: "POST", headers, body: JSON.stringify(body) });
     } catch (e) {
@@ -1343,8 +1349,11 @@ export class GraphAnswer {
         (typeof env === "string" ? env : "") ||
         text ||
         `HTTP ${res.status}`;
-      const code = (env && typeof env === "object" && env.code) ||
-        (res.status === 401 ? "unauthorized" : res.status === 400 ? "bad_request" : "internal");
+      const code = res.status === 504
+        ? "timeout"
+        : (env && typeof env === "object" && env.code) ||
+          (res.status === 401 ? "unauthorized" : res.status === 400 ? "bad_request" : "internal");
+      const requestId = res.headers?.get("x-request-id") ?? undefined;
       if (res.status === 401) throw new AuthError(message, res.status);
       if (res.status === 400) {
         const selectionCode = env?.selectionCode === "ambiguous_resource"
@@ -1366,7 +1375,12 @@ export class GraphAnswer {
           : [];
         throw new BadQueryError(message, res.status, selectionCode, candidates);
       }
-      throw new GraphAnswerError(code, message, res.status);
+      const timeoutSource: TimeoutSource | undefined = code === "timeout"
+        ? (env?.timeoutSource === "statement" || env?.timeoutSource === "request"
+            ? env.timeoutSource
+            : "gateway")
+        : undefined;
+      throw new GraphAnswerError(code, message, res.status, { timeoutSource, requestId });
     }
 
     return json as AskResult;

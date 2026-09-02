@@ -1,13 +1,24 @@
 // Typed errors thrown by the SDK. The server returns a stable envelope
 // { error: { code, message } }; the client maps it onto these.
+export type TimeoutSource = "statement" | "request" | "gateway" | "client";
+
 export class GraphAnswerError extends Error {
   code: string;
   status?: number;
-  constructor(code: string, message: string, status?: number) {
+  timeoutSource?: TimeoutSource;
+  requestId?: string;
+  constructor(
+    code: string,
+    message: string,
+    status?: number,
+    details: { timeoutSource?: TimeoutSource; requestId?: string } = {},
+  ) {
     super(message);
     this.name = "GraphAnswerError";
     this.code = code;
     this.status = status;
+    this.timeoutSource = details.timeoutSource;
+    this.requestId = details.requestId;
   }
 }
 

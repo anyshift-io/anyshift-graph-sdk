@@ -9,7 +9,9 @@
 - Added explicit alert intervals and stable or qualified workload selectors to
   `graph.alertCause()`. Results distinguish suspected, unknown, and incomplete evidence and do
   not claim that a temporal correlation proves causation.
-- Pinned Graph API query-language 1.20 and regenerated the OpenAPI response types and
+- Added bounded hotspot scan metadata and timeout diagnostics (`timeoutSource` and `requestId`)
+  to `GraphAnswerError`.
+- Pinned Graph API query-language 1.21 and regenerated the OpenAPI response types and
   deterministic query reference.
 
 ### Compatibility

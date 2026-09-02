@@ -225,6 +225,13 @@ try {
 
 Existing exact selectors and uniquely ranked fuzzy-name selectors remain compatible.
 
+Hotspot responses disclose the server's bounded newest-event sample in `hotspots.scan`. Treat the
+ranking counts as counts within that sample, not as unbounded exact totals.
+
+On a timeout, `GraphAnswerError.timeoutSource` is `statement`, `request`, or `gateway` and
+`GraphAnswerError.requestId` preserves the response's `X-Request-ID` when present. Include both in
+support reports so the failing layer and request can be correlated without exposing query data.
+
 ## Canonical Public Exposure
 
 Trace a qualified workload from the public edge through observed hops and controls:

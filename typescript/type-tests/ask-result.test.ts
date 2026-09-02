@@ -39,7 +39,7 @@ type ExpectedIntent =
   | "resolve" | "resource" | "connections" | "inventory" | "events" | "cloudevents" | "cloudresources" | "deliveryevents" | "provenance" | "ownership" | "graphcoverage" | "impact" | "hotspots" | "correlations" | "incident" | "responseincidents" | "oncall" | "failures"
   | "deployments" | "audit" | "nodes" | "deployimpact" | "commoncause" | "blast"
   | "spof" | "path" | "cascade" | "alertimpact" | "monitor" | "datastore" | "flow"
-  | "externaldep" | "alerts" | "alertnoise" | "calls" | "servicetree" | "alertcause"
+  | "externaldep" | "alerts" | "alertnoise" | "calls" | "incidentcontext" | "servicetree" | "alertcause"
   | "access" | "exposure" | "orphans" | "coverage" | "slo" | "tenancy"
   | "sharedconfig" | "alertrules" | "iac" | "iacdrift" | "gitops" | "image" | "netpol" | "storage"
   | "pdb" | "scaling" | "topology" | "priority";
@@ -56,7 +56,7 @@ if (result.intent === "inventory") {
 }
 
 if (result.intent === "events") {
-  const total: number | undefined = result.events?.total;
+  const total: number | null | undefined = result.events?.total;
   void total;
   // @ts-expect-error discriminating events must exclude inventory payloads
   result.inventory;

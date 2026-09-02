@@ -45,12 +45,26 @@ export interface EventsParams {
   namespace?: string;
   noise?: "signal" | "all";
   since?: Since;
+  /** Inclusive RFC3339 lower bound. Must be paired with until and cannot be combined with since. */
+  from?: string;
+  /** Exclusive RFC3339 upper bound. Must be paired with from and cannot be combined with since. */
+  until?: string;
+  /** Exact stable graph resource id. */
+  targetId?: string;
+  /** Exact resource label used with target. */
+  targetType?: string;
+  /** Exact cluster name used with target. */
+  cluster?: string;
+  /** Skip exact full-window counts for lower-latency page reads. */
+  stats?: "exact" | "none";
+  /** Opaque cursor returned by the previous bounded page. */
+  cursor?: string;
   limit?: number;
   offset?: number;
 }
 export interface CloudEventsParams {
   /** Cloud provider. */
-  provider?: "aws" | "azure" | "gcp";
+  provider?: "aws" | "azure" | "gcp" | "cloudflare";
   /** AWS account, Azure subscription, or GCP project scope. */
   scope?: string;
   /** Cloud region or provider location. */
@@ -530,7 +544,7 @@ function requireNonEmpty(field: string, value: string | undefined): void {
   }
 }
 
-function validateOperationalTime(field: "from" | "to" | "at", value: string | undefined): number | undefined {
+function validateOperationalTime(field: "from" | "to" | "until" | "at", value: string | undefined): number | undefined {
   if (value === undefined) return undefined;
   if (typeof value !== "string" || value.trim() === "") {
     throw new TypeError(`${field} must be RFC3339 or now`);
@@ -554,6 +568,46 @@ function validateOperationalTime(field: "from" | "to" | "at", value: string | un
     throw new TypeError(`${field} must be RFC3339 or now`);
   }
   return parsed;
+}
+
+function compareRfc3339(left: string, right: string): number {
+  const parts = (value: string) => {
+    const fraction = /\.(\d{1,9})(?=Z|[+-]\d{2}:\d{2}$)/.exec(value)?.[1] ?? "";
+    const wholeSecond = value.replace(/\.\d{1,9}(?=Z|[+-]\d{2}:\d{2}$)/, "");
+    return {
+      epochSecond: Math.floor(Date.parse(wholeSecond) / 1_000),
+      nanosecond: Number(fraction.padEnd(9, "0")),
+    };
+  };
+  const a = parts(left);
+  const b = parts(right);
+  if (a.epochSecond !== b.epochSecond) return a.epochSecond < b.epochSecond ? -1 : 1;
+  if (a.nanosecond === b.nanosecond) return 0;
+  return a.nanosecond < b.nanosecond ? -1 : 1;
+}
+
+function validateEventWindow(p: EventsParams): void {
+  for (const [field, value] of [
+    ["target", p.target], ["targetId", p.targetId], ["targetType", p.targetType],
+    ["namespace", p.namespace], ["cluster", p.cluster], ["cursor", p.cursor],
+  ] as const) requireNonEmpty(field, value);
+  const from = validateOperationalTime("from", p.from);
+  const until = validateOperationalTime("until", p.until);
+  if ((from === undefined) !== (until === undefined)) throw new TypeError("from and until must be provided together");
+  if (p.since !== undefined && p.from !== undefined) throw new TypeError("since cannot be combined with from and until");
+  if (from !== undefined && until !== undefined && compareRfc3339(p.from!, p.until!) >= 0) {
+    throw new TypeError("from must be earlier than until");
+  }
+  if (p.target !== undefined && p.targetId !== undefined) throw new TypeError("target and targetId cannot be combined");
+  if (p.targetId !== undefined && (p.targetType !== undefined || p.namespace !== undefined || p.cluster !== undefined)) {
+    throw new TypeError("targetId cannot be combined with targetType, namespace, or cluster");
+  }
+  if ((p.targetType !== undefined || p.cluster !== undefined) && p.target === undefined) {
+    throw new TypeError("targetType and cluster require target");
+  }
+  if (p.offset !== undefined && (p.cursor !== undefined || p.from !== undefined || p.until !== undefined)) {
+    throw new TypeError("offset cannot be combined with a bounded event window or cursor");
+  }
 }
 
 function operationalServiceConditions(p: OperationalParams): Array<[string, string]> {
@@ -625,7 +679,7 @@ function validateOperationalParams(
   if (p.since !== undefined && p.from !== undefined) {
     throw new TypeError("since cannot be combined with from");
   }
-  if (from !== undefined && to !== undefined && from >= to) {
+  if (from !== undefined && to !== undefined && compareRfc3339(p.from!, p.to!) >= 0) {
     throw new TypeError("from must be earlier than to");
   }
   return operationalServiceConditions(p);
@@ -751,12 +805,20 @@ export class GraphAnswer {
   }
 
   events(p: EventsParams = {}): Promise<AskResult> {
+    validateEventWindow(p);
     return this.typedQuery(compose("events", [
       ["type", p.type],
       ["target", p.target],
+      ["target_id", p.targetId],
+      ["target_type", p.targetType],
       ["namespace", p.namespace],
+      ["cluster", p.cluster],
       ["noise", p.noise === "all" ? "all" : undefined],
+      ["stats", p.stats],
       ["since", p.since],
+      ["from", p.from],
+      ["until", p.until],
+      ["cursor", p.cursor],
     ], p.limit, p.offset));
   }
 

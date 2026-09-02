@@ -20,8 +20,8 @@ Values may be bare words or single- or double-quoted strings.
 | --- | --- | --- |
 | [`resolve`](#resolve) | Resolve a resource name or fragment to ranked current graph resources. | `term` |
 | [`resource_details`](#resource_details) | Read one current graph resource by exact stable ID with safe properties and bounded relationships. | `id` |
-| [`events`](#events) | Read the infrastructure change-event timeline. | `type`, `target`, `namespace`, `noise`, `since` |
-| [`cloud_events`](#cloud_events) | Read evidence-backed AWS, Azure, and GCP change events without parsing summaries. | `provider`, `scope`, `region`, `category`, `type`, `resource`, `actor`, `correlation`, `operation`, `stats`, `noise`, `diff`, `since`, `cursor` |
+| [`events`](#events) | Read the infrastructure change-event timeline. | `type`, `target`, `target_id`, `target_type`, `namespace`, `cluster`, `noise`, `stats`, `since`, `from`, `until`, `cursor` |
+| [`cloud_events`](#cloud_events) | Read evidence-backed AWS, Azure, GCP, and Cloudflare change events without parsing summaries. | `provider`, `scope`, `region`, `category`, `type`, `resource`, `actor`, `correlation`, `operation`, `stats`, `noise`, `diff`, `since`, `cursor` |
 | [`cloud_resources`](#cloud_resources) | Inspect current or recently deleted AWS, Azure, and GCP resources with freshness and provenance. | `provider`, `scope`, `region`, `type`, `resource`, `lifecycle`, `provenance`, `freshness`, `max_age`, `cursor` |
 | [`delivery_events`](#delivery_events) | Read commit, CI, release, and deployment evidence from the delivery graph. | `stage`, `type`, `resource`, `actor`, `source`, `since`, `cursor` |
 | [`provenance`](#provenance) | Trace a resource to stored release, commit, and actor evidence. | `resource` |
@@ -57,6 +57,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`alerts`](#alerts) | List normalized operational alerts while retaining legacy Datadog firing-monitor fields. | `target`, `provider`, `status`, `severity`, `service_id`, `service`, `service_type`, `service_namespace`, `service_cluster`, `provider_service_id`, `since`, `from`, `to`, `at`, `cursor` |
 | [`response_incidents`](#response_incidents) | List provider-neutral response incidents that coordinate alert handling. | `provider`, `status`, `service_id`, `service`, `service_type`, `service_namespace`, `service_cluster`, `provider_service_id`, `since`, `from`, `to`, `at`, `cursor`, `responder`, `urgency` |
 | [`oncall`](#oncall) | List effective on-call responsibility for a point in time or bounded window. | `provider`, `status`, `service_id`, `service`, `service_type`, `service_namespace`, `service_cluster`, `provider_service_id`, `from`, `to`, `at`, `cursor`, `person`, `schedule` |
+| [`incident_context`](#incident_context) | Group stored incident, alert, service, on-call, responder, and reviewed history hops without live provider calls. | `id`, `target`, `provider`, `since` |
 | [`alert_noise`](#alert_noise) | Rank flapping or stuck monitors. | `target`, `kind`, `since` |
 | [`calls`](#calls) | Inspect APM service callers, callees, and HTTP route evidence or rank call-graph fan-in. | `target`, `source` |
 | [`servicetree`](#servicetree) | Expand a service's downstream services, datastores, and external dependencies. | `target`, `source` |
@@ -142,9 +143,16 @@ Modifiers: `LIMIT`; `OFFSET`.
 | --- | --- | --- | --- | --- |
 | `type` | string | No | Any value | Event type or type fragment, such as oom or scaling. |
 | `target` | string | No | Any value | Resource name or fragment. |
+| `target_id` | string | No | Any value | Exact stable graph resource id; cannot be combined with target or name qualifiers. |
+| `target_type` | string | No | Any value | Exact resource label used with target. |
 | `namespace` | string | No | Any value | Kubernetes namespace. |
+| `cluster` | string | No | Any value | Exact cluster name used with target. |
 | `noise` | enum | No | `signal` (`false`, `exclude`)<br />`all` (`true`, `include`) | Whether to include noisy events. |
+| `stats` | enum | No | `exact`<br />`none` | Whether to calculate exact full-window statistics. |
 | `since` | duration | No | Any value | Relative lookback such as 30m, 2h, 1d, or today. |
+| `from` | string | No | Any value | Inclusive absolute RFC3339 lower bound; requires until and excludes since. |
+| `until` | string | No | Any value | Exclusive absolute RFC3339 upper bound; requires from and excludes since. |
+| `cursor` | string | No | Any value | Opaque seek cursor returned by the previous bounded page. |
 
 ### Forms
 
@@ -156,9 +164,17 @@ Read recent events for a resource inside a time window.
 $ annie graph query "SELECT * FROM events WHERE target = checkout AND since = 2h LIMIT 20"
 ```
 
+#### Historical incident window
+
+Read only an exact half-open incident interval without scanning back from now.
+
+```console
+$ annie graph query "SELECT * FROM events WHERE target = checkout AND from = '2026-08-30T10:00:00Z' AND until = '2026-08-30T11:00:00Z' AND stats = none LIMIT 20"
+```
+
 ## cloud_events
 
-Read evidence-backed AWS, Azure, and GCP change events without parsing summaries.
+Read evidence-backed AWS, Azure, GCP, and Cloudflare change events without parsing summaries.
 
 Result intent: `cloudevents`.
 
@@ -170,8 +186,8 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
-| `provider` | enum | No | `aws`<br />`azure`<br />`gcp` | Cloud provider. |
-| `scope` | string | No | Any value | Provider scope: AWS account, Azure subscription, or GCP project. |
+| `provider` | enum | No | `aws`<br />`azure`<br />`gcp`<br />`cloudflare` | Cloud provider. |
+| `scope` | string | No | Any value | Provider scope: AWS account, Azure subscription, GCP project, or Cloudflare account. |
 | `region` | string | No | Any value | Cloud region or location. |
 | `category` | enum | No | `security`<br />`identity`<br />`lifecycle`<br />`configuration`<br />`capacity`<br />`backup`<br />`other` | Normalized cloud-change category. |
 | `type` | string | No | Any value | Exact normalized event type. Underscores are preserved. |
@@ -1213,7 +1229,7 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 | `to` | string | No | Any value | Absolute RFC3339 upper time bound. |
 | `at` | string | No | Any value | Absolute RFC3339 point in time, or now. |
 | `cursor` | string | No | Any value | Opaque keyset cursor returned by a previous page. |
-| `responder` | string | No | Any value | Exact responder source identity or canonical person identity. |
+| `responder` | string | No | Any value | Exact display name, canonical person ID or email, or provider user ID. |
 | `urgency` | string | No | Any value | Provider urgency value; preserved as provider-specific evidence. |
 
 ### Forms
@@ -1263,6 +1279,43 @@ List effective on-call windows at the selected point in time.
 
 ```console
 $ annie graph query "SELECT * FROM oncall WHERE at = now LIMIT 50"
+```
+
+## incident_context
+
+Group stored incident, alert, service, on-call, responder, and reviewed history hops without live provider calls.
+
+Result intent: `incidentcontext`.
+
+Table aliases: `incidentcontext`.
+
+Modifiers: `LIMIT`; `OFFSET` is not applied.
+
+### Filters
+
+| Filter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `id` | string | No | Any value | Exact provider incident ID or Anyshift incident ID. |
+| `target` | string | No | Any value | Exact canonical resource name, Anyshift ID, hashed ID, or provider service identity. |
+| `provider` | enum | No | `pagerduty` (`pd`)<br />`datadog` (`dd`)<br />`grafana`<br />`victoria`<br />`dynatrace`<br />`newrelic` (`new_relic`)<br />`incidentio` (`incident_io`) | Operational evidence provider. |
+| `since` | duration | No | Any value | Relative lookback such as 30m, 2h, 1d, or today. |
+
+### Forms
+
+#### Incident context by provider id
+
+Exactly one of id or target is required. History uses stored similar incidents and reviewed resolution evidence.
+
+```console
+$ annie graph query "SELECT * FROM incident_context WHERE id = Q2Q5QBE019PJM5 LIMIT 10"
+```
+
+#### Incident context by mapped service
+
+Resolve the latest stored incident that AFFECTS a PagerDuty service with RESOLVES_TO the named resource.
+
+```console
+$ annie graph query "SELECT * FROM incident_context WHERE target = checkout AND since = 30d LIMIT 10"
 ```
 
 ## alert_noise

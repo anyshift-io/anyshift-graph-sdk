@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Added absolute `from`/`until` event windows, stable and qualified target selectors,
+  page-only statistics, and opaque seek cursors to `graph.events()`.
+- Pinned Graph API query-language 1.19 and regenerated the OpenAPI response types and
+  deterministic query reference.
+
+### Compatibility
+
+- Existing relative `since` and offset-based event calls remain unchanged. Absolute windows are
+  half-open, require both bounds, and use cursor pagination instead of offsets.
+
 ## 0.5.16 - 2026-08-19
 
 ### Added

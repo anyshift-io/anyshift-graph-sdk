@@ -60,7 +60,7 @@ const exposurePlatformFields = [
 if (
   document?.openapi !== "3.1.0"
   || askResult?.discriminator?.propertyName !== "intent"
-  || queryLanguage?.version !== "1.17"
+  || queryLanguage?.version !== "1.19"
   || queryLanguage?.tables?.length !== askResult.oneOf.length
   || exposureVariant?.properties?.exposure?.$ref !== "#/components/schemas/ExposureResult"
   || !exposureVariant?.required?.includes("exposure")
@@ -75,6 +75,8 @@ if (
   || !cloudEventsResult?.required?.includes("statistics")
   || !cloudEventsResult?.properties?.total?.anyOf?.some((entry) => entry?.type === "null")
   || !cloudEventCorrelation?.required?.includes("providerOperationId")
+  || !queryLanguage?.tables?.find((table) => table?.name === "events")?.filters?.some((filter) => filter?.name === "from")
+  || !queryLanguage?.tables?.find((table) => table?.name === "events")?.filters?.some((filter) => filter?.name === "until")
   || correlationsTable?.intent !== "correlations"
   || correlationsTable?.deprecated !== undefined
   || incidentsTable?.intent !== "incident"
@@ -103,7 +105,7 @@ if (
   || !onCallIdentity?.required?.includes("candidates")
   || onCallIdentity?.properties?.candidates?.maxItems !== 10
 ) {
-  throw new Error(`${source} does not expose the expected executable query-language 1.17 active incident, correlations, operational-response identity candidates, cloud-event, canonical exposure, and exposure platform contract`);
+  throw new Error(`${source} does not expose the expected executable query-language 1.19 event-window, active incident, correlations, operational-response identity candidates, cloud-event, canonical exposure, and exposure platform contract`);
 }
 
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`);

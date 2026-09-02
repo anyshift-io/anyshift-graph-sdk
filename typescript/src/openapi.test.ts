@@ -13,7 +13,7 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
   assert.equal(schemas.AskRequest.additionalProperties, false);
   assert.equal(schemas.AskResult.discriminator.propertyName, "intent");
   assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, variants.length);
-  assert.equal(queryLanguage.version, "1.17");
+  assert.equal(queryLanguage.version, "1.19");
   assert.equal(queryLanguage.tables.length, variants.length);
   const inventorySample = schemas.InventoryResult.properties.sample.items;
   assert.deepEqual(inventorySample.properties.resourceId.type, ["string", "null"]);
@@ -27,12 +27,16 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
   const path = queryLanguage.tables.find((table: any) => table.name === "path");
   const topology = queryLanguage.tables.find((table: any) => table.name === "topology");
   const cloudEvents = queryLanguage.tables.find((table: any) => table.name === "cloud_events");
+  const events = queryLanguage.tables.find((table: any) => table.name === "events");
   const iac = queryLanguage.tables.find((table: any) => table.name === "iac");
   const iacDrift = queryLanguage.tables.find((table: any) => table.name === "iac_drift");
   assert.ok(path.filters.some((filter: any) => filter.name === "from_type"));
   assert.ok(path.filters.some((filter: any) => filter.name === "scope"));
   assert.ok(topology.filters.find((filter: any) => filter.name === "source").values.some((entry: any) => entry.value === "tempo"));
   assert.ok(cloudEvents.filters.some((filter: any) => filter.name === "cursor"));
+  for (const filter of ["from", "until", "stats", "cursor"]) {
+    assert.ok(events.filters.some((entry: any) => entry.name === filter));
+  }
   assert.ok(cloudEvents.filters.some((filter: any) => filter.name === "diff"));
   assert.ok(cloudEvents.filters.some((filter: any) => filter.name === "operation"));
   assert.deepEqual(

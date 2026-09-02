@@ -83,6 +83,33 @@ test("resolve and blast compose stable and qualified resource selectors", async 
   ]);
 });
 
+test("resolve and blast reject empty or conflicting resource selectors before fetch", () => {
+  const calls: string[] = [];
+  const gx = new GraphAnswer({
+    baseUrl: "http://x",
+    fetch: async (_url, init) => {
+      calls.push(JSON.parse(init.body).sql);
+      return resp(200, { intent: "resolve", summary: "ok" });
+    },
+  });
+
+  const invalidResolve = [
+    "",
+    { id: "" },
+    { name: "" },
+    { name: "checkout", cluster: "" },
+    { id: "resource-id", cluster: "staging" },
+    { id: "resource-id", name: "checkout" },
+    {},
+    null,
+  ];
+  for (const term of invalidResolve) {
+    assert.throws(() => gx.resolve({ term } as any), TypeError);
+  }
+  assert.throws(() => gx.blast({ resource: { name: "checkout", namespace: "" } } as any), TypeError);
+  assert.equal(calls.length, 0);
+});
+
 test("ask posts to /ask with the question body", async () => {
   let body: any;
   let headers: Record<string, string> = {};

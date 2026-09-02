@@ -559,13 +559,40 @@ function resourceSelectorConditions(
   nameField: "term" | "resource",
   selector: ResourceLookupSelector,
 ): Array<[string, string]> {
-  if (typeof selector === "string") return [[nameField, selector]];
-  if (selector.id !== undefined) return [["resource_id", selector.id]];
+  if (typeof selector === "string") {
+    requireNonEmpty(nameField, selector);
+    return [[nameField, selector]];
+  }
+  if (selector === null || typeof selector !== "object" || Array.isArray(selector)) {
+    throw new TypeError(`${nameField} must be a resource selector`);
+  }
+
+  const candidate = selector as {
+    id?: string;
+    name?: string;
+    type?: string;
+    namespace?: string;
+    cluster?: string;
+  };
+  for (const [field, value] of [
+    ["id", candidate.id], ["name", candidate.name], ["type", candidate.type],
+    ["namespace", candidate.namespace], ["cluster", candidate.cluster],
+  ] as const) requireNonEmpty(`${nameField} ${field}`, value);
+
+  const hasId = candidate.id !== undefined;
+  const hasName = candidate.name !== undefined;
+  if (hasId === hasName) {
+    throw new TypeError(`${nameField} requires exactly one of name or id`);
+  }
+  if (hasId && (candidate.type !== undefined || candidate.namespace !== undefined || candidate.cluster !== undefined)) {
+    throw new TypeError(`${nameField} id cannot be combined with type, namespace, or cluster`);
+  }
+  if (candidate.id !== undefined) return [["resource_id", candidate.id]];
   return [
-    [nameField, selector.name],
-    ["resource_type", selector.type ?? ""],
-    ["resource_namespace", selector.namespace ?? ""],
-    ["resource_cluster", selector.cluster ?? ""],
+    [nameField, candidate.name!],
+    ["resource_type", candidate.type ?? ""],
+    ["resource_namespace", candidate.namespace ?? ""],
+    ["resource_cluster", candidate.cluster ?? ""],
   ];
 }
 

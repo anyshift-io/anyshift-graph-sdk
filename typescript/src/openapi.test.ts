@@ -43,6 +43,7 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
   for (const [table, principal] of [[resolve, "term"], [blastRadius, "resource"]] as const) {
     const expected = [principal, "resource_id", ...selectorFields];
     assert.deepEqual(table.filters.map((filter: any) => filter.name), expected);
+    assert.ok(table.filters.every((filter: any) => filter.type === "string"));
     assert.deepEqual(table.selector.exactlyOneOf, [principal, "resource_id"]);
     assert.deepEqual(table.selector.nonEmpty, expected);
     assert.deepEqual(table.selector.qualifiers, {

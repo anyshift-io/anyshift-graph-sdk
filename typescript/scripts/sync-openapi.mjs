@@ -69,6 +69,7 @@ function hasQualifiedSelectorContract(table, principal) {
   const expectedFields = [principal, "resource_id", ...qualifiedSelectorFields];
   const selector = table?.selector;
   return JSON.stringify(table?.filters?.map((filter) => filter?.name)) === JSON.stringify(expectedFields)
+    && expectedFields.every((name) => table.filters.find((filter) => filter?.name === name)?.type === "string")
     && JSON.stringify(selector?.exactlyOneOf) === JSON.stringify([principal, "resource_id"])
     && JSON.stringify(selector?.nonEmpty) === JSON.stringify(expectedFields)
     && JSON.stringify(selector?.qualifiers?.fields) === JSON.stringify(qualifiedSelectorFields)

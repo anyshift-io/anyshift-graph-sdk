@@ -37,6 +37,21 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
       /exactly one of target or target_id is required/,
     );
   }
+  const resolve = queryLanguage.tables.find((table: any) => table.name === "resolve");
+  const blastRadius = queryLanguage.tables.find((table: any) => table.name === "blast_radius");
+  const selectorFields = ["resource_type", "resource_namespace", "resource_cluster"];
+  for (const [table, principal] of [[resolve, "term"], [blastRadius, "resource"]] as const) {
+    const expected = [principal, "resource_id", ...selectorFields];
+    assert.deepEqual(table.filters.map((filter: any) => filter.name), expected);
+    assert.deepEqual(table.selector.exactlyOneOf, [principal, "resource_id"]);
+    assert.deepEqual(table.selector.nonEmpty, expected);
+    assert.deepEqual(table.selector.qualifiers, {
+      fields: selectorFields,
+      require: principal,
+      forbidWith: "resource_id",
+      routeExact: true,
+    });
+  }
   assert.ok(path.filters.some((filter: any) => filter.name === "from_type"));
   assert.ok(path.filters.some((filter: any) => filter.name === "scope"));
   assert.ok(topology.filters.find((filter: any) => filter.name === "source").values.some((entry: any) => entry.value === "tempo"));

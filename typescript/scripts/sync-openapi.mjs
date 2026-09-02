@@ -33,6 +33,8 @@ const incidentResponderIdentity = responseIncidentsResult?.properties?.items?.it
   ?.properties?.responders?.items;
 const onCallIdentity = onCallResult?.properties?.items?.items?.properties?.person;
 const alertCauseTable = queryLanguage?.tables?.find((table) => table?.name === "alert_cause");
+const resolveTable = queryLanguage?.tables?.find((table) => table?.name === "resolve");
+const blastRadiusTable = queryLanguage?.tables?.find((table) => table?.name === "blast_radius");
 const alertCauseResult = document?.components?.schemas?.AlertCauseResult;
 const hotspotsResult = document?.components?.schemas?.HotspotsResult;
 const timeoutSource = document?.components?.schemas?.ErrorEnvelope
@@ -62,11 +64,25 @@ const exposurePlatformFields = [
   "observedAt",
   "provenance",
 ];
+const qualifiedSelectorFields = ["resource_type", "resource_namespace", "resource_cluster"];
+function hasQualifiedSelectorContract(table, principal) {
+  const expectedFields = [principal, "resource_id", ...qualifiedSelectorFields];
+  const selector = table?.selector;
+  return JSON.stringify(table?.filters?.map((filter) => filter?.name)) === JSON.stringify(expectedFields)
+    && JSON.stringify(selector?.exactlyOneOf) === JSON.stringify([principal, "resource_id"])
+    && JSON.stringify(selector?.nonEmpty) === JSON.stringify(expectedFields)
+    && JSON.stringify(selector?.qualifiers?.fields) === JSON.stringify(qualifiedSelectorFields)
+    && selector?.qualifiers?.require === principal
+    && selector?.qualifiers?.forbidWith === "resource_id"
+    && selector?.qualifiers?.routeExact === true;
+}
 if (
   document?.openapi !== "3.1.0"
   || askResult?.discriminator?.propertyName !== "intent"
   || queryLanguage?.version !== "1.22"
   || queryLanguage?.tables?.length !== askResult.oneOf.length
+  || !hasQualifiedSelectorContract(resolveTable, "term")
+  || !hasQualifiedSelectorContract(blastRadiusTable, "resource")
   || exposureVariant?.properties?.exposure?.$ref !== "#/components/schemas/ExposureResult"
   || !exposureVariant?.required?.includes("exposure")
   || canonicalExposureFields.some((field) => !exposureResult?.required?.includes(field))

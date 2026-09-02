@@ -166,7 +166,7 @@ explicit without downgrading an independently confirmed fresh traffic path.
 | Response incidents | `graph.incidents()` | `response_incidents` | Which stored provider incidents are open, acknowledged, resolved, or otherwise active for a service. |
 | On-call responsibility | `graph.onCall()` | `oncall` | Who is responsible now, at a point in time, or across a bounded schedule window. |
 | Alert noise | `graph.alertNoise()` | `alert_noise` | Which monitors are flapping or stuck. |
-| Alert cause | `graph.alertCause({ target, id, type, alert, from, to })` | `alert_cause` | Bounded topology-correlated Kubernetes change evidence inside an alert interval; this is supporting evidence, not proof of causality. |
+| Alert cause | `graph.alertCause({ target, namespace, cluster, alert, from, to })` or `graph.alertCause({ targetId, targetType, alert, from, to })` | `alert_cause` | Bounded topology-correlated Kubernetes change evidence inside an alert interval; this is supporting evidence, not proof of causality. |
 | SLO health | `graph.slo()` | `slo` | Which SLOs are breaching or at risk, or the status of one SLO. |
 | Grafana/Victoria alert rules | `graph.alertRules()` | `alertrules` | Which workloads lack rules, which rules exist, or which rules cover a target. |
 

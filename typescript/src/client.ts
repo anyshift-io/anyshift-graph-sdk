@@ -64,7 +64,7 @@ export interface EventsParams {
 }
 export interface CloudEventsParams {
   /** Cloud provider. */
-  provider?: "aws" | "azure" | "gcp";
+  provider?: "aws" | "azure" | "gcp" | "cloudflare";
   /** AWS account, Azure subscription, or GCP project scope. */
   scope?: string;
   /** Cloud region or provider location. */

@@ -83,6 +83,15 @@ test("cloudEvents keeps GCP provider operation and Anyshift correlation filters 
   );
 });
 
+test("cloudEvents accepts the contract-advertised Cloudflare provider", async () => {
+  const { gx, calls } = capturing();
+  await gx.cloudEvents({ provider: "cloudflare", since: "1d", limit: 20 });
+  assert.equal(
+    calls[0].body.sql,
+    "SELECT * FROM cloud_events WHERE provider = 'cloudflare' AND since = '1d' LIMIT 20",
+  );
+});
+
 test("cloudEvents composes explicit statistics mode without changing legacy omission", async () => {
   const { gx, calls } = capturing();
   await gx.cloudEvents({ provider: "gcp", stats: "none", since: "72h", limit: 100 });

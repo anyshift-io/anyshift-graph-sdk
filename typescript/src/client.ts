@@ -37,8 +37,8 @@ export interface GraphAnswerOptions {
 }
 
 export interface ResolveParams {
-  /** Resource name or fragment to rank against the current graph. */
-  term: string;
+  /** Resource name/fragment, stable id, or qualified exact name to resolve. */
+  term: ResourceLookupSelector;
   /** Maximum candidates to return. */
   limit?: number;
 }
@@ -204,7 +204,7 @@ export interface CommonCauseParams {
 }
 export interface BlastParams {
   /** The resource whose transitive impact to compute (configmap, node, SA, workload, …). */
-  resource: string;
+  resource: ResourceLookupSelector;
   /** Top-N workloads / services to return. */
   limit?: number;
 }
@@ -342,6 +342,10 @@ export type ResourceSelector =
   | string
   | { id: string; name?: never; type?: never; namespace?: never; cluster?: never }
   | { id?: never; name: string; type: string; namespace?: string; cluster?: string };
+export type ResourceLookupSelector =
+  | string
+  | { id: string; name?: never; type?: never; namespace?: never; cluster?: never }
+  | { id?: never; name: string; type?: string; namespace?: string; cluster?: string };
 export interface PathParams {
   /** The first resource (start of the path). */
   from: ResourceSelector;
@@ -548,6 +552,52 @@ function selectorConditions(prefix: "from" | "to", selector: ResourceSelector): 
     [`${prefix}_type`, selector.type],
     [`${prefix}_namespace`, selector.namespace ?? ""],
     [`${prefix}_cluster`, selector.cluster ?? ""],
+  ];
+}
+
+function resourceSelectorConditions(
+  nameField: "term" | "resource",
+  selector: ResourceLookupSelector,
+): Array<[string, string]> {
+  if (typeof selector === "string") {
+    requireNonEmpty(nameField, selector);
+    return [[nameField, selector]];
+  }
+  if (selector === null || typeof selector !== "object" || Array.isArray(selector)) {
+    throw new TypeError(`${nameField} must be a resource selector`);
+  }
+
+  const keys = Object.keys(selector);
+  const allowed = new Set(["id", "name", "type", "namespace", "cluster"]);
+  if (keys.some((key) => !allowed.has(key))) {
+    throw new TypeError(`${nameField} resource selector contains an unexpected property`);
+  }
+  const candidate = selector as {
+    id?: string;
+    name?: string;
+    type?: string;
+    namespace?: string;
+    cluster?: string;
+  };
+  for (const [field, value] of [
+    ["id", candidate.id], ["name", candidate.name], ["type", candidate.type],
+    ["namespace", candidate.namespace], ["cluster", candidate.cluster],
+  ] as const) requireNonEmpty(`${nameField} ${field}`, value);
+
+  const hasId = candidate.id !== undefined;
+  const hasName = candidate.name !== undefined;
+  if (hasId === hasName) {
+    throw new TypeError(`${nameField} requires exactly one of name or id`);
+  }
+  if (hasId && (candidate.type !== undefined || candidate.namespace !== undefined || candidate.cluster !== undefined)) {
+    throw new TypeError(`${nameField} id cannot be combined with type, namespace, or cluster`);
+  }
+  if (candidate.id !== undefined) return [["resource_id", candidate.id]];
+  return [
+    [nameField, candidate.name!],
+    ["resource_type", candidate.type ?? ""],
+    ["resource_namespace", candidate.namespace ?? ""],
+    ["resource_cluster", candidate.cluster ?? ""],
   ];
 }
 
@@ -808,7 +858,7 @@ export class GraphAnswer {
   }
 
   resolve(p: ResolveParams): Promise<AskResult> {
-    return this.typedQuery(compose("resolve", [["term", p.term]], p.limit));
+    return this.typedQuery(compose("resolve", resourceSelectorConditions("term", p.term), p.limit));
   }
 
   connections(p: { resource: string }): Promise<AskResult> {
@@ -989,9 +1039,7 @@ export class GraphAnswer {
 
   /** Transitive blast radius — the workloads & services affected if `resource` changes/dies. */
   blast(p: BlastParams): Promise<AskResult> {
-    return this.typedQuery(compose("blast_radius", [
-      ["resource", p.resource],
-    ], p.limit));
+    return this.typedQuery(compose("blast_radius", resourceSelectorConditions("resource", p.resource), p.limit));
   }
 
   /** Single points of failure — most-depended-on resources of a kind, ranked by fan-in. */

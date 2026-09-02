@@ -18,7 +18,7 @@ Values may be bare words or single- or double-quoted strings.
 
 | Target | Purpose | Filters |
 | --- | --- | --- |
-| [`resolve`](#resolve) | Resolve a resource name or fragment to ranked current graph resources. | `term` |
+| [`resolve`](#resolve) | Resolve a resource name or fragment to ranked current graph resources. | `term`, `resource_id`, `resource_type`, `resource_namespace`, `resource_cluster` |
 | [`resource_details`](#resource_details) | Read one current graph resource by exact stable ID with safe properties and bounded relationships. | `id` |
 | [`events`](#events) | Read the infrastructure change-event timeline. | `type`, `target`, `target_id`, `target_type`, `namespace`, `cluster`, `noise`, `stats`, `since`, `from`, `until`, `cursor` |
 | [`cloud_events`](#cloud_events) | Read evidence-backed AWS, Azure, GCP, and Cloudflare change events without parsing summaries. | `provider`, `scope`, `region`, `category`, `type`, `resource`, `actor`, `correlation`, `operation`, `stats`, `noise`, `diff`, `since`, `cursor` |
@@ -39,7 +39,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`nodes`](#nodes) | Read node lifecycle and capacity events. | `target`, `since` |
 | [`deploy_impact`](#deploy_impact) | Join recent deployments to the failures that followed them. | `target`, `since` |
 | [`common_cause`](#common_cause) | Find shared infrastructure or dependencies behind recent failures. | `namespace`, `since` |
-| [`blast_radius`](#blast_radius) | Calculate the transitive workloads, pods, and services affected by a resource. | `resource` |
+| [`blast_radius`](#blast_radius) | Calculate the transitive workloads, pods, and services affected by a resource. | `resource`, `resource_id`, `resource_type`, `resource_namespace`, `resource_cluster` |
 | [`spof`](#spof) | Rank highly shared ConfigMaps, service accounts, or nodes by fan-in. | `kind`, `namespace` |
 | [`orphans`](#orphans) | Find unused or dangling Kubernetes resources. | `kind`, `namespace` |
 | [`coverage`](#coverage) | Find service, monitor, or metrics coverage gaps. | `kind`, `namespace` |
@@ -89,7 +89,11 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
-| `term` | string | Yes | Any value | Resource name or fragment to resolve. |
+| `term` | string | No | Any value | Resource name or fragment; exactly one of term and resource_id is required. |
+| `resource_id` | string | No | Any value | Exact stable graph or provider id; cannot be combined with term or name qualifiers. |
+| `resource_type` | string | No | Any value | Non-empty term-only exact type qualifier. |
+| `resource_namespace` | string | No | Any value | Non-empty term-only exact namespace qualifier. |
+| `resource_cluster` | string | No | Any value | Non-empty term-only exact cluster qualifier. |
 
 ### Forms
 
@@ -99,6 +103,14 @@ Return ranked candidates for a resource name or fragment.
 
 ```console
 $ annie graph query "SELECT * FROM resolve WHERE term = checkout LIMIT 10"
+```
+
+#### Resolve one qualified resource
+
+Resolve an exact same-named resource without a separate client-side lookup.
+
+```console
+$ annie graph query "SELECT * FROM resolve WHERE term = checkout AND resource_type = K8S_DEPLOYMENT AND resource_cluster = staging LIMIT 10"
 ```
 
 ## resource_details
@@ -720,7 +732,11 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
-| `resource` | string | Yes | Any value | Starting resource name or identifier. |
+| `resource` | string | No | Any value | Starting resource name; exactly one of resource and resource_id is required. |
+| `resource_id` | string | No | Any value | Exact stable graph or provider id; cannot be combined with resource or name qualifiers. |
+| `resource_type` | string | No | Any value | Non-empty resource-only exact type qualifier. |
+| `resource_namespace` | string | No | Any value | Non-empty resource-only exact namespace qualifier. |
+| `resource_cluster` | string | No | Any value | Non-empty resource-only exact cluster qualifier. |
 
 ### Forms
 
@@ -730,6 +746,14 @@ Walk impact outward from one resource.
 
 ```console
 $ annie graph query "SELECT * FROM blast_radius WHERE resource = shared-runtime-sa LIMIT 100"
+```
+
+#### Qualified resource blast radius
+
+Select one same-named resource by stable id or exact name qualifiers.
+
+```console
+$ annie graph query "SELECT * FROM blast_radius WHERE resource = checkout AND resource_type = K8S_DEPLOYMENT AND resource_cluster = staging LIMIT 100"
 ```
 
 ## spof

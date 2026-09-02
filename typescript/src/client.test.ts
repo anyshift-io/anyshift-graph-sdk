@@ -60,6 +60,56 @@ test("query posts to /v1/query with the sql body and returns the result", async 
   assert.doesNotMatch(JSON.stringify(captured.init.headers), /oom/);
 });
 
+test("resolve and blast compose stable and qualified resource selectors", async () => {
+  const statements: string[] = [];
+  const gx = new GraphAnswer({
+    baseUrl: "http://x",
+    fetch: async (_url, init) => {
+      statements.push(JSON.parse(init.body).sql);
+      return resp(200, { intent: "resolve", summary: "ok" });
+    },
+  });
+
+  await gx.resolve({ term: { name: "checkout", type: "K8S_DEPLOYMENT", namespace: "apps", cluster: "staging" }, limit: 5 });
+  await gx.resolve({ term: { id: "checkout-staging-id" }, limit: 1 });
+  await gx.blast({ resource: { name: "checkout", cluster: "staging" }, limit: 20 });
+  await gx.blast({ resource: { id: "checkout-staging-id" }, limit: 20 });
+
+  assert.deepEqual(statements, [
+    "SELECT * FROM resolve WHERE term = 'checkout' AND resource_type = 'K8S_DEPLOYMENT' AND resource_namespace = 'apps' AND resource_cluster = 'staging' LIMIT 5",
+    "SELECT * FROM resolve WHERE resource_id = 'checkout-staging-id' LIMIT 1",
+    "SELECT * FROM blast_radius WHERE resource = 'checkout' AND resource_cluster = 'staging' LIMIT 20",
+    "SELECT * FROM blast_radius WHERE resource_id = 'checkout-staging-id' LIMIT 20",
+  ]);
+});
+
+test("resolve and blast reject empty or conflicting resource selectors before fetch", () => {
+  const calls: string[] = [];
+  const gx = new GraphAnswer({
+    baseUrl: "http://x",
+    fetch: async (_url, init) => {
+      calls.push(JSON.parse(init.body).sql);
+      return resp(200, { intent: "resolve", summary: "ok" });
+    },
+  });
+
+  const invalidResolve = [
+    "",
+    { id: "" },
+    { name: "" },
+    { name: "checkout", cluster: "" },
+    { id: "resource-id", cluster: "staging" },
+    { id: "resource-id", name: "checkout" },
+    {},
+    null,
+  ];
+  for (const term of invalidResolve) {
+    assert.throws(() => gx.resolve({ term } as any), TypeError);
+  }
+  assert.throws(() => gx.blast({ resource: { name: "checkout", namespace: "" } } as any), TypeError);
+  assert.equal(calls.length, 0);
+});
+
 test("ask posts to /ask with the question body", async () => {
   let body: any;
   let headers: Record<string, string> = {};

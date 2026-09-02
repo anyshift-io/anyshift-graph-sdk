@@ -39,6 +39,7 @@ export type {
   TenancyParams,
   SharedConfigParams,
   ResourceSelector,
+  ResourceLookupSelector,
   PathParams,
   CascadeParams,
   AlertImpactParams,

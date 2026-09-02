@@ -4,6 +4,8 @@
 
 ### Added
 
+- Added stable-ID and type, namespace, and cluster-qualified selectors to `graph.resolve()` and
+  `graph.blast()`.
 - Added absolute `from`/`until` event windows, stable and qualified target selectors,
   page-only statistics, and opaque seek cursors to `graph.events()`.
 - Added explicit alert intervals and stable or qualified workload selectors to
@@ -11,7 +13,7 @@
   not claim that a temporal correlation proves causation.
 - Added bounded hotspot scan metadata and timeout diagnostics (`timeoutSource` and `requestId`)
   to `GraphAnswerError`.
-- Pinned Graph API query-language 1.21 and regenerated the OpenAPI response types and
+- Pinned Graph API query-language 1.22 and regenerated the OpenAPI response types and
   deterministic query reference.
 
 ### Compatibility

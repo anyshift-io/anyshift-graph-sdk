@@ -200,6 +200,18 @@ test("resolve composes term and limit SQL", async () => {
   assert.equal(calls[0].body.sql, "SELECT * FROM resolve WHERE term = 'checkout api' LIMIT 20");
 });
 
+test("resolve and blast reject unexpected selector properties", () => {
+  const { gx } = capturing();
+  assert.throws(
+    () => gx.resolve({ term: { name: "checkout", type: "K8S_DEPLOYMENT", cluser: "staging" } as any }),
+    /unexpected property/,
+  );
+  assert.throws(
+    () => gx.blast({ resource: { name: "checkout", type: "K8S_DEPLOYMENT", cluser: "staging" } as any }),
+    /unexpected property/,
+  );
+});
+
 test("inventory composes type SQL", async () => {
   const { gx, calls } = capturing();
   await gx.inventory({ type: "service" });

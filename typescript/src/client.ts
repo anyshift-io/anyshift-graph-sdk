@@ -567,6 +567,11 @@ function resourceSelectorConditions(
     throw new TypeError(`${nameField} must be a resource selector`);
   }
 
+  const keys = Object.keys(selector);
+  const allowed = new Set(["id", "name", "type", "namespace", "cluster"]);
+  if (keys.some((key) => !allowed.has(key))) {
+    throw new TypeError(`${nameField} resource selector contains an unexpected property`);
+  }
   const candidate = selector as {
     id?: string;
     name?: string;

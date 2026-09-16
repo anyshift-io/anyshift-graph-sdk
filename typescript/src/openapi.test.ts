@@ -6,6 +6,15 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
   const raw = await readFile(new URL("../../openapi/graph-api.v1.json", import.meta.url), "utf8");
   const document = JSON.parse(raw);
   const schemas = document.components.schemas;
+  for (const properties of [schemas.MonitorResult.properties, schemas.AlertsResult.properties.items.items.properties]) {
+    assert.equal(properties.scopeTargets.type, "array");
+    assert.deepEqual(properties.scopeTargetCount, { type: "integer", minimum: 0 });
+    assert.deepEqual(properties.scopeTargets.items.properties.resolution.enum, ["resolved", "unresolved", "ambiguous"]);
+    for (const field of ["resolution", "id", "name", "type", "namespace", "cluster"]) {
+      assert.ok(properties.scopeTargets.items.required.includes(field));
+    }
+  }
+  assert.match(document.components.parameters.GraphCapabilities.description, /monitor-scope-targets-v1/);
   const variants = schemas.AskResult.oneOf;
   const queryLanguage = document["x-anyshift-query-language"];
 

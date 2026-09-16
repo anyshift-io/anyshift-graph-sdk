@@ -80,8 +80,8 @@ export interface CloudEventsParams {
 }
 export interface CloudResourcesParams {
   /** Cloud provider. */
-  provider?: "aws" | "azure" | "gcp";
-  /** AWS account, Azure subscription, or GCP project scope. */
+  provider?: "aws" | "azure" | "gcp" | "cloudflare";
+  /** AWS account, Azure subscription, GCP project, or Cloudflare account scope. */
   scope?: string;
   /** Cloud region or provider location. */
   region?: string;
@@ -1221,7 +1221,7 @@ export class GraphAnswer {
     const headers: Record<string, string> = {
       "content-type": "application/json",
       "x-anyshift-client": "graph-sdk-typescript",
-      "x-anyshift-graph-capabilities": "monitor-scope-targets-v1",
+      "x-anyshift-graph-capabilities": "monitor-scope-targets-v1,cloudflare-inventory-v1",
       "x-anyshift-client-version": GRAPH_SDK_VERSION,
       "x-anyshift-invocation-id": this.invocationId ?? generateInvocationId(),
       "x-anyshift-graph-workflow": workflow,

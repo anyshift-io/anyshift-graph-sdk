@@ -22,7 +22,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`resource_details`](#resource_details) | Read one current graph resource by exact stable ID with safe properties and bounded relationships. | `id` |
 | [`events`](#events) | Read the infrastructure change-event timeline. | `type`, `target`, `namespace`, `noise`, `since` |
 | [`cloud_events`](#cloud_events) | Read evidence-backed AWS, Azure, and GCP change events without parsing summaries. | `provider`, `scope`, `region`, `category`, `type`, `resource`, `actor`, `correlation`, `operation`, `stats`, `noise`, `diff`, `since`, `cursor` |
-| [`cloud_resources`](#cloud_resources) | Inspect current or recently deleted AWS, Azure, and GCP resources with freshness and provenance. | `provider`, `scope`, `region`, `type`, `resource`, `lifecycle`, `provenance`, `freshness`, `max_age`, `cursor` |
+| [`cloud_resources`](#cloud_resources) | Inspect current or recently deleted AWS, Azure, GCP, and Cloudflare resources with freshness and provenance. | `provider`, `scope`, `region`, `type`, `resource`, `lifecycle`, `provenance`, `freshness`, `max_age`, `cursor` |
 | [`delivery_events`](#delivery_events) | Read commit, CI, release, and deployment evidence from the delivery graph. | `stage`, `type`, `resource`, `actor`, `source`, `since`, `cursor` |
 | [`provenance`](#provenance) | Trace a resource to stored release, commit, and actor evidence. | `resource` |
 | [`ownership`](#ownership) | Resolve observed GitHub user or team code ownership and contact identities. | `resource` |
@@ -197,7 +197,7 @@ $ annie graph query "SELECT * FROM cloud_events WHERE provider = aws AND categor
 
 ## cloud_resources
 
-Inspect current or recently deleted AWS, Azure, and GCP resources with freshness and provenance.
+Inspect current or recently deleted AWS, Azure, GCP, and Cloudflare resources with freshness and provenance.
 
 Result intent: `cloudresources`.
 
@@ -209,8 +209,8 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 
 | Filter | Type | Required | Accepted values | Description |
 | --- | --- | --- | --- | --- |
-| `provider` | enum | No | `aws`<br />`azure`<br />`gcp` | Cloud provider. |
-| `scope` | string | No | Any value | Provider scope: AWS account, Azure subscription, or GCP project. |
+| `provider` | enum | No | `aws`<br />`azure`<br />`gcp`<br />`cloudflare` | Cloud provider. |
+| `scope` | string | No | Any value | Provider scope: AWS account, Azure subscription, GCP project, or Cloudflare account. |
 | `region` | string | No | Any value | Cloud region or location. |
 | `type` | string | No | Any value | Provider resource type, such as EC2_INSTANCE or COMPUTE_INSTANCES. |
 | `resource` | string | No | Any value | Exact native id, graph id, or unambiguous resource name. |

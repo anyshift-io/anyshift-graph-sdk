@@ -3389,6 +3389,36 @@
             "example": "SELECT * FROM topology WHERE service = checkout AND level = context"
           }
         ]
+      },
+      {
+        "name": "event_contributors",
+        "aliases": [],
+        "intent": "eventcontributors",
+        "summary": "Read exact stored Sentry alert-evaluation contributors; not inferred root causes.",
+        "filters": [
+          {
+            "name": "firing_id",
+            "type": "string",
+            "description": "Exact case-sensitive firing event dedupeId.",
+            "required": true
+          },
+          {
+            "name": "cursor",
+            "type": "string",
+            "description": "Opaque contributor page cursor."
+          }
+        ],
+        "pagination": {
+          "limit": true,
+          "offset": false
+        },
+        "forms": [
+          {
+            "name": "Alert contributors",
+            "description": "Inspect linked and missing declared contributors; evaluation coverage stays unknown.",
+            "example": "SELECT * FROM event_contributors WHERE firing_id = sentry-alert-firing-1 LIMIT 50"
+          }
+        ]
       }
     ]
   },
@@ -18206,11 +18236,287 @@
               }
             },
             "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "question",
+              "intent",
+              "summary",
+              "eventContributors"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "countOnly": {
+                "type": "boolean"
+              },
+              "elapsedMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "resolved": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "term",
+                      "hashedID",
+                      "name",
+                      "type"
+                    ],
+                    "properties": {
+                      "term": {
+                        "type": "string"
+                      },
+                      "hashedID": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphNode"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GraphEdge"
+                }
+              },
+              "intent": {
+                "const": "eventcontributors"
+              },
+              "eventContributors": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/EventContributorsResult"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
           }
         ],
         "discriminator": {
           "propertyName": "intent"
         }
+      },
+      "EventContributorsResult": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "const": "sentry"
+          },
+          "firingId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "found",
+              "not_found"
+            ]
+          },
+          "firing": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "timestamp": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "alertRuleId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "issueId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "type",
+                  "timestamp",
+                  "alertRuleId",
+                  "issueId"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "counts": {
+            "type": "object",
+            "properties": {
+              "declared": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "linkedDeclared": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "linkedEvents": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "missingDeclared": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "declared",
+              "linkedDeclared",
+              "linkedEvents",
+              "missingDeclared"
+            ],
+            "additionalProperties": false
+          },
+          "declarationAvailable": {
+            "type": "boolean"
+          },
+          "evaluationCoverage": {
+            "type": "string",
+            "const": "unknown"
+          },
+          "missingProviderEventIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "missingSampleTruncated": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "providerEventId": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "release": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "providerEventId",
+                "type",
+                "timestamp",
+                "release"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "page": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "hasMore": {
+                "type": "boolean"
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "limit",
+              "hasMore",
+              "nextCursor"
+            ],
+            "additionalProperties": false
+          },
+          "evidenceBoundary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider",
+          "firingId",
+          "status",
+          "firing",
+          "counts",
+          "declarationAvailable",
+          "evaluationCoverage",
+          "missingProviderEventIds",
+          "missingSampleTruncated",
+          "items",
+          "page",
+          "evidenceBoundary"
+        ],
+        "additionalProperties": false
       }
     }
   },

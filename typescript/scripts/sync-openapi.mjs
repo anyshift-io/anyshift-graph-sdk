@@ -16,6 +16,11 @@ if (!Array.isArray(inventoryProviders) || !inventoryProviders.includes("cloudfla
 
 const askResult = document?.components?.schemas?.AskResult;
 const queryLanguage = document?.["x-anyshift-query-language"];
+if (!document?.components?.schemas?.EventContributorsResult
+  || !queryLanguage?.tables?.some((table) => table.name === "event_contributors")
+  || !askResult?.oneOf?.some((variant) => variant?.properties?.intent?.const === "event_contributors")) {
+  throw new Error("OpenAPI must preserve the event contributors result, query target, and intent");
+}
 const exposureVariant = askResult?.oneOf?.find((variant) => variant?.properties?.intent?.const === "exposure");
 const exposureResult = document?.components?.schemas?.ExposureResult;
 const cloudEventsTable = queryLanguage?.tables?.find((table) => table?.name === "cloud_events");
@@ -80,7 +85,7 @@ if (
   || !document?.components?.parameters?.GraphCapabilities?.description?.includes("monitor-scope-targets-v1")
   || document?.openapi !== "3.1.0"
   || askResult?.discriminator?.propertyName !== "intent"
-  || queryLanguage?.version !== "1.17"
+  || !["1.17-sdk.1", "1.23"].includes(queryLanguage?.version)
   || queryLanguage?.tables?.length !== askResult.oneOf.length
   || exposureVariant?.properties?.exposure?.$ref !== "#/components/schemas/ExposureResult"
   || !exposureVariant?.required?.includes("exposure")
@@ -123,7 +128,7 @@ if (
   || !onCallIdentity?.required?.includes("candidates")
   || onCallIdentity?.properties?.candidates?.maxItems !== 10
 ) {
-  throw new Error(`${source} does not expose the expected executable query-language 1.17 active incident, correlations, operational-response identity candidates, cloud-event, canonical exposure, exposure platform, and monitor scope-target contract`);
+  throw new Error(`${source} does not expose the expected executable query-language 1.17-sdk.1 or 1.23 active incident, correlations, operational-response identity candidates, cloud-event, canonical exposure, exposure platform, and monitor scope-target contract`);
 }
 
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`);

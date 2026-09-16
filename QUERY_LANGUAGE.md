@@ -1,6 +1,6 @@
 # Anyshift Graph Query Language
 
-This is the complete reference for deterministic queries accepted by the Anyshift Graph API and `annie graph query`. It is generated from the executable query catalog published in the Graph API OpenAPI contract.
+This reference describes the pinned SDK query catalog 1.17-sdk.1. The SDK snapshot extends the 1.17 baseline with contributor lookup; it does not claim complete parity with later server catalogs. It is generated from the SDK-pinned OpenAPI contract.
 
 ## Grammar
 

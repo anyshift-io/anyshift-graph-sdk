@@ -493,7 +493,12 @@
           {
             "name": "resource",
             "type": "string",
-            "description": "Exact graph id or unambiguous target name."
+            "description": "Graph id or target name; use resource_id for an exact case-sensitive event target id."
+          },
+          {
+            "name": "resource_id",
+            "type": "string",
+            "description": "Exact case-sensitive target hashedID; mutually exclusive with resource and never matches a target name."
           },
           {
             "name": "actor",

@@ -120,7 +120,7 @@ test("caller-supplied invocation id must be a UUID", () => {
 
 test("telemetry version matches the published package version", async () => {
   const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
-  assert.equal(packageJson.version, "0.5.19");
+  assert.equal(packageJson.version, "0.5.20");
   assert.equal(GRAPH_SDK_VERSION, packageJson.version);
 });
 
@@ -332,4 +332,19 @@ test("eventContributors preserves exact firing selectors and returned evidence",
  assert.deepEqual(result.eventContributors,payload);
  for(const firingId of ["","   "]) assert.throws(()=>graph.eventContributors({firingId}),/requires firingId/);
  assert.equal(calls,1);
+});
+
+
+test("deliveryEvents preserves exact resource IDs and rejects invalid selectors before HTTP", async () => {
+  const queries: string[] = [];
+  const gx = new GraphAnswer({baseUrl:"http://fixture",fetch:async(_url,init)=>{
+    queries.push(JSON.parse(init.body as string).sql);
+    return resp(200,{intent:"deliveryevents",summary:"No retained evidence",deliveryEvents:{items:[]}});
+  }});
+  await gx.deliveryEvents({resourceId:"Mixed-Case-ID",limit:5});
+  assert.match(queries[0],/resource_id = 'Mixed-Case-ID'/);
+  assert.doesNotMatch(queries[0],/resource = /);
+  for (const resourceId of ["", "  "]) assert.throws(()=>gx.deliveryEvents({resourceId}),/non-empty/);
+  assert.throws(()=>gx.deliveryEvents({resource:"name",resourceId:"ID"} as any),/mutually exclusive/);
+  assert.equal(queries.length,1);
 });

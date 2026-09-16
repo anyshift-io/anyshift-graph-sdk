@@ -23,7 +23,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`events`](#events) | Read the infrastructure change-event timeline. | `type`, `target`, `namespace`, `noise`, `since` |
 | [`cloud_events`](#cloud_events) | Read evidence-backed AWS, Azure, and GCP change events without parsing summaries. | `provider`, `scope`, `region`, `category`, `type`, `resource`, `actor`, `correlation`, `operation`, `stats`, `noise`, `diff`, `since`, `cursor` |
 | [`cloud_resources`](#cloud_resources) | Inspect current or recently deleted AWS, Azure, GCP, and Cloudflare resources with freshness and provenance. | `provider`, `scope`, `region`, `type`, `resource`, `lifecycle`, `provenance`, `freshness`, `max_age`, `cursor` |
-| [`delivery_events`](#delivery_events) | Read commit, CI, release, and deployment evidence from the delivery graph. | `stage`, `type`, `resource`, `actor`, `source`, `since`, `cursor` |
+| [`delivery_events`](#delivery_events) | Read commit, CI, release, and deployment evidence from the delivery graph. | `stage`, `type`, `resource`, `resource_id`, `actor`, `source`, `since`, `cursor` |
 | [`provenance`](#provenance) | Trace a resource to stored release, commit, and actor evidence. | `resource` |
 | [`ownership`](#ownership) | Resolve observed GitHub user or team code ownership and contact identities. | `resource` |
 | [`graph_coverage`](#graph_coverage) | Inspect current node, relationship, bridge, and event evidence by graph source. | `source` |
@@ -247,7 +247,8 @@ Modifiers: `LIMIT`; `OFFSET` is not applied.
 | --- | --- | --- | --- | --- |
 | `stage` | enum | No | `commit`<br />`ci` (`pipeline`)<br />`release`<br />`deploy` (`deployment`) | Delivery stage. |
 | `type` | string | No | Any value | Exact event type, such as event_release or argocd_synced. |
-| `resource` | string | No | Any value | Exact graph id or unambiguous target name. |
+| `resource` | string | No | Any value | Graph id or target name; use resource_id for an exact case-sensitive event target id. |
+| `resource_id` | string | No | Any value | Exact case-sensitive target hashedID; mutually exclusive with resource and never matches a target name. |
 | `actor` | string | No | Any value | Actor identity, name, or graph id. |
 | `source` | string | No | Any value | Persisted event source. |
 | `since` | duration | No | Any value | Relative lookback such as 30m, 2h, 1d, or today. |

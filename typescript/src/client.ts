@@ -100,16 +100,15 @@ export interface CloudResourcesParams {
 }
 export interface EventContributorsParams { firingId: string; cursor?: string; limit?: number }
 
-export interface DeliveryEventsParams {
+export type DeliveryEventsParams = {
   stage?: "commit" | "ci" | "release" | "deploy";
   type?: string;
-  resource?: string;
   actor?: string;
   source?: string;
   since?: Since;
   cursor?: string;
   limit?: number;
-}
+} & ({ resource?: string; resourceId?: never } | { resource?: never; resourceId: string });
 export interface EvidenceResourceParams {
   resource: string;
   limit?: number;
@@ -806,10 +805,13 @@ export class GraphAnswer {
 
   /** Commit, CI, release, and deployment evidence from the delivery graph. */
   deliveryEvents(p: DeliveryEventsParams = {}): Promise<AskResult> {
+    if (p.resource !== undefined && p.resourceId !== undefined) throw new Error("resource and resourceId are mutually exclusive");
+    if (p.resourceId !== undefined && !p.resourceId.trim()) throw new Error("resourceId must be non-empty");
     return this.typedQuery(compose("delivery_events", [
       ["stage", p.stage],
       ["type", p.type],
       ["resource", p.resource],
+      ["resource_id", p.resourceId],
       ["actor", p.actor],
       ["source", p.source],
       ["since", p.since],

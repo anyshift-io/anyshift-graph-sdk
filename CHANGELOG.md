@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.20 - 2026-09-16
+
+- Add exact `resourceId` delivery-event selection with no name fallback. Reject empty IDs and mutually exclusive resource selectors.
+
 ## 0.5.19 - 2026-09-16
 
 - Add typed exact Sentry alert-evaluation contributors, bounded cursor pagination and explicit missing-evidence and unknown-coverage fields.

@@ -382,3 +382,5 @@ npm run test:consumer
 ### Monitor scope targets
 
 Monitor and alert results can include `scopeTargets` with stable resource IDs, actual resource types, and nullable namespace/cluster fields, plus `scopeTargetCount`. The SDK negotiates these fields with the API. Compare the returned array length with the count to detect a bounded sample; older servers may omit both. Multiple legitimate targets are not reduced to one chosen service. These are stored monitoring associations, not causal findings.
+
+Cloudflare inventory is available through `graph.cloudResources({ provider: "cloudflare", scope: "cloudflare/<account-id>" })`. Canonical `cf://` IDs preserve account/zone identity; missing region and observation evidence remain null/unknown. The client advertises `cloudflare-inventory-v1` so provider-omitted inventory can include Cloudflare once the compatible API is deployed.

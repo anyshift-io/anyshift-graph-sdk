@@ -9,6 +9,11 @@ if (!response.ok) {
 }
 
 const document = await response.json();
+const inventoryProviders = document?.components?.schemas?.CloudResourcesResult?.properties?.items?.items?.properties?.provider?.enum;
+if (!Array.isArray(inventoryProviders) || !inventoryProviders.includes("cloudflare")) {
+ throw new Error("OpenAPI must preserve Cloudflare cloud inventory provider support");
+}
+
 const askResult = document?.components?.schemas?.AskResult;
 const queryLanguage = document?.["x-anyshift-query-language"];
 const exposureVariant = askResult?.oneOf?.find((variant) => variant?.properties?.intent?.const === "exposure");

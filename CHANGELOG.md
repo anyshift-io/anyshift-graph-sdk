@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.18 - 2026-09-16
+
+- Support typed Cloudflare cloud inventory and negotiate cloudflare-inventory-v1 for broad inventory queries. Preserve canonical IDs, null regions, and unknown evidence.
+
 ## 0.5.17 - 2026-09-16
 
 - Expose typed monitor and alert scope targets with full target counts.

@@ -811,3 +811,12 @@ test("topology composes service + level SQL", async () => {
   await b.gx.topology({ service: "payment" });
   assert.equal(b.calls[0].body.sql, "SELECT * FROM topology WHERE service = 'payment'");
 });
+
+test("cloudResources accepts Cloudflare account scope and opaque cursor",async()=>{
+ const {gx,calls}=capturing();
+ await gx.cloudResources({provider:"cloudflare",scope:"cloudflare/account-a",resource:"cf://accounts/account-a/zones/zone-a/dns_records/record-a",cursor:"opaque",limit:10});
+ assert.match(calls[0].body.sql,/provider = 'cloudflare'/);
+ assert.match(calls[0].body.sql,/scope = 'cloudflare\/account-a'/);
+ assert.match(calls[0].body.sql,/resource = 'cf:\/\/accounts\/account-a\/zones\/zone-a\/dns_records\/record-a'/);
+ assert.match(calls[0].body.sql,/cursor = 'opaque'/);
+});

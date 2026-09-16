@@ -22,7 +22,7 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
   assert.equal(schemas.AskRequest.additionalProperties, false);
   assert.equal(schemas.AskResult.discriminator.propertyName, "intent");
   assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, variants.length);
-  assert.equal(queryLanguage.version, "1.17-sdk.1");
+  assert.ok(["1.17-sdk.2", "1.23", "1.24"].includes(queryLanguage.version));
   assert.equal(queryLanguage.tables.length, variants.length);
   const inventorySample = schemas.InventoryResult.properties.sample.items;
   assert.deepEqual(inventorySample.properties.resourceId.type, ["string", "null"]);

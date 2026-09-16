@@ -28,6 +28,9 @@ if (!document?.components?.schemas?.EventContributorsResult
   || !askResult?.oneOf?.some((variant) => variant?.properties?.intent?.const === "eventcontributors")) {
   throw new Error("OpenAPI must preserve the event contributors result, query target, and intent");
 }
+if (!queryLanguage?.tables?.find((table) => table.name === "delivery_events")?.filters?.some((filter) => filter.name === "resource_id")) {
+  throw new Error("OpenAPI must preserve delivery_events.resource_id exact identity selector");
+}
 const exposureVariant = askResult?.oneOf?.find((variant) => variant?.properties?.intent?.const === "exposure");
 const exposureResult = document?.components?.schemas?.ExposureResult;
 const cloudEventsTable = queryLanguage?.tables?.find((table) => table?.name === "cloud_events");
@@ -92,7 +95,7 @@ if (
   || !document?.components?.parameters?.GraphCapabilities?.description?.includes("monitor-scope-targets-v1")
   || document?.openapi !== "3.1.0"
   || askResult?.discriminator?.propertyName !== "intent"
-  || !["1.17-sdk.1", "1.23", "1.24"].includes(queryLanguage?.version)
+  || !["1.17-sdk.2", "1.23", "1.24"].includes(queryLanguage?.version)
   || queryLanguage?.tables?.length !== askResult.oneOf.length
   || exposureVariant?.properties?.exposure?.$ref !== "#/components/schemas/ExposureResult"
   || !exposureVariant?.required?.includes("exposure")
@@ -135,7 +138,7 @@ if (
   || !onCallIdentity?.required?.includes("candidates")
   || onCallIdentity?.properties?.candidates?.maxItems !== 10
 ) {
-  throw new Error(`${source} does not expose the expected executable query-language 1.17-sdk.1, 1.23 or 1.24 active incident, correlations, operational-response identity candidates, cloud-event, canonical exposure, exposure platform, and monitor scope-target contract`);
+  throw new Error(`${source} does not expose the expected executable query-language 1.17-sdk.2, 1.23 or 1.24 active incident, correlations, operational-response identity candidates, cloud-event, canonical exposure, exposure platform, and monitor scope-target contract`);
 }
 
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`);

@@ -166,3 +166,8 @@ test("pinned cloud inventory contract includes Cloudflare",async()=>{
  assert.ok(document.components.schemas.CloudResourcesResult.properties.items.items.properties.provider.enum.includes("cloudflare"));
  assert.match(document.components.parameters.GraphCapabilities.description,/cloudflare-inventory-v1/);
 });
+
+test("cross-layer contract declares its negotiated capability", async () => {
+  const document = JSON.parse(await readFile(new URL("../../openapi/graph-api.v1.json", import.meta.url), "utf8"));
+  assert.match(document.components.parameters.GraphCapabilities.description, /cross-layer-evidence-v1/);
+});

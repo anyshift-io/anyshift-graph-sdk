@@ -10,7 +10,8 @@ if (!response.ok) {
 
 const document = await response.json();
 const schemas = document?.components?.schemas;
-if (!schemas?.PathResult?.properties?.chain?.items?.properties?.hashedID
+if (!document?.components?.parameters?.GraphCapabilities?.description?.includes("cross-layer-evidence-v1")
+  || !schemas?.PathResult?.properties?.chain?.items?.properties?.hashedID
   || !schemas?.StorageResult?.properties?.cloudBacking
   || !schemas?.AccessResult?.properties?.irsaAssociations) {
   throw new Error(`${source} does not expose the cross-layer identity, cloud backing and IRSA evidence contract`);

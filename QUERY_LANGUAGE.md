@@ -1,6 +1,6 @@
 # Anyshift Graph Query Language
 
-This reference describes the pinned SDK query catalog 1.17-sdk.1. The SDK snapshot extends the 1.17 baseline with contributor lookup; it does not claim complete parity with later server catalogs. It is generated from the SDK-pinned OpenAPI contract.
+This reference describes the pinned SDK query catalog 1.17-sdk.2. The SDK snapshot extends the 1.17 baseline with contributor lookup and exact delivery resource IDs; it does not claim complete parity with later server catalogs. It is generated from the SDK-pinned OpenAPI contract.
 
 ## Grammar
 

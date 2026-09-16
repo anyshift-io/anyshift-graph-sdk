@@ -2,6 +2,8 @@
 
 ## 0.5.20 - 2026-09-16
 
+- Version the exact delivery selector catalog as `1.17-sdk.2` and reject synchronization that removes it.
+
 - Add exact `resourceId` delivery-event selection with no name fallback. Reject empty IDs and mutually exclusive resource selectors.
 
 ## 0.5.19 - 2026-09-16

@@ -120,7 +120,7 @@ test("caller-supplied invocation id must be a UUID", () => {
 
 test("telemetry version matches the published package version", async () => {
   const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
-  assert.equal(packageJson.version, "0.5.20");
+  assert.equal(packageJson.version, "0.5.21");
   assert.equal(GRAPH_SDK_VERSION, packageJson.version);
 });
 
@@ -312,7 +312,7 @@ test("new exposure selectors preserve an old server query-parser rejection", asy
 test("monitor scope targets are negotiated and preserved with cloud identity", async () => {
   const target = { resolution: "resolved", id: "arn:aws:rds:eu-west-1:123:db:checkout", name: "checkout", type: "RDS_DB", namespace: null, cluster: null };
   const client = new GraphAnswer({ fetch: async (_url, init) => {
-    assert.equal(init.headers["x-anyshift-graph-capabilities"], "monitor-scope-targets-v1,cloudflare-inventory-v1");
+    assert.equal(init.headers["x-anyshift-graph-capabilities"], "monitor-scope-targets-v1,cloudflare-inventory-v1,cross-layer-evidence-v1");
     return resp(200, { question: "", intent: "monitor", summary: "Stored scope, not causality", monitor: {
       term: "checkout", matched: 1, monitors: ["checkout"], services: [], workloads: [], nodes: [], slos: [],
       scopeTargets: [target], scopeTargetCount: 2,

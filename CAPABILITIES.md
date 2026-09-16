@@ -237,3 +237,12 @@ fuzzy selectors retain their existing behavior.
 
 The capabilities above reflect the current public SDK surface. New SDKs for Python and Go should use
 this matrix as the baseline for parity.
+
+### Cross-layer stored evidence
+
+Path results include optional exact graph/native IDs and scope per hop. Storage
+results include optional bounded cloud backing (`USES_DISK`); access results
+include optional bounded IRSA associations (`ASSUMES`). The SDK negotiates
+`cross-layer-evidence-v1`. These are stored connectivity/association facts, not
+causality or effective IAM permissions. Existing impact traversal keeps its
+reviewed directions and explicit depth/exclusion warnings.

@@ -8427,6 +8427,24 @@
                     "string",
                     "null"
                   ]
+                },
+                "hashedID": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "scope": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
               "required": [
@@ -10037,6 +10055,112 @@
       "AccessResult": {
         "type": "object",
         "properties": {
+          "irsaAssociations": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "serviceAccountId": {
+                      "type": "string"
+                    },
+                    "serviceAccount": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "namespace": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "cluster": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "resource": {
+                      "type": "object",
+                      "properties": {
+                        "hashedID": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "name": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "kind": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "scope": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "region": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "hashedID",
+                        "id",
+                        "name",
+                        "kind",
+                        "scope",
+                        "region"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "serviceAccountId",
+                    "serviceAccount",
+                    "namespace",
+                    "cluster",
+                    "resource"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "hasMore": {
+                "type": "boolean"
+              },
+              "boundary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "items",
+              "limit",
+              "hasMore",
+              "boundary"
+            ],
+            "additionalProperties": false
+          },
           "mode": {
             "type": "string",
             "enum": [
@@ -12223,6 +12347,95 @@
       "StorageResult": {
         "type": "object",
         "properties": {
+          "cloudBacking": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "pvcId": {
+                      "type": "string"
+                    },
+                    "pvId": {
+                      "type": "string"
+                    },
+                    "resource": {
+                      "type": "object",
+                      "properties": {
+                        "hashedID": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "name": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "kind": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "scope": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "region": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "hashedID",
+                        "id",
+                        "name",
+                        "kind",
+                        "scope",
+                        "region"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "pvcId",
+                    "pvId",
+                    "resource"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "hasMore": {
+                "type": "boolean"
+              },
+              "boundary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "items",
+              "limit",
+              "hasMore",
+              "boundary"
+            ],
+            "additionalProperties": false
+          },
           "mode": {
             "type": "string",
             "enum": [

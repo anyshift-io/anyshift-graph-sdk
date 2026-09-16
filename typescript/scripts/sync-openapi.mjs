@@ -9,6 +9,12 @@ if (!response.ok) {
 }
 
 const document = await response.json();
+const schemas = document?.components?.schemas;
+if (!schemas?.PathResult?.properties?.chain?.items?.properties?.hashedID
+  || !schemas?.StorageResult?.properties?.cloudBacking
+  || !schemas?.AccessResult?.properties?.irsaAssociations) {
+  throw new Error(`${source} does not expose the cross-layer identity, cloud backing and IRSA evidence contract`);
+}
 const inventoryProviders = document?.components?.schemas?.CloudResourcesResult?.properties?.items?.items?.properties?.provider?.enum;
 if (!Array.isArray(inventoryProviders) || !inventoryProviders.includes("cloudflare")) {
  throw new Error("OpenAPI must preserve Cloudflare cloud inventory provider support");
@@ -85,7 +91,7 @@ if (
   || !document?.components?.parameters?.GraphCapabilities?.description?.includes("monitor-scope-targets-v1")
   || document?.openapi !== "3.1.0"
   || askResult?.discriminator?.propertyName !== "intent"
-  || !["1.17-sdk.1", "1.23"].includes(queryLanguage?.version)
+  || !["1.17-sdk.1", "1.23", "1.24"].includes(queryLanguage?.version)
   || queryLanguage?.tables?.length !== askResult.oneOf.length
   || exposureVariant?.properties?.exposure?.$ref !== "#/components/schemas/ExposureResult"
   || !exposureVariant?.required?.includes("exposure")
@@ -128,7 +134,7 @@ if (
   || !onCallIdentity?.required?.includes("candidates")
   || onCallIdentity?.properties?.candidates?.maxItems !== 10
 ) {
-  throw new Error(`${source} does not expose the expected executable query-language 1.17-sdk.1 or 1.23 active incident, correlations, operational-response identity candidates, cloud-event, canonical exposure, exposure platform, and monitor scope-target contract`);
+  throw new Error(`${source} does not expose the expected executable query-language 1.17-sdk.1, 1.23 or 1.24 active incident, correlations, operational-response identity candidates, cloud-event, canonical exposure, exposure platform, and monitor scope-target contract`);
 }
 
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`);

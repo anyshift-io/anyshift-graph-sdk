@@ -1022,6 +1022,9 @@ export interface components {
                 name: string;
                 type: string | null;
                 namespace: string | null;
+                hashedID?: string | null;
+                id?: string | null;
+                scope?: string | null;
             }[];
             rels: string[];
         };
@@ -1327,6 +1330,25 @@ export interface components {
             }[];
         };
         AccessResult: {
+            irsaAssociations?: {
+                items: {
+                    serviceAccountId: string;
+                    serviceAccount: string | null;
+                    namespace: string | null;
+                    cluster: string | null;
+                    resource: {
+                        hashedID: string;
+                        id: string | null;
+                        name: string | null;
+                        kind: string | null;
+                        scope: string | null;
+                        region: string | null;
+                    };
+                }[];
+                limit: number;
+                hasMore: boolean;
+                boundary: string;
+            };
             /** @enum {string} */
             mode: "reach" | "privileged";
             /** @enum {string} */
@@ -1719,6 +1741,23 @@ export interface components {
             }[];
         };
         StorageResult: {
+            cloudBacking?: {
+                items: {
+                    pvcId: string;
+                    pvId: string;
+                    resource: {
+                        hashedID: string;
+                        id: string | null;
+                        name: string | null;
+                        kind: string | null;
+                        scope: string | null;
+                        region: string | null;
+                    };
+                }[];
+                limit: number;
+                hasMore: boolean;
+                boundary: string;
+            };
             /** @enum {string} */
             mode: "footprint" | "orphanpv" | "unclaimedpvc" | "byclass";
             filter: {

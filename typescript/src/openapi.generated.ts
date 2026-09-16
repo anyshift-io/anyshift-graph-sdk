@@ -1067,6 +1067,17 @@ export interface components {
             }[];
         };
         MonitorResult: {
+            scopeTargets?: {
+                /** @enum {string} */
+                resolution: "resolved" | "unresolved" | "ambiguous";
+                id: string | null;
+                name: string | null;
+                providerServiceId?: string | null;
+                type: string | null;
+                namespace: string | null;
+                cluster: string | null;
+            }[];
+            scopeTargetCount?: number;
             term: string;
             matched: number;
             monitors: string[];
@@ -1148,6 +1159,7 @@ export interface components {
                     resolution: "resolved" | "unresolved" | "ambiguous";
                     id: string | null;
                     name: string | null;
+                    providerServiceId?: string | null;
                     type: string | null;
                     namespace: string | null;
                     cluster: string | null;
@@ -1184,6 +1196,17 @@ export interface components {
                     /** @constant */
                     provider: "incidentio";
                 };
+                scopeTargets?: {
+                    /** @enum {string} */
+                    resolution: "resolved" | "unresolved" | "ambiguous";
+                    id: string | null;
+                    name: string | null;
+                    providerServiceId?: string | null;
+                    type: string | null;
+                    namespace: string | null;
+                    cluster: string | null;
+                }[];
+                scopeTargetCount?: number;
                 /** @enum {string} */
                 status: "firing" | "recovered" | "suppressed" | "unknown";
                 /** @enum {string} */

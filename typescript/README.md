@@ -378,3 +378,7 @@ npm run check:generated
 npm run build
 npm run test:consumer
 ```
+
+### Monitor scope targets
+
+Monitor and alert results can include `scopeTargets` with stable resource IDs, actual resource types, and nullable namespace/cluster fields, plus `scopeTargetCount`. The SDK negotiates these fields with the API. Compare the returned array length with the count to detect a bounded sample; older servers may omit both. Multiple legitimate targets are not reduced to one chosen service. These are stored monitoring associations, not causal findings.

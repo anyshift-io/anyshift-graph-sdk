@@ -8635,6 +8635,71 @@
       "MonitorResult": {
         "type": "object",
         "properties": {
+          "scopeTargets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "resolution": {
+                  "type": "string",
+                  "enum": [
+                    "resolved",
+                    "unresolved",
+                    "ambiguous"
+                  ]
+                },
+                "id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "providerServiceId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "type": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "namespace": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "cluster": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "resolution",
+                "id",
+                "name",
+                "type",
+                "namespace",
+                "cluster"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "scopeTargetCount": {
+            "type": "integer",
+            "minimum": 0
+          },
           "term": {
             "type": "string"
           },
@@ -9058,6 +9123,12 @@
                             "null"
                           ]
                         },
+                        "providerServiceId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
                         "type": {
                           "type": [
                             "string",
@@ -9227,6 +9298,71 @@
                       "additionalProperties": false
                     }
                   ]
+                },
+                "scopeTargets": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "resolution": {
+                        "type": "string",
+                        "enum": [
+                          "resolved",
+                          "unresolved",
+                          "ambiguous"
+                        ]
+                      },
+                      "id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "providerServiceId": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "namespace": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "cluster": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "resolution",
+                      "id",
+                      "name",
+                      "type",
+                      "namespace",
+                      "cluster"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "scopeTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
                 },
                 "status": {
                   "type": "string",

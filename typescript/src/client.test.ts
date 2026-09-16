@@ -308,3 +308,17 @@ test("new exposure selectors preserve an old server query-parser rejection", asy
       && error.message === "Unknown column: resource_id",
   );
 });
+
+test("monitor scope targets are negotiated and preserved with cloud identity", async () => {
+  const target = { resolution: "resolved", id: "arn:aws:rds:eu-west-1:123:db:checkout", name: "checkout", type: "RDS_DB", namespace: null, cluster: null };
+  const client = new GraphAnswer({ fetch: async (_url, init) => {
+    assert.equal(init.headers["x-anyshift-graph-capabilities"], "monitor-scope-targets-v1");
+    return resp(200, { question: "", intent: "monitor", summary: "Stored scope, not causality", monitor: {
+      term: "checkout", matched: 1, monitors: ["checkout"], services: [], workloads: [], nodes: [], slos: [],
+      scopeTargets: [target], scopeTargetCount: 2,
+    }});
+  }});
+  const result = await client.query("SELECT * FROM monitor WHERE target = checkout");
+  assert.deepEqual(result.monitor?.scopeTargets, [target]);
+  assert.equal(result.monitor?.scopeTargetCount, 2);
+});

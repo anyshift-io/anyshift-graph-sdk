@@ -2842,6 +2842,60 @@ export interface components {
             /** @constant */
             intent: "iacdrift";
             iacDrift: components["schemas"]["IacDriftResult"] | null;
+        } | {
+            question: string;
+            summary: string;
+            countOnly?: boolean;
+            elapsedMs?: number;
+            resolved?: {
+                term: string;
+                hashedID: string;
+                name: string;
+                type: string | null;
+            } | null;
+            nodes?: components["schemas"]["GraphNode"][];
+            edges?: components["schemas"]["GraphEdge"][];
+            /** @constant */
+            intent: "eventcontributors";
+            eventContributors: components["schemas"]["EventContributorsResult"] | null;
+        };
+        EventContributorsResult: {
+            /** @constant */
+            provider: "sentry";
+            firingId: string;
+            /** @enum {string} */
+            status: "found" | "not_found";
+            firing: {
+                id: string;
+                type: string | null;
+                timestamp: string | null;
+                alertRuleId: string | null;
+                issueId: string | null;
+            } | null;
+            counts: {
+                declared: number;
+                linkedDeclared: number;
+                linkedEvents: number;
+                missingDeclared: number;
+            };
+            declarationAvailable: boolean;
+            /** @constant */
+            evaluationCoverage: "unknown";
+            missingProviderEventIds: string[];
+            missingSampleTruncated: boolean;
+            items: {
+                id: string;
+                providerEventId: string;
+                type: string | null;
+                timestamp: string | null;
+                release: string | null;
+            }[];
+            page: {
+                limit: number;
+                hasMore: boolean;
+                nextCursor: string | null;
+            };
+            evidenceBoundary: string;
         };
     };
     responses: never;

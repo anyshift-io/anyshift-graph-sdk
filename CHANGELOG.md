@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.19 - 2026-09-16
+
+- Add typed exact Sentry alert-evaluation contributors, bounded cursor pagination and explicit missing-evidence and unknown-coverage fields.
+
 ## 0.5.18 - 2026-09-16
 
 - Support typed Cloudflare cloud inventory and negotiate cloudflare-inventory-v1 for broad inventory queries. Preserve canonical IDs, null regions, and unknown evidence.

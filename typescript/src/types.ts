@@ -59,3 +59,5 @@ export type GraphIntent = AskResult["intent"];
 
 /** Select the exact response shape returned for one Graph API intent. */
 export type AskResultFor<I extends GraphIntent> = Extract<AskResult, { intent: I }>;
+
+export type EventContributorsResult = Schemas["EventContributorsResult"];

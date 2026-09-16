@@ -163,6 +163,7 @@ explicit without downgrading an independently confirmed fresh traffic path.
 | Datadog alert impact | `graph.alertImpact({ resource })` | `alert_impact` | Which monitors and SLOs would fire if a resource is impacted. |
 | Monitor mapping | `graph.monitor({ target })` | `monitor` | Which service, workload, and node a monitor watches. |
 | Active alerts | `graph.alerts()` | `alerts` | Which normalized operational alerts are firing, while retaining the legacy Datadog projection during v1. |
+| Sentry firing contributors | `graph.eventContributors({ firingId })` | `event_contributors` | Which stored events are declared contributors and linked by TRIGGERED to one exact firing; missing links remain explicit. |
 | Response incidents | `graph.incidents()` | `response_incidents` | Which stored provider incidents are open, acknowledged, resolved, or otherwise active for a service. |
 | On-call responsibility | `graph.onCall()` | `oncall` | Who is responsible now, at a point in time, or across a bounded schedule window. |
 | Alert noise | `graph.alertNoise()` | `alert_noise` | Which monitors are flapping or stuck. |

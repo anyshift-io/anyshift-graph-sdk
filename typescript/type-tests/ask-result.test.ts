@@ -1,3 +1,4 @@
+import type { EventContributorsResult } from "../src/index.js";
 import type {
   ApmSource,
   AlertItem,
@@ -216,3 +217,6 @@ void configurationEvidenceSource;
 declare const contributors: AskResultFor<"eventcontributors">;
 const evaluationCoverage: "unknown" | undefined = contributors.eventContributors?.evaluationCoverage;
 void evaluationCoverage;
+
+declare const contributorResult: EventContributorsResult;
+const contributorResultType: EventContributorsResult = contributorResult;

@@ -7,8 +7,8 @@ const check = process.argv.includes("--check");
 const contract = JSON.parse(await readFile(contractPath, "utf8"));
 const language = contract["x-anyshift-query-language"];
 
-if (language?.version !== "1.17" || !Array.isArray(language.tables) || language.tables.length === 0) {
-  throw new Error(`${contractPath.pathname} does not contain x-anyshift-query-language version 1.17`);
+if (!["1.17-sdk.1", "1.23"].includes(language?.version) || !Array.isArray(language.tables) || language.tables.length === 0) {
+  throw new Error(`${contractPath.pathname} does not contain x-anyshift-query-language version 1.17-sdk.1 or 1.23`);
 }
 
 const escapeCell = (value) => String(value).replaceAll("|", "\\|").replaceAll("\n", " ");
@@ -26,7 +26,7 @@ function renderValues(filter) {
 const lines = [
   "# Anyshift Graph Query Language",
   "",
-  "This is the complete reference for deterministic queries accepted by the Anyshift Graph API and `annie graph query`. It is generated from the executable query catalog published in the Graph API OpenAPI contract.",
+  `This reference describes the pinned SDK query catalog ${language.version}. The SDK snapshot extends the 1.17 baseline with contributor lookup; it does not claim complete parity with later server catalogs. It is generated from the SDK-pinned OpenAPI contract.`,
   "",
   "## Grammar",
   "",

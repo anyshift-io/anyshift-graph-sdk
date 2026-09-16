@@ -18,7 +18,7 @@ const askResult = document?.components?.schemas?.AskResult;
 const queryLanguage = document?.["x-anyshift-query-language"];
 if (!document?.components?.schemas?.EventContributorsResult
   || !queryLanguage?.tables?.some((table) => table.name === "event_contributors")
-  || !askResult?.oneOf?.some((variant) => variant?.properties?.intent?.const === "event_contributors")) {
+  || !askResult?.oneOf?.some((variant) => variant?.properties?.intent?.const === "eventcontributors")) {
   throw new Error("OpenAPI must preserve the event contributors result, query target, and intent");
 }
 const exposureVariant = askResult?.oneOf?.find((variant) => variant?.properties?.intent?.const === "exposure");

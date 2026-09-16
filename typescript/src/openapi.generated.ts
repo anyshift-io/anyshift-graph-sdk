@@ -2848,7 +2848,7 @@ export interface components {
     parameters: {
         /** @description Anyshift project id whose graph should be queried. */
         ProjectId: string;
-        /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields. */
+        /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; hotspots-bounded-scan-v1 enables HotspotsResult.scan bounded and limit fields; hotspots-bounded-scan-v2 adds window, streams, and maximumRows metadata; deploy-impact-temporal-candidates-v1 enables DeployImpactResult.temporalCandidates (opt-in after= window); monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. */
         GraphCapabilities: string;
     };
     requestBodies: never;
@@ -2861,7 +2861,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields. */
+                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; hotspots-bounded-scan-v1 enables HotspotsResult.scan bounded and limit fields; hotspots-bounded-scan-v2 adds window, streams, and maximumRows metadata; deploy-impact-temporal-candidates-v1 enables DeployImpactResult.temporalCandidates (opt-in after= window); monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. */
                 "x-anyshift-graph-capabilities"?: components["parameters"]["GraphCapabilities"];
             };
             path?: never;
@@ -2924,7 +2924,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields. */
+                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; hotspots-bounded-scan-v1 enables HotspotsResult.scan bounded and limit fields; hotspots-bounded-scan-v2 adds window, streams, and maximumRows metadata; deploy-impact-temporal-candidates-v1 enables DeployImpactResult.temporalCandidates (opt-in after= window); monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. */
                 "x-anyshift-graph-capabilities"?: components["parameters"]["GraphCapabilities"];
             };
             path: {
@@ -3008,7 +3008,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields. */
+                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; hotspots-bounded-scan-v1 enables HotspotsResult.scan bounded and limit fields; hotspots-bounded-scan-v2 adds window, streams, and maximumRows metadata; deploy-impact-temporal-candidates-v1 enables DeployImpactResult.temporalCandidates (opt-in after= window); monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. */
                 "x-anyshift-graph-capabilities"?: components["parameters"]["GraphCapabilities"];
             };
             path?: never;
@@ -3071,7 +3071,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields. */
+                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; hotspots-bounded-scan-v1 enables HotspotsResult.scan bounded and limit fields; hotspots-bounded-scan-v2 adds window, streams, and maximumRows metadata; deploy-impact-temporal-candidates-v1 enables DeployImpactResult.temporalCandidates (opt-in after= window); monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. */
                 "x-anyshift-graph-capabilities"?: components["parameters"]["GraphCapabilities"];
             };
             path: {

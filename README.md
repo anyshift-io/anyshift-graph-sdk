@@ -62,3 +62,5 @@ Release checklist:
   `npm run test:consumer`.
 - Package contents are verified with `npm pack --dry-run`.
 - Developer documentation is published in the Anyshift documentation site.
+
+Use `graph.eventContributors({ firingId: "exact-firing-dedupeId", limit: 50 })` to inspect stored Sentry alert-evaluation members. Pass `cursor` from the returned page to continue. IDs preserve case; missing IDs may be late, expired or unobserved. Evaluation coverage remains unknown and contributor membership is not proof of infrastructure root cause.

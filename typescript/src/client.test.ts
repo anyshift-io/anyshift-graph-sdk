@@ -120,7 +120,7 @@ test("caller-supplied invocation id must be a UUID", () => {
 
 test("telemetry version matches the published package version", async () => {
   const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
-  assert.equal(packageJson.version, "0.5.18");
+  assert.equal(packageJson.version, "0.5.19");
   assert.equal(GRAPH_SDK_VERSION, packageJson.version);
 });
 
@@ -321,4 +321,15 @@ test("monitor scope targets are negotiated and preserved with cloud identity", a
   const result = await client.query("SELECT * FROM monitor WHERE target = checkout");
   assert.deepEqual(result.monitor?.scopeTargets, [target]);
   assert.equal(result.monitor?.scopeTargetCount, 2);
+});
+
+test("eventContributors preserves exact firing selectors and returned evidence",async()=>{
+ let sql="";let calls=0;
+ const payload={firingId:"Mixed-Case-ID",evaluationCoverage:"unknown",missingProviderEventIds:["missing"],items:[{id:"event-hash",providerEventId:"sentry-id",release:"v1"}],page:{hasMore:true,nextCursor:"next"}};
+ const graph=new GraphAnswer({baseUrl:"http://fixture",fetch:async(_url,init)=>{calls++;sql=JSON.parse(init.body as string).sql;return resp(200,{question:sql,intent:"eventcontributors",summary:"Stored evidence",eventContributors:payload});}});
+ const result=await graph.eventContributors({firingId:"Mixed-Case-ID",cursor:"previous",limit:5});
+ assert.equal(sql,"SELECT * FROM event_contributors WHERE firing_id = 'Mixed-Case-ID' AND cursor = 'previous' LIMIT 5");
+ assert.deepEqual(result.eventContributors,payload);
+ for(const firingId of ["","   "]) assert.throws(()=>graph.eventContributors({firingId}),/requires firingId/);
+ assert.equal(calls,1);
 });

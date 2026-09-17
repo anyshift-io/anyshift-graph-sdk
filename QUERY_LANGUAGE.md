@@ -1,6 +1,6 @@
 # Anyshift Graph Query Language
 
-This is the complete reference for deterministic queries accepted by the Anyshift Graph API and `annie graph query`. It is generated from the executable query catalog published in the Graph API OpenAPI contract.
+This reference describes the pinned SDK query catalog 1.17-sdk.1. The SDK snapshot extends the 1.17 baseline with contributor lookup; it does not claim complete parity with later server catalogs. It is generated from the SDK-pinned OpenAPI contract.
 
 ## Grammar
 
@@ -73,6 +73,7 @@ Values may be bare words or single- or double-quoted strings.
 | [`pdb`](#pdb) | Find workloads without PodDisruptionBudgets or inspect one workload or PDB. | `target`, `workload`, `pdb` |
 | [`scaling`](#scaling) | Find workloads without HPAs, list autoscaled workloads, or inspect one target. | `mode`, `namespace`, `target` |
 | [`topology`](#topology) | Build a typed service topology at a selected level. | `service`, `level`, `source`, `endpoint`, `dependency` |
+| [`event_contributors`](#event_contributors) | Read exact stored Sentry alert-evaluation contributors; not inferred root causes. | `firing_id`, `cursor` |
 
 ## resolve
 
@@ -1808,6 +1809,33 @@ Service is required; level selects the topology depth.
 
 ```console
 $ annie graph query "SELECT * FROM topology WHERE service = checkout AND level = context"
+```
+
+## event_contributors
+
+Read exact stored Sentry alert-evaluation contributors; not inferred root causes.
+
+Result intent: `eventcontributors`.
+
+Table aliases: None.
+
+Modifiers: `LIMIT`; `OFFSET` is not applied.
+
+### Filters
+
+| Filter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `firing_id` | string | Yes | Any value | Exact case-sensitive firing event dedupeId. |
+| `cursor` | string | No | Any value | Opaque contributor page cursor. |
+
+### Forms
+
+#### Alert contributors
+
+Inspect linked and missing declared contributors; evaluation coverage stays unknown.
+
+```console
+$ annie graph query "SELECT * FROM event_contributors WHERE firing_id = sentry-alert-firing-1 LIMIT 50"
 ```
 
 ## Related Documentation

@@ -115,3 +115,7 @@ export type {
   OnCallResult,
   OnCallWindowItem,
 } from "./types.js";
+
+export type { EventContributorsParams } from "./client.js";
+
+export type { EventContributorsResult } from "./types.js";

@@ -98,6 +98,8 @@ export interface CloudResourcesParams {
   cursor?: string;
   limit?: number;
 }
+export interface EventContributorsParams { firingId: string; cursor?: string; limit?: number }
+
 export interface DeliveryEventsParams {
   stage?: "commit" | "ci" | "release" | "deploy";
   type?: string;
@@ -794,6 +796,12 @@ export class GraphAnswer {
       ["max_age", p.maxAge],
       ["cursor", p.cursor],
     ], p.limit));
+  }
+
+  /** Exact stored Sentry evaluation membership, not inferred root cause. */
+  eventContributors(p: EventContributorsParams): Promise<AskResult> {
+    if (!p.firingId.trim()) throw new BadQueryError("eventContributors requires firingId");
+    return this.typedQuery(compose("event_contributors", [["firing_id", p.firingId], ["cursor", p.cursor]], p.limit));
   }
 
   /** Commit, CI, release, and deployment evidence from the delivery graph. */

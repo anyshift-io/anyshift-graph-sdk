@@ -390,3 +390,13 @@ Use `graph.eventContributors({ firingId: "exact-firing-dedupeId", limit: 50 })` 
 ### Exact delivery evidence
 
 Use `graph.deliveryEvents({ resourceId: "Exact-Graph-ID", since: "24h", limit: 20 })` to select stored delivery events for one exact, case-sensitive graph identity. `resourceId` and the legacy `resource` selector are mutually exclusive. Empty IDs are rejected before any request. A commit, tag, or PR alone does not prove deployment. Requires the API exact `resource_id` selector.
+
+### Cross-layer evidence
+
+`path`, `storage`, and `access` preserve typed stored cloud/Kubernetes bridge
+evidence. Path hops expose exact graph/native IDs and scope; `storage.cloudBacking`
+and `access.irsaAssociations` expose bounded snapshots (`items`, `limit`, `hasMore`,
+`boundary`). The SDK negotiates `cross-layer-evidence-v1`; older servers may omit
+these optional fields. Missing native IDs/scope stay null. IRSA is an observed role
+association, not effective IAM authorization. Operational impact remains bounded
+to reviewed directional edges and excludes identity and role-assumption bridges.

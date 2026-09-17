@@ -22,7 +22,7 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
   assert.equal(schemas.AskRequest.additionalProperties, false);
   assert.equal(schemas.AskResult.discriminator.propertyName, "intent");
   assert.equal(new Set(variants.map((variant: any) => variant.properties.intent.const)).size, variants.length);
-  assert.ok(["1.17-sdk.2", "1.23"].includes(queryLanguage.version));
+  assert.ok(["1.17-sdk.2", "1.23", "1.24"].includes(queryLanguage.version));
   assert.equal(queryLanguage.tables.length, variants.length);
   const inventorySample = schemas.InventoryResult.properties.sample.items;
   assert.deepEqual(inventorySample.properties.resourceId.type, ["string", "null"]);
@@ -165,4 +165,9 @@ test("pinned cloud inventory contract includes Cloudflare",async()=>{
  const document=JSON.parse(await readFile(new URL("../../openapi/graph-api.v1.json",import.meta.url),"utf8"));
  assert.ok(document.components.schemas.CloudResourcesResult.properties.items.items.properties.provider.enum.includes("cloudflare"));
  assert.match(document.components.parameters.GraphCapabilities.description,/cloudflare-inventory-v1/);
+});
+
+test("cross-layer contract declares its negotiated capability", async () => {
+  const document = JSON.parse(await readFile(new URL("../../openapi/graph-api.v1.json", import.meta.url), "utf8"));
+  assert.match(document.components.parameters.GraphCapabilities.description, /cross-layer-evidence-v1/);
 });

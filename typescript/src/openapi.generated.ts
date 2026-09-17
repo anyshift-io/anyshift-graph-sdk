@@ -1022,6 +1022,9 @@ export interface components {
                 name: string;
                 type: string | null;
                 namespace: string | null;
+                hashedID?: string | null;
+                id?: string | null;
+                scope?: string | null;
             }[];
             rels: string[];
         };
@@ -1327,6 +1330,25 @@ export interface components {
             }[];
         };
         AccessResult: {
+            irsaAssociations?: {
+                items: {
+                    serviceAccountId: string;
+                    serviceAccount: string | null;
+                    namespace: string | null;
+                    cluster: string | null;
+                    resource: {
+                        hashedID: string;
+                        id: string | null;
+                        name: string | null;
+                        kind: string | null;
+                        scope: string | null;
+                        region: string | null;
+                    };
+                }[];
+                limit: number;
+                hasMore: boolean;
+                boundary: string;
+            };
             /** @enum {string} */
             mode: "reach" | "privileged";
             /** @enum {string} */
@@ -1719,6 +1741,23 @@ export interface components {
             }[];
         };
         StorageResult: {
+            cloudBacking?: {
+                items: {
+                    pvcId: string;
+                    pvId: string;
+                    resource: {
+                        hashedID: string;
+                        id: string | null;
+                        name: string | null;
+                        kind: string | null;
+                        scope: string | null;
+                        region: string | null;
+                    };
+                }[];
+                limit: number;
+                hasMore: boolean;
+                boundary: string;
+            };
             /** @enum {string} */
             mode: "footprint" | "orphanpv" | "unclaimedpvc" | "byclass";
             filter: {
@@ -2902,7 +2941,7 @@ export interface components {
     parameters: {
         /** @description Anyshift project id whose graph should be queried. */
         ProjectId: string;
-        /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. cloudflare-inventory-v1 includes Cloudflare in provider-omitted cloud_resources before pagination/counts; explicit provider=cloudflare also opts in. */
+        /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. cloudflare-inventory-v1 includes Cloudflare in provider-omitted cloud_resources before pagination/counts; explicit provider=cloudflare also opts in. cross-layer-evidence-v1 enables exact path identities, bounded storage cloudBacking and access irsaAssociations; stored associations are not effective IAM permissions. */
         GraphCapabilities: string;
     };
     requestBodies: never;
@@ -2915,7 +2954,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. cloudflare-inventory-v1 includes Cloudflare in provider-omitted cloud_resources before pagination/counts; explicit provider=cloudflare also opts in. */
+                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. cloudflare-inventory-v1 includes Cloudflare in provider-omitted cloud_resources before pagination/counts; explicit provider=cloudflare also opts in. cross-layer-evidence-v1 enables exact path identities, bounded storage cloudBacking and access irsaAssociations; stored associations are not effective IAM permissions. */
                 "x-anyshift-graph-capabilities"?: components["parameters"]["GraphCapabilities"];
             };
             path?: never;
@@ -2978,7 +3017,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. cloudflare-inventory-v1 includes Cloudflare in provider-omitted cloud_resources before pagination/counts; explicit provider=cloudflare also opts in. */
+                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. cloudflare-inventory-v1 includes Cloudflare in provider-omitted cloud_resources before pagination/counts; explicit provider=cloudflare also opts in. cross-layer-evidence-v1 enables exact path identities, bounded storage cloudBacking and access irsaAssociations; stored associations are not effective IAM permissions. */
                 "x-anyshift-graph-capabilities"?: components["parameters"]["GraphCapabilities"];
             };
             path: {
@@ -3062,7 +3101,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. cloudflare-inventory-v1 includes Cloudflare in provider-omitted cloud_resources before pagination/counts; explicit provider=cloudflare also opts in. */
+                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. cloudflare-inventory-v1 includes Cloudflare in provider-omitted cloud_resources before pagination/counts; explicit provider=cloudflare also opts in. cross-layer-evidence-v1 enables exact path identities, bounded storage cloudBacking and access irsaAssociations; stored associations are not effective IAM permissions. */
                 "x-anyshift-graph-capabilities"?: components["parameters"]["GraphCapabilities"];
             };
             path?: never;
@@ -3125,7 +3164,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. cloudflare-inventory-v1 includes Cloudflare in provider-omitted cloud_resources before pagination/counts; explicit provider=cloudflare also opts in. */
+                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. cloudflare-inventory-v1 includes Cloudflare in provider-omitted cloud_resources before pagination/counts; explicit provider=cloudflare also opts in. cross-layer-evidence-v1 enables exact path identities, bounded storage cloudBacking and access irsaAssociations; stored associations are not effective IAM permissions. */
                 "x-anyshift-graph-capabilities"?: components["parameters"]["GraphCapabilities"];
             };
             path: {

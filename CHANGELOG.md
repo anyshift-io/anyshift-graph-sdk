@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.21 - 2026-09-17
+
+- Negotiate typed path identities, cloud storage backing and observed IRSA associations with explicit bounds; role associations do not establish effective permissions.
+
 ## 0.5.20 - 2026-09-16
 
 - Version the exact delivery selector catalog as `1.17-sdk.2` and reject synchronization that removes it.

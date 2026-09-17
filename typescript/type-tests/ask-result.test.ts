@@ -225,3 +225,12 @@ const conflictingDelivery: DeliveryEventsParams = {resource:"name",resourceId:"I
 void exactDelivery; void conflictingDelivery;
 declare const contributorResult: EventContributorsResult;
 const contributorResultType: EventContributorsResult = contributorResult;
+
+declare const crossLayerStorage: AskResultFor<"storage">;
+const cloudBackingHash: string | undefined = crossLayerStorage.storage?.cloudBacking?.items[0].resource.hashedID;
+const backingHasMore: boolean | undefined = crossLayerStorage.storage?.cloudBacking?.hasMore;
+declare const crossLayerAccess: AskResultFor<"access">;
+const irsaRole: string | null | undefined = crossLayerAccess.access?.irsaAssociations?.items[0].resource.id;
+declare const crossLayerPath: AskResultFor<"path">;
+const pathScope: string | null | undefined = crossLayerPath.path?.chain[0].scope;
+void cloudBackingHash; void backingHasMore; void irsaRole; void pathScope;

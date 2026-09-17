@@ -3468,7 +3468,7 @@
         "schema": {
           "type": "string"
         },
-        "description": "Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. cloudflare-inventory-v1 includes Cloudflare in provider-omitted cloud_resources before pagination/counts; explicit provider=cloudflare also opts in."
+        "description": "Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. cloudflare-inventory-v1 includes Cloudflare in provider-omitted cloud_resources before pagination/counts; explicit provider=cloudflare also opts in. cross-layer-evidence-v1 enables exact path identities, bounded storage cloudBacking and access irsaAssociations; stored associations are not effective IAM permissions."
       }
     },
     "schemas": {
@@ -8427,6 +8427,24 @@
                     "string",
                     "null"
                   ]
+                },
+                "hashedID": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "scope": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
               "required": [
@@ -10037,6 +10055,112 @@
       "AccessResult": {
         "type": "object",
         "properties": {
+          "irsaAssociations": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "serviceAccountId": {
+                      "type": "string"
+                    },
+                    "serviceAccount": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "namespace": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "cluster": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "resource": {
+                      "type": "object",
+                      "properties": {
+                        "hashedID": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "name": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "kind": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "scope": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "region": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "hashedID",
+                        "id",
+                        "name",
+                        "kind",
+                        "scope",
+                        "region"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "serviceAccountId",
+                    "serviceAccount",
+                    "namespace",
+                    "cluster",
+                    "resource"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "hasMore": {
+                "type": "boolean"
+              },
+              "boundary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "items",
+              "limit",
+              "hasMore",
+              "boundary"
+            ],
+            "additionalProperties": false
+          },
           "mode": {
             "type": "string",
             "enum": [
@@ -12223,6 +12347,95 @@
       "StorageResult": {
         "type": "object",
         "properties": {
+          "cloudBacking": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "pvcId": {
+                      "type": "string"
+                    },
+                    "pvId": {
+                      "type": "string"
+                    },
+                    "resource": {
+                      "type": "object",
+                      "properties": {
+                        "hashedID": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "name": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "kind": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "scope": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "region": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "hashedID",
+                        "id",
+                        "name",
+                        "kind",
+                        "scope",
+                        "region"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "pvcId",
+                    "pvId",
+                    "resource"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "hasMore": {
+                "type": "boolean"
+              },
+              "boundary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "items",
+              "limit",
+              "hasMore",
+              "boundary"
+            ],
+            "additionalProperties": false
+          },
           "mode": {
             "type": "string",
             "enum": [

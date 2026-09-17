@@ -1067,6 +1067,17 @@ export interface components {
             }[];
         };
         MonitorResult: {
+            scopeTargets?: {
+                /** @enum {string} */
+                resolution: "resolved" | "unresolved" | "ambiguous";
+                id: string | null;
+                name: string | null;
+                providerServiceId?: string | null;
+                type: string | null;
+                namespace: string | null;
+                cluster: string | null;
+            }[];
+            scopeTargetCount?: number;
             term: string;
             matched: number;
             monitors: string[];
@@ -1148,6 +1159,7 @@ export interface components {
                     resolution: "resolved" | "unresolved" | "ambiguous";
                     id: string | null;
                     name: string | null;
+                    providerServiceId?: string | null;
                     type: string | null;
                     namespace: string | null;
                     cluster: string | null;
@@ -1184,6 +1196,17 @@ export interface components {
                     /** @constant */
                     provider: "incidentio";
                 };
+                scopeTargets?: {
+                    /** @enum {string} */
+                    resolution: "resolved" | "unresolved" | "ambiguous";
+                    id: string | null;
+                    name: string | null;
+                    providerServiceId?: string | null;
+                    type: string | null;
+                    namespace: string | null;
+                    cluster: string | null;
+                }[];
+                scopeTargetCount?: number;
                 /** @enum {string} */
                 status: "firing" | "recovered" | "suppressed" | "unknown";
                 /** @enum {string} */
@@ -2825,7 +2848,7 @@ export interface components {
     parameters: {
         /** @description Anyshift project id whose graph should be queried. */
         ProjectId: string;
-        /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields. */
+        /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. */
         GraphCapabilities: string;
     };
     requestBodies: never;
@@ -2838,7 +2861,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields. */
+                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. */
                 "x-anyshift-graph-capabilities"?: components["parameters"]["GraphCapabilities"];
             };
             path?: never;
@@ -2901,7 +2924,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields. */
+                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. */
                 "x-anyshift-graph-capabilities"?: components["parameters"]["GraphCapabilities"];
             };
             path: {
@@ -2985,7 +3008,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields. */
+                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. */
                 "x-anyshift-graph-capabilities"?: components["parameters"]["GraphCapabilities"];
             };
             path?: never;
@@ -3048,7 +3071,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields. */
+                /** @description Comma-separated fixed capability tokens. exposure-inventory-state-v1 enables ExposureGap.inventoryState; inventory-provenance-v1 enables InventoryResult.bySource and sample provenance fields; monitor-scope-targets-v1 enables monitor and alert scopeTargets and scopeTargetCount, representing stored monitoring scope rather than causality. */
                 "x-anyshift-graph-capabilities"?: components["parameters"]["GraphCapabilities"];
             };
             path: {

@@ -1221,6 +1221,7 @@ export class GraphAnswer {
     const headers: Record<string, string> = {
       "content-type": "application/json",
       "x-anyshift-client": "graph-sdk-typescript",
+      "x-anyshift-graph-capabilities": "monitor-scope-targets-v1",
       "x-anyshift-client-version": GRAPH_SDK_VERSION,
       "x-anyshift-invocation-id": this.invocationId ?? generateInvocationId(),
       "x-anyshift-graph-workflow": workflow,

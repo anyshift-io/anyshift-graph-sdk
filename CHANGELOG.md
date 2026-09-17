@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.17 - 2026-09-16
+
+- Expose typed monitor and alert scope targets with full target counts.
+- Negotiate `monitor-scope-targets-v1` so stored Datadog cloud targets are returned without requiring an APM bridge. Multiple targets and truncated samples remain explicit. Monitoring scope does not imply causation.
+
 ## 0.5.16 - 2026-08-19
 
 ### Added

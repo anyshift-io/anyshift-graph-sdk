@@ -27,6 +27,19 @@ const onCallTable = queryLanguage?.tables?.find((table) => table?.name === "onca
 const responseIncidentsVariant = askResult?.oneOf?.find((variant) => variant?.properties?.intent?.const === "responseincidents");
 const onCallVariant = askResult?.oneOf?.find((variant) => variant?.properties?.intent?.const === "oncall");
 const alertsResult = document?.components?.schemas?.AlertsResult;
+const scopeResults = [
+  document?.components?.schemas?.MonitorResult?.properties,
+  alertsResult?.properties?.items?.items?.properties,
+];
+const validScopeTargets = scopeResults.every((properties) => {
+  const targets = properties?.scopeTargets;
+  const item = targets?.items;
+  return targets?.type === "array"
+    && properties?.scopeTargetCount?.type === "integer"
+    && properties?.scopeTargetCount?.minimum === 0
+    && ["resolution", "id", "name", "type", "namespace", "cluster"].every((field) => item?.required?.includes(field))
+    && ["resolved", "unresolved", "ambiguous"].every((value) => item?.properties?.resolution?.enum?.includes(value));
+});
 const responseIncidentsResult = document?.components?.schemas?.ResponseIncidentsResult;
 const onCallResult = document?.components?.schemas?.OnCallResult;
 const incidentResponderIdentity = responseIncidentsResult?.properties?.items?.items
@@ -58,7 +71,9 @@ const exposurePlatformFields = [
   "provenance",
 ];
 if (
-  document?.openapi !== "3.1.0"
+  !validScopeTargets
+  || !document?.components?.parameters?.GraphCapabilities?.description?.includes("monitor-scope-targets-v1")
+  || document?.openapi !== "3.1.0"
   || askResult?.discriminator?.propertyName !== "intent"
   || queryLanguage?.version !== "1.17"
   || queryLanguage?.tables?.length !== askResult.oneOf.length
@@ -103,7 +118,7 @@ if (
   || !onCallIdentity?.required?.includes("candidates")
   || onCallIdentity?.properties?.candidates?.maxItems !== 10
 ) {
-  throw new Error(`${source} does not expose the expected executable query-language 1.17 active incident, correlations, operational-response identity candidates, cloud-event, canonical exposure, and exposure platform contract`);
+  throw new Error(`${source} does not expose the expected executable query-language 1.17 active incident, correlations, operational-response identity candidates, cloud-event, canonical exposure, exposure platform, and monitor scope-target contract`);
 }
 
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`);

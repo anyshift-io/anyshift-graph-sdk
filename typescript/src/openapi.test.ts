@@ -160,3 +160,9 @@ test("pinned OpenAPI exposes the executable operational-response contract", asyn
     assert.deepEqual(identity.properties.candidates.items.required, ["personId", "name", "email"]);
   }
 });
+
+test("pinned cloud inventory contract includes Cloudflare",async()=>{
+ const document=JSON.parse(await readFile(new URL("../../openapi/graph-api.v1.json",import.meta.url),"utf8"));
+ assert.ok(document.components.schemas.CloudResourcesResult.properties.items.items.properties.provider.enum.includes("cloudflare"));
+ assert.match(document.components.parameters.GraphCapabilities.description,/cloudflare-inventory-v1/);
+});

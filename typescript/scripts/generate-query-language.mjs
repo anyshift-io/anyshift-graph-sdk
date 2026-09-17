@@ -7,8 +7,8 @@ const check = process.argv.includes("--check");
 const contract = JSON.parse(await readFile(contractPath, "utf8"));
 const language = contract["x-anyshift-query-language"];
 
-if (!["1.17-sdk.1", "1.23"].includes(language?.version) || !Array.isArray(language.tables) || language.tables.length === 0) {
-  throw new Error(`${contractPath.pathname} does not contain x-anyshift-query-language version 1.17-sdk.1 or 1.23`);
+if (!["1.17-sdk.2", "1.23"].includes(language?.version) || !Array.isArray(language.tables) || language.tables.length === 0) {
+  throw new Error(`${contractPath.pathname} does not contain x-anyshift-query-language version 1.17-sdk.2 or 1.23`);
 }
 
 const escapeCell = (value) => String(value).replaceAll("|", "\\|").replaceAll("\n", " ");
@@ -26,7 +26,7 @@ function renderValues(filter) {
 const lines = [
   "# Anyshift Graph Query Language",
   "",
-  `This reference describes the pinned SDK query catalog ${language.version}. The SDK snapshot extends the 1.17 baseline with contributor lookup; it does not claim complete parity with later server catalogs. It is generated from the SDK-pinned OpenAPI contract.`,
+  `This reference describes the pinned SDK query catalog ${language.version}. The SDK snapshot extends the 1.17 baseline with contributor lookup and exact delivery resource IDs; it does not claim complete parity with later server catalogs. It is generated from the SDK-pinned OpenAPI contract.`,
   "",
   "## Grammar",
   "",

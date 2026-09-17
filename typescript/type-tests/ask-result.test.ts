@@ -218,5 +218,10 @@ declare const contributors: AskResultFor<"eventcontributors">;
 const evaluationCoverage: "unknown" | undefined = contributors.eventContributors?.evaluationCoverage;
 void evaluationCoverage;
 
+import type { DeliveryEventsParams } from "../src/client.js";
+const exactDelivery: DeliveryEventsParams = {resourceId:"Mixed-Case-ID"};
+// @ts-expect-error Exact identity and legacy resource selectors are mutually exclusive.
+const conflictingDelivery: DeliveryEventsParams = {resource:"name",resourceId:"ID"};
+void exactDelivery; void conflictingDelivery;
 declare const contributorResult: EventContributorsResult;
 const contributorResultType: EventContributorsResult = contributorResult;

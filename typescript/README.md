@@ -386,3 +386,7 @@ Monitor and alert results can include `scopeTargets` with stable resource IDs, a
 Cloudflare inventory is available through `graph.cloudResources({ provider: "cloudflare", scope: "cloudflare/<account-id>" })`. Canonical `cf://` IDs preserve account/zone identity; missing region and observation evidence remain null/unknown. The client advertises `cloudflare-inventory-v1` so provider-omitted inventory can include Cloudflare once the compatible API is deployed.
 
 Use `graph.eventContributors({ firingId: "exact-firing-dedupeId", limit: 50 })` to inspect stored Sentry alert-evaluation members. Pass `cursor` from the returned page to continue. IDs preserve case; missing IDs may be late, expired or unobserved. Evaluation coverage remains unknown and contributor membership is not proof of infrastructure root cause.
+
+### Exact delivery evidence
+
+Use `graph.deliveryEvents({ resourceId: "Exact-Graph-ID", since: "24h", limit: 20 })` to select stored delivery events for one exact, case-sensitive graph identity. `resourceId` and the legacy `resource` selector are mutually exclusive. Empty IDs are rejected before any request. A commit, tag, or PR alone does not prove deployment. Requires the API exact `resource_id` selector.

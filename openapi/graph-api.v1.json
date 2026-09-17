@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "x-anyshift-query-language": {
-    "version": "1.17-sdk.1",
+    "version": "1.17-sdk.2",
     "docsUrl": "https://docs.anyshift.io/pages/product/integration/graph_query_language",
     "grammar": "SELECT <*|count(*)> FROM <table> [WHERE k = v [AND ...]] [LIMIT n] [OFFSET n]",
     "selectors": [
@@ -493,7 +493,12 @@
           {
             "name": "resource",
             "type": "string",
-            "description": "Exact graph id or unambiguous target name."
+            "description": "Graph id or target name; use resource_id for an exact case-sensitive event target id."
+          },
+          {
+            "name": "resource_id",
+            "type": "string",
+            "description": "Exact case-sensitive target hashedID; mutually exclusive with resource and never matches a target name."
           },
           {
             "name": "actor",

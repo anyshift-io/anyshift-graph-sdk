@@ -11,6 +11,8 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    cooldown:
+      default-days: 7
     groups:
       minor-and-patch:
         applies-to: version-updates
@@ -35,6 +37,8 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    cooldown:
+      default-days: 7
     groups:
       minor-and-patch:
         applies-to: version-updates

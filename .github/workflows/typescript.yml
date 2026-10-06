@@ -1,14 +1,7 @@
 name: TypeScript SDK
 
 on:
-  pull_request:
-    paths:
-      - "typescript/**"
-      - "openapi/**"
-      - "QUERY_LANGUAGE.md"
-      - "CAPABILITIES.md"
-      - "README.md"
-      - ".github/workflows/typescript.yml"
+  workflow_dispatch:
   push:
     branches: ["main"]
     paths:

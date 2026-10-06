@@ -64,3 +64,15 @@ Release checklist:
 - Developer documentation is published in the Anyshift documentation site.
 
 Use `graph.eventContributors({ firingId: "exact-firing-dedupeId", limit: 50 })` to inspect stored Sentry alert-evaluation members. Pass `cursor` from the returned page to continue. IDs preserve case; missing IDs may be late, expired or unobserved. Evaluation coverage remains unknown and contributor membership is not proof of infrastructure root cause.
+
+## Manual pull request validation
+
+PR workflows do not start automatically when a pull request opens or receives a commit. Run the relevant validation from GitHub Actions using the pull request branch, or from `gh`:
+
+```sh
+gh workflow run <workflow-file> --ref <pr-branch> --repo anyshift-io/anyshift-graph-sdk
+```
+
+Re-run required checks after each new commit; a successful run must match the pull request’s latest commit. Supply any required workflow inputs.
+
+Manual workflow files: `.github/workflows/typescript.yml`.

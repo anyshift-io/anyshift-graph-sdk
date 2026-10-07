@@ -2,6 +2,11 @@ name: TypeScript SDK
 
 on:
   workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Optional pull request number to validate (supports fork pull requests)
+        required: false
+        type: number
   push:
     branches: ["main"]
     paths:
@@ -23,6 +28,9 @@ jobs:
         working-directory: typescript
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ inputs.pr_number && format('refs/pull/{0}/head', inputs.pr_number) || github.ref }}
+          persist-credentials: false
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
           node-version: 22

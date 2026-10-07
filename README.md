@@ -67,12 +67,12 @@ Use `graph.eventContributors({ firingId: "exact-firing-dedupeId", limit: 50 })` 
 
 ## Manual pull request validation
 
-PR workflows do not start automatically when a pull request opens or receives a commit. Run the relevant validation from GitHub Actions using the pull request branch, or from `gh`:
+PR workflows do not start automatically when a pull request opens or receives a commit. After the dispatch-enabled workflow is present on the default branch, run the relevant validation from GitHub Actions using the pull request branch, or from `gh`:
 
 ```sh
 gh workflow run <workflow-file> --ref <pr-branch> --repo anyshift-io/anyshift-graph-sdk
 ```
 
-Re-run required checks after each new commit; a successful run must match the pull request’s latest commit. Supply any required workflow inputs.
+For a pull request from a fork, use `gh workflow run typescript.yml --ref main --repo anyshift-io/anyshift-graph-sdk -f pr_number=<number>` to validate the pull request head. Re-run required checks after each new commit; a successful run must match the pull request’s latest commit. Supply any required workflow inputs. A PR that first adds dispatch support cannot use this GitHub workflow before merge; local checks during that bootstrap period do not count as required GitHub checks.
 
 Manual workflow files: `.github/workflows/typescript.yml`.

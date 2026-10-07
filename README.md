@@ -67,7 +67,7 @@ Use `graph.eventContributors({ firingId: "exact-firing-dedupeId", limit: 50 })` 
 
 ## Manual pull request validation
 
-PR workflows do not start automatically when a pull request opens or receives a commit. After the dispatch-enabled workflow is present on the default branch, run the relevant validation from GitHub Actions using the pull request branch, or from `gh`:
+The TypeScript package validation workflow does not start automatically when a pull request opens or receives a commit. After the dispatch-enabled workflow is present on the default branch, run that validation from GitHub Actions using the pull request branch, or from `gh`:
 
 ```sh
 gh workflow run <workflow-file> --ref <pr-branch> --repo anyshift-io/anyshift-graph-sdk

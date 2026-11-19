@@ -20,8 +20,43 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ inputs.pr_number || 'branch' }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+
 jobs:
+  status_pending:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+      pull-requests: read
+    outputs:
+      sha: ${{ steps.target.outputs.sha }}
+    steps:
+      - name: Mark CI pending on the target commit
+        id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATUS_CONTEXT: manual-validation/typescript
+          PR_NUMBER: ${{ inputs.pr_number || '' }}
+        run: |
+          validation_sha=$GITHUB_SHA
+          if [[ -n "$PR_NUMBER" ]]; then
+            [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+            validation_sha=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .head.sha)
+          fi
+          [[ "$validation_sha" =~ ^[0-9a-f]{40}$ ]]
+          echo "sha=$validation_sha" >> "$GITHUB_OUTPUT"
+          gh api --method POST "repos/$GITHUB_REPOSITORY/statuses/$validation_sha" \
+            -f state=pending -f context="$STATUS_CONTEXT" \
+            -f description="Validation is running" \
+            -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --silent
+
   test:
+    needs: status_pending
+    if: ${{ !cancelled() && (needs.status_pending.result == 'success' || needs.status_pending.result == 'skipped') }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -29,7 +64,7 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          ref: ${{ inputs.pr_number && format('refs/pull/{0}/head', inputs.pr_number) || github.sha }}
+          ref: ${{ needs.status_pending.outputs.sha || github.sha }}
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
@@ -42,3 +77,23 @@ jobs:
       - run: npm run check:generated
       - run: npm run build
       - run: npm run test:consumer
+
+  publish_status:
+    needs: [status_pending, test]
+    if: ${{ always() && needs.status_pending.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      - name: Publish CI result on the validated commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATUS_CONTEXT: manual-validation/typescript
+          VALIDATION_SHA: ${{ needs.status_pending.outputs.sha }}
+          VALIDATION_STATE: ${{ needs.test.result == 'success' && 'success' || 'failure' }}
+        run: |
+          gh api --method POST "repos/$GITHUB_REPOSITORY/statuses/$VALIDATION_SHA" \
+            -f state="$VALIDATION_STATE" -f context="$STATUS_CONTEXT" \
+            -f description="Validation result: $VALIDATION_STATE" \
+            -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --silent
